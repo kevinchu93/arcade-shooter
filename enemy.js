@@ -6,6 +6,15 @@ module.exports = class {
     this.positionVertical = obj.positionVertical;
     this.speed = obj.speed;
   }
+  static getDefaultSpec() {
+    return {
+      width: 50,
+      height: 30,
+      positionHorizontal: 350,
+      positionVertical: 75, // canvas height - height
+      speed: 20,
+    };
+  }
   canvasFill(drawingContext) {
     drawingContext.fillRect(
       this.positionHorizontal,
@@ -26,14 +35,5 @@ module.exports = class {
   update(timeElapsed, boundaryLeft, boundaryRight) {
     this.boundaryCheck(boundaryLeft, boundaryRight);
     this.movement(timeElapsed);
-  }
-  static getDefaultSpec() {
-    return {
-      width: 50,
-      height: 30,
-      positionHorizontal: 350,
-      positionVertical: 75, // canvas height - height
-      speed: 20,
-    };
   }
 };

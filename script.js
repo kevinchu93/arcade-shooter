@@ -3,22 +3,20 @@ const Player = require('./player.js');
 const Event = require('./event.js');
 const Enemy = require('./enemy.js');
 
-const head = {
-  value: null,
-};
-
 const components = {
   bulletHead: null,
-  player: new Player(Player.getDefaultSpec()),
-  enemy: new Enemy(Enemy.getDefaultSpec()),
+  player: null,
+  enemy: null,
 };
 
 const gameArea = {
   canvasElement: document.getElementById('canvas'),
-  start: function () {
+  start: function (components) {
     this.canvasElement.width = 1366;
     this.canvasElement.height = 768;
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
+    components.player = new Player(Player.getDefaultSpec(this.canvasElement.width, this.canvasElement.height));
+    components.enemy = new Enemy(Enemy.getDefaultSpec());
   },
   fill: function () {
     this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
@@ -53,7 +51,6 @@ function update(components, gameArea) {
     for (let i = components.bulletHead; i != null; i = i.next) {
       i.update(timeElapsed, 0, components, Bullet);
     }
-
     components.enemy.update(timeElapsed, 0, 1366);
     canvasFill(components);
     window.requestAnimationFrame(requestAnimationFrameLoop);
@@ -62,7 +59,7 @@ function update(components, gameArea) {
 }
 
 window.onload = () => {
-  gameArea.start();
+  gameArea.start(components);
   update(components, gameArea);
   Event.mouseMove(gameArea.canvasElement, components.player);
   Event.click(gameArea.canvasElement, Bullet, components, components.player);

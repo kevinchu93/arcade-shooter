@@ -15,12 +15,12 @@ module.exports = class {
     );
     drawingContext.fillText(this.score, 1200, 55);
   }
-  static getDefaultSpec() {
+  static getDefaultSpec(canvasWidth, canvasHeight) {
     return {
       width: 35,
       height: 20,
-      positionHorizontal: 100,
-      positionVertical: 768 - 20, // canvas height - height
+      positionHorizontal: (canvasWidth) / 2,
+      positionVertical: canvasHeight - 20, // canvas height - height
       score: 0,
     };
   }
