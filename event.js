@@ -10,7 +10,7 @@ module.exports = class {
       const bullet = new Bullet(Bullet.getDefaultSpec());
       bullet.positionHorizontal = player.positionHorizontal + ((player.width - bullet.width) / 2);
       bullet.positionVertical = player.positionVertical;
-      components.bulletHead = bullet.append(components.bulletHead);
+      components.bullets.head = bullet.append(components.bullets.head);
     });
   }
 };

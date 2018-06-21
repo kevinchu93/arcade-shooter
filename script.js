@@ -4,9 +4,33 @@ const Event = require('./event.js');
 const Enemy = require('./enemy.js');
 
 const components = {
-  bulletHead: null,
+  bullets: {
+    head: null,
+    canvasFill: function(gameArea) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.canvasFill(gameArea.canvasElementDrawingContext);
+      }
+    },
+    update: function(timeElapsed, boundary, components, Bullet) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.update(timeElapsed, 0, components, Bullet);
+      }
+    },
+  },
   player: null,
-  enemyHead: null,
+  enemies: {
+    head: null,
+    canvasFill: function(gameArea) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.canvasFill(gameArea.canvasElementDrawingContext);
+      }
+    },
+    update: function(timeElapsed, boundaryLeft, boundaryRight, components) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.update(timeElapsed, 0, 1366, components);
+      }
+    },
+  },
 };
 
 const gameArea = {
@@ -17,7 +41,7 @@ const gameArea = {
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
     components.player = new Player(Player.getDefaultSpec(this.canvasElement.width, this.canvasElement.height));
     let enemy = new Enemy(Enemy.getDefaultSpec());
-    components.enemyHead = enemy.append(components.enemyHead);
+    components.enemies.head = enemy.append(components.enemies.head);
   },
   fill: function () {
     this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
@@ -36,12 +60,8 @@ const gameArea = {
 function canvasFill(components) {
   gameArea.fill();
   components.player.canvasFill(gameArea.canvasElementDrawingContext);
-  for (let i = components.enemyHead; i != null; i = i.next) {
-    i.canvasFill(gameArea.canvasElementDrawingContext);
-  }
-  for (let i = components.bulletHead; i != null; i = i.next) {
-    i.canvasFill(gameArea.canvasElementDrawingContext);
-  }
+  components.enemies.canvasFill(gameArea);
+  components.bullets.canvasFill(gameArea);
 }
 
 function update(components, gameArea) {
@@ -56,15 +76,11 @@ function update(components, gameArea) {
     gameArea.enemySpawnCountdown -= timeElapsed;
     if (gameArea.enemySpawnCountdown <= 0) {
       let enemy = new Enemy(Enemy.getDefaultSpec());
-      components.enemyHead = enemy.append(components.enemyHead);
+      components.enemies.head = enemy.append(components.enemies.head);
       gameArea.enemySpawnCountdown += 1000;
     }
-    for (let i = components.bulletHead; i != null; i = i.next) {
-      i.update(timeElapsed, 0, components, Bullet);
-    }
-    for (let i = components.enemyHead; i != null; i = i.next) {
-      i.update(timeElapsed, 0, 1366, components);
-    }
+    components.bullets.update(timeElapsed, 0, components, Bullet);
+    components.enemies.update(timeElapsed, 0, 1366, components);
     canvasFill(components);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }

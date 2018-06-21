@@ -34,8 +34,8 @@ module.exports = class bullet {
   update(timeElapsed, boundary, components, Bullet) {
     this.boundaryCheck(boundary);
     this.movement(timeElapsed);
-    if (this.hitCheck(components.enemyHead)) {
-      components.bulletHead = this.remove(components.bulletHead);
+    if (this.hitCheck(components.enemies.head)) {
+      components.bullets.head = this.remove(components.bullets.head);
       components.player.score += 1;
     }
   }

@@ -41,7 +41,7 @@ module.exports = class {
   }
   hitCheck(components) {
     if (this.hitState) {
-      components.enemyHead = this.remove(components.enemyHead);
+      components.enemies.head = this.remove(components.enemies.head);
     }
   }
   append(head) {
