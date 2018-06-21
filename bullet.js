@@ -34,7 +34,7 @@ module.exports = class bullet {
   update(timeElapsed, boundary, components, Bullet) {
     this.boundaryCheck(boundary);
     this.movement(timeElapsed);
-    if (this.hitCheck(components.enemy)) {
+    if (this.hitCheck(components.enemyHead)) {
       components.bulletHead = this.remove(components.bulletHead);
       components.player.score += 1;
     }
@@ -48,13 +48,18 @@ module.exports = class bullet {
       this.height,
     );
   }
-  hitCheck(enemy) {
-    return (
-      this.positionVertical <= enemy.positionVertical + enemy.height &&
-      this.positionVertical >= enemy.positionVertical &&
-      this.positionHorizontal >= enemy.positionHorizontal &&
-      this.positionHorizontal <= enemy.positionHorizontal + enemy.width
-    )
+  hitCheck(enemyHead) {
+    for (let i = enemyHead; i != null; i = i.next) {
+      if (
+        this.positionVertical <= i.positionVertical + i.height &&
+        this.positionVertical >= i.positionVertical &&
+        this.positionHorizontal >= i.positionHorizontal &&
+        this.positionHorizontal <= i.positionHorizontal + i.width
+      ) {
+        i.hitState = true;
+        return true;
+      }
+    }
   }
   append(head) {
     if (head == null) {

@@ -5,6 +5,7 @@ module.exports = class {
     this.positionHorizontal = obj.positionHorizontal;
     this.positionVertical = obj.positionVertical;
     this.speed = obj.speed;
+    this.hitState = obj.hitState;
   }
   static getDefaultSpec() {
     return {
@@ -13,6 +14,7 @@ module.exports = class {
       positionHorizontal: 350,
       positionVertical: 75, // canvas height - height
       speed: 20,
+      hitState: false,
     };
   }
   canvasFill(drawingContext) {
@@ -32,8 +34,41 @@ module.exports = class {
       this.speed = -this.speed;
     }
   }
-  update(timeElapsed, boundaryLeft, boundaryRight) {
+  update(timeElapsed, boundaryLeft, boundaryRight, components) {
     this.boundaryCheck(boundaryLeft, boundaryRight);
     this.movement(timeElapsed);
+    this.hitCheck(components);
+  }
+  hitCheck(components) {
+    if (this.hitState) {
+      components.enemyHead = this.remove(components.enemyHead);
+    }
+  }
+  append(head) {
+    if (head == null) {
+      head = this;
+      return head;
+    }
+    for (let i = head; i != null; i = i.next) {
+      if (i.next == null) {
+        i.next = this;
+        i = i.next;
+      }
+    }
+    return head;
+  }
+  remove(head) {
+    if (head == this) {
+      return head.next;
+    }
+    for (let i = head; i.next != null; i = i.next) {
+      if (i.next == this) {
+        i.next = i.next.next;
+      }
+      if (i.next == null) {
+        return head;
+      }
+    }
+    return head;
   }
 };

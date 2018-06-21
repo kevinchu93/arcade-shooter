@@ -35,7 +35,7 @@ module.exports = class bullet {
   update(timeElapsed, boundary, components, Bullet) {
     this.boundaryCheck(boundary);
     this.movement(timeElapsed);
-    if (this.hitCheck(components.enemy)) {
+    if (this.hitCheck(components.enemyHead)) {
       components.bulletHead = this.remove(components.bulletHead);
       components.player.score += 1;
     }
@@ -49,13 +49,18 @@ module.exports = class bullet {
       this.height,
     );
   }
-  hitCheck(enemy) {
-    return (
-      this.positionVertical <= enemy.positionVertical + enemy.height &&
-      this.positionVertical >= enemy.positionVertical &&
-      this.positionHorizontal >= enemy.positionHorizontal &&
-      this.positionHorizontal <= enemy.positionHorizontal + enemy.width
-    )
+  hitCheck(enemyHead) {
+    for (let i = enemyHead; i != null; i = i.next) {
+      if (
+        this.positionVertical <= i.positionVertical + i.height &&
+        this.positionVertical >= i.positionVertical &&
+        this.positionHorizontal >= i.positionHorizontal &&
+        this.positionHorizontal <= i.positionHorizontal + i.width
+      ) {
+        i.hitState = true;
+        return true;
+      }
+    }
   }
   append(head) {
     if (head == null) {
@@ -94,6 +99,7 @@ module.exports = class {
     this.positionHorizontal = obj.positionHorizontal;
     this.positionVertical = obj.positionVertical;
     this.speed = obj.speed;
+    this.hitState = obj.hitState;
   }
   static getDefaultSpec() {
     return {
@@ -102,6 +108,7 @@ module.exports = class {
       positionHorizontal: 350,
       positionVertical: 75, // canvas height - height
       speed: 20,
+      hitState: false,
     };
   }
   canvasFill(drawingContext) {
@@ -121,9 +128,42 @@ module.exports = class {
       this.speed = -this.speed;
     }
   }
-  update(timeElapsed, boundaryLeft, boundaryRight) {
+  update(timeElapsed, boundaryLeft, boundaryRight, components) {
     this.boundaryCheck(boundaryLeft, boundaryRight);
     this.movement(timeElapsed);
+    this.hitCheck(components);
+  }
+  hitCheck(components) {
+    if (this.hitState) {
+      components.enemyHead = this.remove(components.enemyHead);
+    }
+  }
+  append(head) {
+    if (head == null) {
+      head = this;
+      return head;
+    }
+    for (let i = head; i != null; i = i.next) {
+      if (i.next == null) {
+        i.next = this;
+        i = i.next;
+      }
+    }
+    return head;
+  }
+  remove(head) {
+    if (head == this) {
+      return head.next;
+    }
+    for (let i = head; i.next != null; i = i.next) {
+      if (i.next == this) {
+        i.next = i.next.next;
+      }
+      if (i.next == null) {
+        return head;
+      }
+    }
+    return head;
   }
 };
 
@@ -183,7 +223,7 @@ const Enemy = require('./enemy.js');
 const components = {
   bulletHead: null,
   player: null,
-  enemy: null,
+  enemyHead: null,
 };
 
 const gameArea = {
@@ -193,7 +233,8 @@ const gameArea = {
     this.canvasElement.height = 768;
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
     components.player = new Player(Player.getDefaultSpec(this.canvasElement.width, this.canvasElement.height));
-    components.enemy = new Enemy(Enemy.getDefaultSpec());
+    let enemy = new Enemy(Enemy.getDefaultSpec());
+    components.enemyHead = enemy.append(components.enemyHead);
   },
   fill: function () {
     this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
@@ -206,12 +247,15 @@ const gameArea = {
     );
     this.canvasElementDrawingContext.fillStyle = 'white';
   },
+  enemySpawnCountdown: 1000,
 };
 
 function canvasFill(components) {
   gameArea.fill();
   components.player.canvasFill(gameArea.canvasElementDrawingContext);
-  components.enemy.canvasFill(gameArea.canvasElementDrawingContext);
+  for (let i = components.enemyHead; i != null; i = i.next) {
+    i.canvasFill(gameArea.canvasElementDrawingContext);
+  }
   for (let i = components.bulletHead; i != null; i = i.next) {
     i.canvasFill(gameArea.canvasElementDrawingContext);
   }
@@ -225,10 +269,19 @@ function update(components, gameArea) {
     timeStamp = timeStamp || 20;    // timeStamp is undefined until window.requestAnimationFrame runs
     timeElapsed = timeStamp - timePrevious;
     timePrevious = timeStamp;
+
+    gameArea.enemySpawnCountdown -= timeElapsed;
+    if (gameArea.enemySpawnCountdown <= 0) {
+      let enemy = new Enemy(Enemy.getDefaultSpec());
+      components.enemyHead = enemy.append(components.enemyHead);
+      gameArea.enemySpawnCountdown += 1000;
+    }
     for (let i = components.bulletHead; i != null; i = i.next) {
       i.update(timeElapsed, 0, components, Bullet);
     }
-    components.enemy.update(timeElapsed, 0, 1366);
+    for (let i = components.enemyHead; i != null; i = i.next) {
+      i.update(timeElapsed, 0, 1366, components);
+    }
     canvasFill(components);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }

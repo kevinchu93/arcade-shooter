@@ -6,7 +6,7 @@ const Enemy = require('./enemy.js');
 const components = {
   bulletHead: null,
   player: null,
-  enemy: null,
+  enemyHead: null,
 };
 
 const gameArea = {
@@ -16,7 +16,8 @@ const gameArea = {
     this.canvasElement.height = 768;
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
     components.player = new Player(Player.getDefaultSpec(this.canvasElement.width, this.canvasElement.height));
-    components.enemy = new Enemy(Enemy.getDefaultSpec());
+    let enemy = new Enemy(Enemy.getDefaultSpec());
+    components.enemyHead = enemy.append(components.enemyHead);
   },
   fill: function () {
     this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
@@ -29,12 +30,15 @@ const gameArea = {
     );
     this.canvasElementDrawingContext.fillStyle = 'white';
   },
+  enemySpawnCountdown: 1000,
 };
 
 function canvasFill(components) {
   gameArea.fill();
   components.player.canvasFill(gameArea.canvasElementDrawingContext);
-  components.enemy.canvasFill(gameArea.canvasElementDrawingContext);
+  for (let i = components.enemyHead; i != null; i = i.next) {
+    i.canvasFill(gameArea.canvasElementDrawingContext);
+  }
   for (let i = components.bulletHead; i != null; i = i.next) {
     i.canvasFill(gameArea.canvasElementDrawingContext);
   }
@@ -48,10 +52,19 @@ function update(components, gameArea) {
     timeStamp = timeStamp || 20;    // timeStamp is undefined until window.requestAnimationFrame runs
     timeElapsed = timeStamp - timePrevious;
     timePrevious = timeStamp;
+
+    gameArea.enemySpawnCountdown -= timeElapsed;
+    if (gameArea.enemySpawnCountdown <= 0) {
+      let enemy = new Enemy(Enemy.getDefaultSpec());
+      components.enemyHead = enemy.append(components.enemyHead);
+      gameArea.enemySpawnCountdown += 1000;
+    }
     for (let i = components.bulletHead; i != null; i = i.next) {
       i.update(timeElapsed, 0, components, Bullet);
     }
-    components.enemy.update(timeElapsed, 0, 1366);
+    for (let i = components.enemyHead; i != null; i = i.next) {
+      i.update(timeElapsed, 0, 1366, components);
+    }
     canvasFill(components);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }
