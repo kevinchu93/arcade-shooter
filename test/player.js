@@ -1,16 +1,14 @@
 const sinon = require('sinon');
 const Player = require('../player.js');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
-mockPlayerSpec = {
+const mockPlayerSpec = {
   width: 35,
   height: 20,
   positionHorizontal: 100,
   positionVertical: 748,
   score: 0,
-}
-
-mockPlayer = new Player(mockPlayerSpec);
+};
 
 describe('Player', () => {
   let player = {};
@@ -19,19 +17,20 @@ describe('Player', () => {
   });
   describe('constructor', () => {
     it('should create new player instance with correct parameters', () => {
-      let instance = new Player(mockPlayerSpec);
+      const instance = new Player(mockPlayerSpec);
       expect(instance).to.deep.equal(mockPlayerSpec);
     });
   });
   describe('canvasFill', () => {
     it('should call drawingContext.fillRect wiht correct parameters', () => {
-      let drawingContext = {
-        fillRect: function() {},
+      const drawingContext = {
+        fillRect() {},
+        fillText() {},
       };
-      let fillRectStub = sinon.stub(drawingContext, 'fillRect');
+      sinon.stub(drawingContext, 'fillRect');
       player.canvasFill(drawingContext);
       sinon.assert.calledWithExactly(drawingContext.fillRect, 100, 748, 35, 20);
-      fillRectStub.restore();
+      drawingContext.fillRect.restore();
     });
   });
   describe('getDefaultSpec', () => {

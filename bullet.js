@@ -14,7 +14,7 @@ module.exports = class bullet {
       height: 10,
       speed: 20,
       positionHorizontal: undefined,
-      positionVertical: undefined,   // canvas height - height
+      positionVertical: undefined, // canvas height - height
       state: true,
       nextBullet: null,
     };
@@ -31,7 +31,7 @@ module.exports = class bullet {
     }
   }
 
-  update(timeElapsed, boundary, components, Bullet) {
+  update(timeElapsed, boundary, components) {
     this.boundaryCheck(boundary);
     this.movement(timeElapsed);
     if (this.hitCheck(components.enemies.head)) {
@@ -60,11 +60,11 @@ module.exports = class bullet {
         return true;
       }
     }
+    return false;
   }
   append(head) {
     if (head == null) {
-      head = this;
-      return head;
+      return this;
     }
     for (let i = head; i != null; i = i.next) {
       if (i.next == null) {
@@ -75,11 +75,11 @@ module.exports = class bullet {
     return head;
   }
   remove(head) {
-    if (head == this) {
+    if (head === this) {
       return head.next;
     }
     for (let i = head; i.next != null; i = i.next) {
-      if (i.next == this) {
+      if (i.next === this) {
         i.next = i.next.next;
       }
       if (i.next == null) {

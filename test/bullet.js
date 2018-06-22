@@ -1,9 +1,8 @@
 const sinon = require('sinon');
 const Bullet = require('../bullet.js');
-const assert = require('assert');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
-mockBulletSpec = {
+const mockBulletSpec = {
   width: 10,
   height: 20,
   speed: 10,
@@ -11,9 +10,17 @@ mockBulletSpec = {
   positionVertical: 100,
   state: false,
   nextBullet: null,
-}
+};
 
-mockBullet = new Bullet(mockBulletSpec);
+const mockComponents = {
+  enemies: {
+    head: null,
+  },
+};
+
+const mockBullet = {};
+
+// mockBullet = new Bullet(mockBulletSpec);
 
 describe('Bullet', () => {
   let bullet = {};
@@ -22,7 +29,7 @@ describe('Bullet', () => {
   });
   describe('constructor', () => {
     it('should create new bullet instance with correct parameters', () => {
-      let instance = new Bullet(mockBulletSpec);
+      const instance = new Bullet(mockBulletSpec);
       expect(instance).to.deep.equal(mockBulletSpec);
     });
   });
@@ -51,27 +58,35 @@ describe('Bullet', () => {
   });
   describe('update', () => {
     it('should call boundaryCheck(boundary) with correct parameters', () => {
-      let boundaryCheckStub = sinon.stub(bullet, 'boundaryCheck');
-      bullet.update(10, 10);
-      sinon.assert.calledWithExactly(bullet.boundaryCheck, 10);
-      boundaryCheckStub.restore();
+      sinon.stub(bullet, 'movement');
+      sinon.stub(bullet, 'boundaryCheck');
+      sinon.stub(bullet, 'hitCheck');
+      bullet.update(10, 20, mockComponents, mockBullet);
+      sinon.assert.calledWithExactly(bullet.boundaryCheck, 20);
+      bullet.movement.restore();
+      bullet.boundaryCheck.restore();
+      bullet.hitCheck.restore();
     });
     it('should call movement(timeElapsed) with correct parameters', () => {
-      let movementStub = sinon.stub(bullet, 'movement');
-      bullet.update(10, 10);
-      sinon.assert.calledWithExactly(bullet.movement, 10)
-      movementStub.restore();
+      sinon.stub(bullet, 'movement');
+      sinon.stub(bullet, 'boundaryCheck');
+      sinon.stub(bullet, 'hitCheck');
+      bullet.update(10, 20, mockComponents, mockBullet);
+      sinon.assert.calledWithExactly(bullet.movement, 10);
+      bullet.movement.restore();
+      bullet.boundaryCheck.restore();
+      bullet.hitCheck.restore();
     });
   });
   describe('canvasFill', () => {
     it('should call drawingContext.fillRect wiht correct parameters', () => {
-      let drawingContext = {
-        fillRect: function() {},
+      const drawingContext = {
+        fillRect() {},
       };
-      let fillRectStub = sinon.stub(drawingContext, 'fillRect');
+      sinon.stub(drawingContext, 'fillRect');
       bullet.canvasFill(drawingContext);
       sinon.assert.calledWithExactly(drawingContext.fillRect, 100, 100, 10, 20);
-      fillRectStub.restore();
+      drawingContext.fillRect.restore();
     });
   });
   describe('getDefaultSpec', () => {

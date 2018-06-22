@@ -1,16 +1,15 @@
 const sinon = require('sinon');
 const Enemy = require('../enemy.js');
-const expect = require('chai').expect;
+const { expect } = require('chai');
 
-mockEnemySpec = {
+const mockEnemySpec = {
   width: 50,
   height: 30,
   positionHorizontal: 350,
   positionVertical: 75,
   speed: 20,
-}
-
-mockEnemy = new Enemy(mockEnemySpec);
+  hitState: false,
+};
 
 describe('Enemy', () => {
   let enemy = {};
@@ -19,16 +18,16 @@ describe('Enemy', () => {
   });
   describe('constructor', () => {
     it('should create new enemy instance with correct parameters', () => {
-      let instance = new Enemy(mockEnemySpec);
+      const instance = new Enemy(mockEnemySpec);
       expect(instance).to.deep.equal(mockEnemySpec);
     });
   });
   describe('canvasFill', () => {
     it('should call drawingContext.fillRect wiht correct parameters', () => {
-      let drawingContext = {
-        fillRect: function() {},
+      const drawingContext = {
+        fillRect() {},
       };
-      let fillRectStub = sinon.stub(drawingContext, 'fillRect');
+      const fillRectStub = sinon.stub(drawingContext, 'fillRect');
       enemy.canvasFill(drawingContext);
       sinon.assert.calledWithExactly(drawingContext.fillRect, 350, 75, 50, 30);
       fillRectStub.restore();
@@ -52,16 +51,16 @@ describe('Enemy', () => {
   });
   describe('update', () => {
     it('should call boundaryCheck(boundaryLeft, boundaryRight) with correct parameters', () => {
-      let boundaryCheckStub = sinon.stub(enemy, 'boundaryCheck');
+      sinon.stub(enemy, 'boundaryCheck');
       enemy.update(10, 20, 30);
       sinon.assert.calledWithExactly(enemy.boundaryCheck, 20, 30);
-      boundaryCheckStub.restore();
+      enemy.boundaryCheck.restore();
     });
     it('should call movement(timeElapsed) with correct parameters', () => {
-      let movementStub = sinon.stub(enemy, 'movement');
+      sinon.stub(enemy, 'movement');
       enemy.update(10, 20, 30);
-      sinon.assert.calledWithExactly(enemy.movement, 10)
-      movementStub.restore();
+      sinon.assert.calledWithExactly(enemy.movement, 10);
+      enemy.movement.restore();
     });
   });
 

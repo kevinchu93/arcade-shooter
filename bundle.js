@@ -15,7 +15,7 @@ module.exports = class bullet {
       height: 10,
       speed: 20,
       positionHorizontal: undefined,
-      positionVertical: undefined,   // canvas height - height
+      positionVertical: undefined, // canvas height - height
       state: true,
       nextBullet: null,
     };
@@ -32,7 +32,7 @@ module.exports = class bullet {
     }
   }
 
-  update(timeElapsed, boundary, components, Bullet) {
+  update(timeElapsed, boundary, components) {
     this.boundaryCheck(boundary);
     this.movement(timeElapsed);
     if (this.hitCheck(components.enemies.head)) {
@@ -61,11 +61,11 @@ module.exports = class bullet {
         return true;
       }
     }
+    return false;
   }
   append(head) {
     if (head == null) {
-      head = this;
-      return head;
+      return this;
     }
     for (let i = head; i != null; i = i.next) {
       if (i.next == null) {
@@ -76,11 +76,11 @@ module.exports = class bullet {
     return head;
   }
   remove(head) {
-    if (head == this) {
+    if (head === this) {
       return head.next;
     }
     for (let i = head; i.next != null; i = i.next) {
-      if (i.next == this) {
+      if (i.next === this) {
         i.next = i.next.next;
       }
       if (i.next == null) {
@@ -92,6 +92,37 @@ module.exports = class bullet {
 };
 
 },{}],2:[function(require,module,exports){
+module.exports = {
+  bullets: {
+    head: null,
+    canvasFill(gameArea) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.canvasFill(gameArea.canvasElementDrawingContext);
+      }
+    },
+    update(timeElapsed, boundary, components, Bullet) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.update(timeElapsed, 0, components, Bullet);
+      }
+    },
+  },
+  player: null,
+  enemies: {
+    head: null,
+    canvasFill(gameArea) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.canvasFill(gameArea.canvasElementDrawingContext);
+      }
+    },
+    update(timeElapsed, boundaryLeft, boundaryRight, components) {
+      for (let i = this.head; i != null; i = i.next) {
+        i.update(timeElapsed, 0, 1366, components);
+      }
+    },
+  },
+};
+
+},{}],3:[function(require,module,exports){
 module.exports = class {
   constructor(obj) {
     this.width = obj.width;
@@ -140,8 +171,7 @@ module.exports = class {
   }
   append(head) {
     if (head == null) {
-      head = this;
-      return head;
+      return this;
     }
     for (let i = head; i != null; i = i.next) {
       if (i.next == null) {
@@ -152,11 +182,11 @@ module.exports = class {
     return head;
   }
   remove(head) {
-    if (head == this) {
+    if (head === this) {
       return head.next;
     }
     for (let i = head; i.next != null; i = i.next) {
-      if (i.next == this) {
+      if (i.next === this) {
         i.next = i.next.next;
       }
       if (i.next == null) {
@@ -167,7 +197,7 @@ module.exports = class {
   }
 };
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 module.exports = class {
   static mouseMove(canvasElement, player) {
     canvasElement.addEventListener('mousemove', (e) => {
@@ -185,7 +215,38 @@ module.exports = class {
   }
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
+const Player = require('./player.js');
+const Enemy = require('./enemy.js');
+
+module.exports = {
+  canvasElement: document.getElementById('canvas'),
+  start(components) {
+    this.canvasElement.width = 1366;
+    this.canvasElement.height = 768;
+    this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
+    components.player = new Player(Player.getDefaultSpec(
+      this.canvasElement.width,
+      this.canvasElement.height,
+    ));
+    const enemy = new Enemy(Enemy.getDefaultSpec());
+    components.enemies.head = enemy.append(components.enemies.head);
+  },
+  fill() {
+    this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
+    this.canvasElementDrawingContext.fillStyle = 'black';
+    this.canvasElementDrawingContext.fillRect(
+      0,
+      0,
+      this.canvasElement.width,
+      this.canvasElement.height,
+    );
+    this.canvasElementDrawingContext.fillStyle = 'white';
+  },
+  enemySpawnCountdown: 1000,
+};
+
+},{"./enemy.js":3,"./player.js":6}],6:[function(require,module,exports){
 module.exports = class {
   constructor(obj) {
     this.width = obj.width;
@@ -214,67 +275,14 @@ module.exports = class {
   }
 };
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 const Bullet = require('./bullet.js');
-const Player = require('./player.js');
 const Event = require('./event.js');
 const Enemy = require('./enemy.js');
+const components = require('./components.js');
+const gameArea = require('./gameArea.js');
 
-const components = {
-  bullets: {
-    head: null,
-    canvasFill: function(gameArea) {
-      for (let i = this.head; i != null; i = i.next) {
-        i.canvasFill(gameArea.canvasElementDrawingContext);
-      }
-    },
-    update: function(timeElapsed, boundary, components, Bullet) {
-      for (let i = this.head; i != null; i = i.next) {
-        i.update(timeElapsed, 0, components, Bullet);
-      }
-    },
-  },
-  player: null,
-  enemies: {
-    head: null,
-    canvasFill: function(gameArea) {
-      for (let i = this.head; i != null; i = i.next) {
-        i.canvasFill(gameArea.canvasElementDrawingContext);
-      }
-    },
-    update: function(timeElapsed, boundaryLeft, boundaryRight, components) {
-      for (let i = this.head; i != null; i = i.next) {
-        i.update(timeElapsed, 0, 1366, components);
-      }
-    },
-  },
-};
-
-const gameArea = {
-  canvasElement: document.getElementById('canvas'),
-  start: function (components) {
-    this.canvasElement.width = 1366;
-    this.canvasElement.height = 768;
-    this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
-    components.player = new Player(Player.getDefaultSpec(this.canvasElement.width, this.canvasElement.height));
-    let enemy = new Enemy(Enemy.getDefaultSpec());
-    components.enemies.head = enemy.append(components.enemies.head);
-  },
-  fill: function () {
-    this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
-    this.canvasElementDrawingContext.fillStyle = 'black';
-    this.canvasElementDrawingContext.fillRect(
-      0,
-      0,
-      this.canvasElement.width,
-      this.canvasElement.height,
-    );
-    this.canvasElementDrawingContext.fillStyle = 'white';
-  },
-  enemySpawnCountdown: 1000,
-};
-
-function canvasFill(components) {
+function canvasFill(components, gameArea) {
   gameArea.fill();
   components.player.canvasFill(gameArea.canvasElementDrawingContext);
   components.enemies.canvasFill(gameArea);
@@ -286,19 +294,19 @@ function update(components, gameArea) {
   let timePrevious = 0;
 
   function requestAnimationFrameLoop(timeStamp) {
-    timeStamp = timeStamp || 20;    // timeStamp is undefined until window.requestAnimationFrame runs
+    timeStamp = timeStamp || 20; // timeStamp is undefined until window.requestAnimationFrame runs
     timeElapsed = timeStamp - timePrevious;
     timePrevious = timeStamp;
 
     gameArea.enemySpawnCountdown -= timeElapsed;
     if (gameArea.enemySpawnCountdown <= 0) {
-      let enemy = new Enemy(Enemy.getDefaultSpec());
+      const enemy = new Enemy(Enemy.getDefaultSpec());
       components.enemies.head = enemy.append(components.enemies.head);
       gameArea.enemySpawnCountdown += 1000;
     }
     components.bullets.update(timeElapsed, 0, components, Bullet);
     components.enemies.update(timeElapsed, 0, 1366, components);
-    canvasFill(components);
+    canvasFill(components, gameArea);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }
   requestAnimationFrameLoop(timeElapsed, timePrevious);
@@ -311,4 +319,4 @@ window.onload = () => {
   Event.click(gameArea.canvasElement, Bullet, components, components.player);
 };
 
-},{"./bullet.js":1,"./enemy.js":2,"./event.js":3,"./player.js":4}]},{},[5]);
+},{"./bullet.js":1,"./components.js":2,"./enemy.js":3,"./event.js":4,"./gameArea.js":5}]},{},[7]);

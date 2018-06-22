@@ -46,8 +46,7 @@ module.exports = class {
   }
   append(head) {
     if (head == null) {
-      head = this;
-      return head;
+      return this;
     }
     for (let i = head; i != null; i = i.next) {
       if (i.next == null) {
@@ -58,11 +57,11 @@ module.exports = class {
     return head;
   }
   remove(head) {
-    if (head == this) {
+    if (head === this) {
       return head.next;
     }
     for (let i = head; i.next != null; i = i.next) {
-      if (i.next == this) {
+      if (i.next === this) {
         i.next = i.next.next;
       }
       if (i.next == null) {
