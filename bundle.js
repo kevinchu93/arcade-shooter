@@ -154,8 +154,9 @@ module.exports = class {
     this.positionHorizontal += this.speed * (timeElapsed / (1000 / 60));
   }
   boundaryCheck(boundaryLeft, boundaryRight) {
-    if (this.positionHorizontal <= boundaryLeft ||
-      (this.positionHorizontal + this.width) >= boundaryRight) {
+    if (this.positionHorizontal <= boundaryLeft && this.speed < 0) {
+      this.speed = -this.speed;
+    } else if ((this.positionHorizontal + this.width) >= boundaryRight && this.speed > 0) {
       this.speed = -this.speed;
     }
   }
