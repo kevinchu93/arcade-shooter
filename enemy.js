@@ -6,6 +6,7 @@ module.exports = class {
     this.positionVertical = obj.positionVertical;
     this.speed = obj.speed;
     this.hitState = obj.hitState;
+    this.nextEnemy = obj.nextEnemy;
   }
   static getDefaultSpec() {
     return {
@@ -15,6 +16,7 @@ module.exports = class {
       positionVertical: 75, // canvas height - height
       speed: 20,
       hitState: false,
+      nextEnemy: null,
     };
   }
   canvasFill(drawingContext) {
@@ -49,23 +51,23 @@ module.exports = class {
     if (head == null) {
       return this;
     }
-    for (let i = head; i != null; i = i.next) {
-      if (i.next == null) {
-        i.next = this;
-        i = i.next;
+    for (let i = head; i != null; i = i.nextEnemy) {
+      if (i.nextEnemy == null) {
+        i.nextEnemy = this;
+        i = i.nextEnemy;
       }
     }
     return head;
   }
   remove(head) {
     if (head === this) {
-      return head.next;
+      return head.nextEnemy;
     }
-    for (let i = head; i.next != null; i = i.next) {
-      if (i.next === this) {
-        i.next = i.next.next;
+    for (let i = head; i.nextEnemy != null; i = i.nextEnemy) {
+      if (i.nextEnemy === this) {
+        i.nextEnemy = i.nextEnemy.nextEnemy;
       }
-      if (i.next == null) {
+      if (i.nextEnemy == null) {
         return head;
       }
     }

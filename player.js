@@ -6,15 +6,6 @@ module.exports = class {
     this.positionVertical = obj.positionVertical;
     this.score = obj.score;
   }
-  canvasFill(drawingContext) {
-    drawingContext.fillRect(
-      this.positionHorizontal,
-      this.positionVertical,
-      this.width,
-      this.height,
-    );
-    drawingContext.fillText(this.score, 1200, 55);
-  }
   static getDefaultSpec(canvasWidth, canvasHeight) {
     return {
       width: 35,
@@ -23,5 +14,14 @@ module.exports = class {
       positionVertical: canvasHeight - 20, // canvas height - height
       score: 0,
     };
+  }
+  canvasFill(drawingContext) {
+    drawingContext.fillRect(
+      this.positionHorizontal,
+      this.positionVertical,
+      this.width,
+      this.height,
+    );
+    drawingContext.fillText(this.score, 1200, 55);
   }
 };

@@ -49,7 +49,7 @@ module.exports = class bullet {
     );
   }
   hitCheck(enemyHead) {
-    for (let i = enemyHead; i != null; i = i.next) {
+    for (let i = enemyHead; i != null; i = i.nextEnemy) {
       if (
         this.positionVertical <= i.positionVertical + i.height &&
         this.positionVertical >= i.positionVertical &&
@@ -66,23 +66,23 @@ module.exports = class bullet {
     if (head == null) {
       return this;
     }
-    for (let i = head; i != null; i = i.next) {
-      if (i.next == null) {
-        i.next = this;
-        i = i.next;
+    for (let i = head; i != null; i = i.nextBullet) {
+      if (i.nextBullet == null) {
+        i.nextBullet = this;
+        i = i.nextBullet;
       }
     }
     return head;
   }
   remove(head) {
     if (head === this) {
-      return head.next;
+      return head.nextBullet;
     }
-    for (let i = head; i.next != null; i = i.next) {
-      if (i.next === this) {
-        i.next = i.next.next;
+    for (let i = head; i.nextBullet != null; i = i.nextBullet) {
+      if (i.nextBullet === this) {
+        i.nextBullet = i.nextBullet.nextBullet;
       }
-      if (i.next == null) {
+      if (i.nextBullet == null) {
         return head;
       }
     }
