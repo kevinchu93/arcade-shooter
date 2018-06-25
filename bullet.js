@@ -1,4 +1,4 @@
-module.exports = class bullet {
+module.exports = class {
   constructor(obj) {
     this.width = obj.width;
     this.height = obj.height;
@@ -6,7 +6,7 @@ module.exports = class bullet {
     this.positionHorizontal = obj.positionHorizontal;
     this.positionVertical = obj.positionVertical;
     this.state = obj.state;
-    this.nextBullet = null;
+    this.nextBullet = obj.nextBullet;
   }
   static getDefaultSpec() {
     return {
@@ -25,14 +25,15 @@ module.exports = class bullet {
     }
   }
 
-  boundaryCheck(boundary) {
+  boundaryCheck(boundary, components) {
     if (this.positionVertical + this.height <= boundary) {
+      this.remove(components.bullets.head);
       this.state = false;
     }
   }
 
   update(timeElapsed, boundary, components) {
-    this.boundaryCheck(boundary);
+    this.boundaryCheck(boundary, components);
     this.movement(timeElapsed);
     if (this.hitCheck(components.enemies.head)) {
       components.bullets.head = this.remove(components.bullets.head);

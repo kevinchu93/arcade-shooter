@@ -30,10 +30,10 @@ describe('Enemy', () => {
       const drawingContext = {
         fillRect() {},
       };
-      const fillRectStub = sinon.stub(drawingContext, 'fillRect');
+      sinon.stub(drawingContext, 'fillRect');
       mockEnemy.canvasFill(drawingContext);
       sinon.assert.calledWithExactly(drawingContext.fillRect, 350, 75, 50, 30);
-      fillRectStub.restore();
+      drawingContext.fillRect.restore();
     });
   });
   describe('movement', () => {

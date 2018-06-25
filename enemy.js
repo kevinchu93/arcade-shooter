@@ -10,11 +10,11 @@ module.exports = class {
   }
   static getDefaultSpec() {
     return {
-      width: 50,
-      height: 30,
+      width: 20,
+      height: 10,
       positionHorizontal: 350,
       positionVertical: 75, // canvas height - height
-      speed: 20,
+      speed: 10,
       hitState: false,
       nextEnemy: null,
     };

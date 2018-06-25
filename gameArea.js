@@ -6,6 +6,7 @@ module.exports = {
   start(components) {
     this.canvasElement.width = 1366;
     this.canvasElement.height = 768;
+    this.canvasElement.tabIndex = 1000;
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
     components.player = new Player(Player.getDefaultSpec(
       this.canvasElement.width,
@@ -26,4 +27,5 @@ module.exports = {
     this.canvasElementDrawingContext.fillStyle = 'white';
   },
   enemySpawnCountdown: 1000,
+  powerUpSpawnCountdown: 1000,
 };

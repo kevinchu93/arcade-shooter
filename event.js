@@ -13,4 +13,11 @@ module.exports = class {
       components.bullets.head = bullet.append(components.bullets.head);
     });
   }
+  static keyInput(canvasElement, components, Bullet, keyMap) {
+    ['keydown', 'keyup'].forEach((eventListener) => {
+      canvasElement.addEventListener(eventListener, (e) => {
+        keyMap[e.keyCode] = e.type === 'keydown';
+      });
+    });
+  }
 };
