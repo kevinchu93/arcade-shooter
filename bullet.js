@@ -52,10 +52,26 @@ module.exports = class {
   hitCheck(enemyHead) {
     for (let i = enemyHead; i != null; i = i.nextEnemy) {
       if (
-        this.positionVertical <= i.positionVertical + i.height &&
-        this.positionVertical >= i.positionVertical &&
-        this.positionHorizontal >= i.positionHorizontal &&
-        this.positionHorizontal <= i.positionHorizontal + i.width
+        (
+          (
+            this.positionVertical >= i.positionVertical &&
+            this.positinVertical <= i.positionVertical + i.height
+          ) ||
+          (
+            this.positionVertical + this.height >= i.positionVertical &&
+            this.positionVertical + this.height <= i.positionVertical + i.height
+          )
+        ) &&
+        (
+          (
+            i.positionHorizontal >= this.positionHorizontal &&
+            i.positionHorizontal <= this.positionHorizontal + this.width
+          ) ||
+          (
+            i.positionHorizontal + i.width >= this.positionHorizontal &&
+            i.positionHorizontal <= this.positionHorizontal + this.width
+          )
+        )
       ) {
         i.hitState = true;
         return true;
