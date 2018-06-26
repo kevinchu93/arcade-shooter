@@ -1,7 +1,7 @@
 const Bullet = require('./bullet.js');
 const Event = require('./event.js');
 const Enemy = require('./enemy.js');
-const components = require('./components.js');
+const components = require('./components/index.js');
 const gameArea = require('./gameArea.js');
 const PowerUp = require('./powerUp.js');
 
@@ -24,24 +24,10 @@ function update(components, gameArea) {
     timeElapsed = timeStamp - timePrevious;
     timePrevious = timeStamp;
 
-    gameArea.enemySpawnCountdown -= timeElapsed;
-    gameArea.powerUpSpawnCountdown -= timeElapsed;
-    if (gameArea.powerUpSpawnCountdown <= 0) {
-      const powerUp = new PowerUp(PowerUp.getDefaultSpec());
-      powerUp.positionHorizontal = Math.floor(Math.random() * 1366);
-      components.powerUps.head = powerUp.append(components.powerUps.head);
-      gameArea.powerUpSpawnCountdown += Math.floor(Math.random() * 10000);
-    }
-    if (gameArea.enemySpawnCountdown <= 0) {
-      const enemy = new Enemy(Enemy.getDefaultSpec());
-      components.enemies.head = enemy.append(components.enemies.head);
-      gameArea.enemySpawnCountdown += 1000;
-    }
-
     components.player.update(timeElapsed, gameArea.canvasElement, keyMap);
     components.bullets.update(timeElapsed, 0, components, Bullet, keyMap);
-    components.enemies.update(timeElapsed, 0, 1366, components);
-    components.powerUps.update(timeElapsed);
+    components.enemies.update(timeElapsed, 0, 1366, components, Enemy);
+    components.powerUps.update(timeElapsed, components, PowerUp);
     canvasFill(components, gameArea);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }

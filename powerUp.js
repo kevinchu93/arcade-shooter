@@ -16,7 +16,7 @@ module.exports = class {
     };
   }
   canvasFill(drawingContext) {
-    drawingContext.fillStyle = 'deepskyblue';
+    drawingContext.fillStyle = this.color;
     drawingContext.beginPath();
     drawingContext.arc(this.positionHorizontal, this.positionVertical, this.radius, 0, 2 * Math.PI);
     drawingContext.fill();
