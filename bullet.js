@@ -55,7 +55,7 @@ module.exports = class {
         (
           (
             this.positionVertical >= i.positionVertical &&
-            this.positinVertical <= i.positionVertical + i.height
+            this.positionVertical <= i.positionVertical + i.height
           ) ||
           (
             this.positionVertical + this.height >= i.positionVertical &&

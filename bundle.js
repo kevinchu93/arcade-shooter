@@ -56,7 +56,7 @@ module.exports = class {
         (
           (
             this.positionVertical >= i.positionVertical &&
-            this.positinVertical <= i.positionVertical + i.height
+            this.positionVertical <= i.positionVertical + i.height
           ) ||
           (
             this.positionVertical + this.height >= i.positionVertical &&
@@ -119,16 +119,25 @@ module.exports = {
     },
     update(timeElapsed, boundary, components, Bullet, keyMap) {
       if (keyMap[13] === true) {
-        const bullet = new Bullet(Bullet.getDefaultSpec());
-        bullet.positionHorizontal =
-          components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
-        bullet.positionVertical = components.player.positionVertical;
-        components.bullets.head = bullet.append(components.bullets.head);
+        this.createNew(components, Bullet);
       }
       for (let i = this.head; i != null; i = i.nextBullet) {
         i.update(timeElapsed, boundary, components, Bullet);
       }
     },
+    createNew(components, Bullet) {
+      console.log('hello');
+      const bullet = new Bullet(Bullet.getDefaultSpec());
+      console.log(bullet);
+      bullet.positionHorizontal =
+        components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
+      bullet.positionVertical = components.player.positionVertical;
+      return bullet;
+    },
+    appendNewBullet(bullet, components) {
+      console.log('hello');
+      components.bullets.head = bullet.append(components.bullets.head);
+    }
   },
   player: null,
   enemies: {
@@ -304,10 +313,6 @@ module.exports = class {
     this.positionVertical = obj.positionVertical;
     this.score = obj.score;
     this.speed = obj.speed;
-    this.stateMoveLeft = obj.stateMoveLeft;
-    this.stateMoveRight = obj.stateMoveRight;
-    this.stateMoveUp = obj.stateMoveUp;
-    this.stateMoveDown = obj.stateMoveDown;
   }
   static getDefaultSpec(canvasWidth, canvasHeight) {
     return {
@@ -317,10 +322,6 @@ module.exports = class {
       positionVertical: canvasHeight - 20, // canvas height - height
       score: 0,
       speed: 5,
-      stateMoveLeft: false,
-      stateMoveRight: false,
-      stateMoveUp: false,
-      stateMoveDown: false,
     };
   }
   canvasFill(drawingContext) {
@@ -341,33 +342,33 @@ module.exports = class {
   movementLeft(keyMap, time, boundaryLeft) {
     if (keyMap[37] === true && this.positionHorizontal >= boundaryLeft) {
       this.positionHorizontal -= this.speed * (time / (1000 / 60));
-      if (this.positionHorizontal < boundaryLeft) {
-        this.positionHorizontal = boundaryLeft;
-      }
+    }
+    if (this.positionHorizontal < boundaryLeft) {
+      this.positionHorizontal = boundaryLeft;
     }
   }
   movementRight(keyMap, time, boundaryRight) {
     if (keyMap[39] === true && this.positionHorizontal + this.width <= boundaryRight) {
       this.positionHorizontal += this.speed * (time / (1000 / 60));
-      if (this.positionHorizontal + this.width > boundaryRight) {
-        this.positionHorizontal = boundaryRight - this.width;
-      }
+    }
+    if (this.positionHorizontal + this.width > boundaryRight) {
+      this.positionHorizontal = boundaryRight - this.width;
     }
   }
   movementUp(keyMap, time, boundaryUp) {
     if (keyMap[38] === true && this.positionVertical >= boundaryUp) {
       this.positionVertical -= this.speed * (time / (1000 / 60));
-      if (this.positionVertical < boundaryUp) {
-        this.positionVertical = boundaryUp;
-      }
+    }
+    if (this.positionVertical < boundaryUp) {
+      this.positionVertical = boundaryUp;
     }
   }
   movementDown(keyMap, time, boundaryDown) {
     if (keyMap[40] === true && this.positionVertical + this.height <= boundaryDown) {
       this.positionVertical += this.speed * (time / (1000 / 60));
-      if (this.positionVertical + this.height > boundaryDown) {
-        this.positionVertical = boundaryDown;
-      }
+    }
+    if (this.positionVertical + this.height > boundaryDown) {
+      this.positionVertical = boundaryDown - this.height;
     }
   }
 };

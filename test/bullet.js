@@ -68,15 +68,42 @@ describe('Bullet', () => {
   describe('boundaryCheck', () => {
     it('should set state to false when positionVertical + height are within boundary input', () => {
       const mockBullet = new Bullet(mockBulletSpecDefault);
+      const components = {
+        bullets: {
+          head: 'head',
+        },
+      };
+      sinon.stub(mockBullet, 'remove');
       mockBullet.state = true;
-      mockBullet.boundaryCheck(130);
+      mockBullet.boundaryCheck(130, components);
       expect(mockBullet.state).to.equal(false);
+      mockBullet.remove.restore();
+    });
+    it('should call remove when positionVertical + height are within boundary input', () => {
+      const mockBullet = new Bullet(mockBulletSpecDefault);
+      const components = {
+        bullets: {
+          head: 'head',
+        },
+      };
+      sinon.stub(mockBullet, 'remove');
+      mockBullet.state = true;
+      mockBullet.boundaryCheck(130, components);
+      sinon.assert.calledWithExactly(mockBullet.remove, 'head'); 
+      mockBullet.remove.restore();
     });
     it('should not set state to false when positionVertical + height exceed boundary input', () => {
       const mockBullet = new Bullet(mockBulletSpecDefault);
+      const components = {
+        bullets: {
+          head: 'head',
+        },
+      };
+      sinon.stub(mockBullet, 'remove');
       mockBullet.state = true;
-      mockBullet.boundaryCheck(110);
+      mockBullet.boundaryCheck(110, components);
       expect(mockBullet.state).to.equal(true);
+      mockBullet.remove.restore();
     });
   });
   describe('update', () => {
@@ -90,8 +117,8 @@ describe('Bullet', () => {
       sinon.stub(mockBullet, 'movement');
       sinon.stub(mockBullet, 'boundaryCheck');
       sinon.stub(mockBullet, 'hitCheck');
-      mockBullet.update(10, 20, mockComponents, mockBullet);
-      sinon.assert.calledWithExactly(mockBullet.boundaryCheck, 20);
+      mockBullet.update(10, 20, mockComponents);
+      sinon.assert.calledWithExactly(mockBullet.boundaryCheck, 20, mockComponents);
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
       mockBullet.hitCheck.restore();
@@ -106,7 +133,7 @@ describe('Bullet', () => {
       sinon.stub(mockBullet, 'movement');
       sinon.stub(mockBullet, 'boundaryCheck');
       sinon.stub(mockBullet, 'hitCheck');
-      mockBullet.update(10, 20, mockComponents, mockBullet);
+      mockBullet.update(10, 20, mockComponents);
       sinon.assert.calledWithExactly(mockBullet.movement, 10);
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
@@ -129,7 +156,7 @@ describe('Bullet', () => {
       sinon.stub(mockBullet, 'boundaryCheck');
       sinon.stub(mockBullet, 'hitCheck').returns(true);
       sinon.stub(mockBullet, 'remove');
-      mockBullet.update(10, 20, mockComponents, mockBullet);
+      mockBullet.update(10, 20, mockComponents);
       sinon.assert.calledWithExactly(mockBullet.remove, mockBullet);
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
@@ -147,7 +174,7 @@ describe('Bullet', () => {
       sinon.stub(mockBullet, 'boundaryCheck');
       sinon.stub(mockBullet, 'hitCheck').returns(false);
       sinon.stub(mockBullet, 'remove');
-      mockBullet.update(10, 20, mockComponents, mockBullet);
+      mockBullet.update(10, 20, mockComponents);
       sinon.assert.notCalled(mockBullet.remove);
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
