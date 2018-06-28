@@ -3,6 +3,24 @@ const { expect } = require('chai');
 const powerUps = require('../components/powerUps/index.js');
 
 describe('powerUps', () => {
+  describe('rate', () => {
+    it('should call floor function', () => {
+      sinon.stub(Math, 'floor');
+      sinon.stub(Math, 'random').returns(1);
+      powerUps.spawn.rate();
+      sinon.assert.calledWithExactly(Math.floor, 10000);
+      Math.floor.restore();
+      Math.random.restore();
+    });
+    it('should call random function', () => {
+      sinon.stub(Math, 'floor');
+      sinon.stub(Math, 'random').returns(1);
+      powerUps.spawn.rate();
+      sinon.assert.calledWithExactly(Math.random);
+      Math.floor.restore();
+      Math.random.restore();
+    });
+  });
   describe('canvasFill', () => {
     it('should call canvasFill with correct parameters for all powerUps', () => {
       let mockPowerUp1 = {};
