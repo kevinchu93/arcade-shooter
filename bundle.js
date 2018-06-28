@@ -178,10 +178,10 @@ const enemies = require('./enemies/index.js');
 const powerUps = require('./powerUps/index.js');
 
 module.exports = {
-  bullets: bullets,
+  bullets,
   player: null,
-  enemies: enemies, 
-  powerUps: powerUps,
+  enemies,
+  powerUps,
 };
 
 },{"./bullets/index.js":2,"./enemies/index.js":3,"./powerUps/index.js":5}],5:[function(require,module,exports){

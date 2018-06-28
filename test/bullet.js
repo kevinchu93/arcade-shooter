@@ -89,7 +89,7 @@ describe('Bullet', () => {
       sinon.stub(mockBullet, 'remove');
       mockBullet.state = true;
       mockBullet.boundaryCheck(130, components);
-      sinon.assert.calledWithExactly(mockBullet.remove, 'head'); 
+      sinon.assert.calledWithExactly(mockBullet.remove, 'head');
       mockBullet.remove.restore();
     });
     it('should not set state to false when positionVertical + height exceed boundary input', () => {

@@ -22,11 +22,11 @@ module.exports = {
     components.powerUps.spawn.countdown -= timeElapsed;
     if (components.powerUps.spawn.countdown <= 0) {
       components.powerUps.spawn.countdown += components.powerUps.spawn.rate();
-      const powerUp = this.createNew(components, PowerUp);
+      const powerUp = this.createNew(PowerUp);
       this.appendNewPowerUp(components, powerUp);
     }
   },
-  createNew(components, PowerUp) {
+  createNew(PowerUp) {
     const powerUp = new PowerUp(PowerUp.getDefaultSpec());
     powerUp.positionHorizontal = Math.floor(Math.random() * 1366);
     powerUp.color = this.types[Math.floor(Math.random() * 3)];

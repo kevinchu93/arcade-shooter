@@ -19,11 +19,11 @@ module.exports = {
     components.enemies.spawn.countdown -= timeElapsed;
     if (components.enemies.spawn.countdown <= 0) {
       components.enemies.spawn.countdown += components.enemies.spawn.rate;
-      const enemy = this.createNew(components, Enemy);
+      const enemy = this.createNew(Enemy);
       this.appendNewEnemy(components, enemy);
     }
   },
-  createNew(components, Enemy) {
+  createNew(Enemy) {
     const enemy = new Enemy(Enemy.getDefaultSpec());
     return enemy;
   },
