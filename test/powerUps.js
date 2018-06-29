@@ -109,7 +109,7 @@ describe('powerUps', () => {
           },
         },
       };
-      powerUps.spawnUpdate(500, mockComponents, 'PowerUp')
+      powerUps.spawnUpdate(500, mockComponents, 'PowerUp');
       expect(mockComponents.powerUps.spawn.countdown).to.equal(500);
     });
     it('should increment countdown by rate when countdown <= 0', () => {
@@ -118,14 +118,14 @@ describe('powerUps', () => {
           spawn: {
             countdown: -100,
             rate() {
-              return 1000
+              return 1000;
             },
           },
         },
       };
       sinon.stub(powerUps, 'createNew');
       sinon.stub(powerUps, 'appendNewPowerUp');
-      powerUps.spawnUpdate(0, mockComponents, 'PowerUp')
+      powerUps.spawnUpdate(0, mockComponents, 'PowerUp');
       expect(mockComponents.powerUps.spawn.countdown).to.equal(900);
       powerUps.createNew.restore();
       powerUps.appendNewPowerUp.restore();
@@ -142,7 +142,7 @@ describe('powerUps', () => {
       };
       sinon.stub(powerUps, 'createNew');
       sinon.stub(powerUps, 'appendNewPowerUp');
-      powerUps.spawnUpdate(0, mockComponents, 'PowerUp')
+      powerUps.spawnUpdate(0, mockComponents, 'PowerUp');
       sinon.assert.calledWithExactly(powerUps.createNew, 'PowerUp');
       powerUps.createNew.restore();
       powerUps.appendNewPowerUp.restore();
@@ -159,7 +159,7 @@ describe('powerUps', () => {
       };
       sinon.stub(powerUps, 'createNew').returns('mockPowerUp');
       sinon.stub(powerUps, 'appendNewPowerUp');
-      powerUps.spawnUpdate(0, mockComponents, 'PowerUp')
+      powerUps.spawnUpdate(0, mockComponents, 'PowerUp');
       sinon.assert.calledWithExactly(powerUps.appendNewPowerUp, mockComponents, 'mockPowerUp');
       powerUps.createNew.restore();
       powerUps.appendNewPowerUp.restore();
@@ -176,7 +176,7 @@ describe('powerUps', () => {
       };
       sinon.stub(powerUps, 'createNew');
       sinon.stub(powerUps, 'appendNewPowerUp');
-      powerUps.spawnUpdate(0, mockComponents, 'PowerUp')
+      powerUps.spawnUpdate(0, mockComponents, 'PowerUp');
       expect(mockComponents.powerUps.spawn.countdown).to.equal(100);
       powerUps.createNew.restore();
       powerUps.appendNewPowerUp.restore();
@@ -193,7 +193,7 @@ describe('powerUps', () => {
       };
       sinon.stub(powerUps, 'createNew');
       sinon.stub(powerUps, 'appendNewPowerUp');
-      powerUps.spawnUpdate(0, mockComponents, 'PowerUp')
+      powerUps.spawnUpdate(0, mockComponents, 'PowerUp');
       sinon.assert.notCalled(powerUps.createNew);
       powerUps.createNew.restore();
       powerUps.appendNewPowerUp.restore();
@@ -210,7 +210,7 @@ describe('powerUps', () => {
       };
       sinon.stub(powerUps, 'createNew');
       sinon.stub(powerUps, 'appendNewPowerUp');
-      powerUps.spawnUpdate(0, mockComponents, 'PowerUp')
+      powerUps.spawnUpdate(0, mockComponents, 'PowerUp');
       sinon.assert.notCalled(powerUps.appendNewPowerUp);
       powerUps.createNew.restore();
       powerUps.appendNewPowerUp.restore();
@@ -251,7 +251,6 @@ describe('powerUps', () => {
       namespace.PowerUp.restore();
       Math.random.restore();
     });
-      
   });
   describe('appendNewPowerUp', () => {
     it('should call append with correct parameter', () => {

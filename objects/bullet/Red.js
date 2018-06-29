@@ -1,6 +1,6 @@
-const Bullet = require('./bullet.js');
+const Default = require('./Default.js');
 
-module.exports = class extends Bullet {
+module.exports = class extends Default {
   constructor(player) {
     super(player);
     this.test = 'test';
@@ -11,7 +11,6 @@ module.exports = class extends Bullet {
   }
   canvasFill(drawingContext) {
     super.canvasFill(drawingContext);
-    console.log(this);
     drawingContext.fillRect(
       this.leftPositionHorizontal,
       this.leftPositionVertical,

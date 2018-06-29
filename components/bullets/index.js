@@ -5,29 +5,29 @@ module.exports = {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
   },
-  update(timeElapsed, boundary, components, Bullet, keyMap, OrangeRed, DeepSkyBlue) {
+  update(timeElapsed, boundary, components, Bullet, keyMap) {
     if (keyMap[13] === true) {
-      const bullet = this.createNew(components, Bullet, OrangeRed, DeepSkyBlue);
+      const bullet = this.createNew(components, Bullet);
       this.appendNewBullet(bullet, components);
     }
     for (let i = this.head; i != null; i = i.nextBullet) {
       i.update(timeElapsed, boundary, components, Bullet);
     }
   },
-  createNew(components, Bullet, OrangeRed, DeepSkyBlue) {
+  createNew(components, Bullet) {
     let bullet = {};
     switch (components.player.bulletType) {
       case 'white':
-        bullet = new Bullet(components.player);
+        bullet = new Bullet.Default(components.player);
         break;
       case 'orangered':
-        bullet = new OrangeRed(components.player);
+        bullet = new Bullet.Red(components.player);
         break;
       case 'deepskyblue':
-        bullet = new DeepSkyBlue(components.player);
+        bullet = new Bullet.Blue(components.player);
         break;
       default:
-        bullet = new Bullet(components.player);
+        bullet = new Bullet.Default(components.player);
     }
     return bullet;
   },

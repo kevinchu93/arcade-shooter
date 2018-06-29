@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const enemies = require('../components/enemies/index.js')
+const enemies = require('../components/enemies/index.js');
 
 describe('enemies', () => {
   describe('canvasFill', () => {
@@ -89,7 +89,7 @@ describe('enemies', () => {
           },
         },
       };
-      enemies.spawnUpdate(500, mockComponents, 'Enemy')
+      enemies.spawnUpdate(500, mockComponents, 'Enemy');
       expect(mockComponents.enemies.spawn.countdown).to.equal(500);
     });
     it('should increment countdown by rate when countdown <= 0', () => {
@@ -103,7 +103,7 @@ describe('enemies', () => {
       };
       sinon.stub(enemies, 'createNew');
       sinon.stub(enemies, 'appendNewEnemy');
-      enemies.spawnUpdate(0, mockComponents, 'Enemy')
+      enemies.spawnUpdate(0, mockComponents, 'Enemy');
       expect(mockComponents.enemies.spawn.countdown).to.equal(900);
       enemies.createNew.restore();
       enemies.appendNewEnemy.restore();
@@ -119,7 +119,7 @@ describe('enemies', () => {
       };
       sinon.stub(enemies, 'createNew');
       sinon.stub(enemies, 'appendNewEnemy');
-      enemies.spawnUpdate(0, mockComponents, 'Enemy')
+      enemies.spawnUpdate(0, mockComponents, 'Enemy');
       sinon.assert.calledWithExactly(enemies.createNew, 'Enemy');
       enemies.createNew.restore();
       enemies.appendNewEnemy.restore();
@@ -135,7 +135,7 @@ describe('enemies', () => {
       };
       sinon.stub(enemies, 'createNew').returns('mockEnemy');
       sinon.stub(enemies, 'appendNewEnemy');
-      enemies.spawnUpdate(0, mockComponents, 'Enemy')
+      enemies.spawnUpdate(0, mockComponents, 'Enemy');
       sinon.assert.calledWithExactly(enemies.appendNewEnemy, mockComponents, 'mockEnemy');
       enemies.createNew.restore();
       enemies.appendNewEnemy.restore();
@@ -151,7 +151,7 @@ describe('enemies', () => {
       };
       sinon.stub(enemies, 'createNew');
       sinon.stub(enemies, 'appendNewEnemy');
-      enemies.spawnUpdate(0, mockComponents, 'Enemy')
+      enemies.spawnUpdate(0, mockComponents, 'Enemy');
       expect(mockComponents.enemies.spawn.countdown).to.equal(100);
       enemies.createNew.restore();
       enemies.appendNewEnemy.restore();
@@ -167,7 +167,7 @@ describe('enemies', () => {
       };
       sinon.stub(enemies, 'createNew');
       sinon.stub(enemies, 'appendNewEnemy');
-      enemies.spawnUpdate(0, mockComponents, 'Enemy')
+      enemies.spawnUpdate(0, mockComponents, 'Enemy');
       sinon.assert.notCalled(enemies.createNew);
       enemies.createNew.restore();
       enemies.appendNewEnemy.restore();
@@ -183,7 +183,7 @@ describe('enemies', () => {
       };
       sinon.stub(enemies, 'createNew');
       sinon.stub(enemies, 'appendNewEnemy');
-      enemies.spawnUpdate(0, mockComponents, 'Enemy')
+      enemies.spawnUpdate(0, mockComponents, 'Enemy');
       sinon.assert.notCalled(enemies.appendNewEnemy);
       enemies.createNew.restore();
       enemies.appendNewEnemy.restore();

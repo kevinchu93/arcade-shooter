@@ -65,7 +65,6 @@ module.exports = class {
         i.positionVertical <= this.positionVertical + this.height
       ) {
         this.bulletType = i.color;
-        console.log(this.bulletType);
         i.stateObtained = true;
       }
     }

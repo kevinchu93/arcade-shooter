@@ -1,6 +1,6 @@
-const Bullet = require('./bullet.js');
+const Default = require('./Default.js');
 
-module.exports = class extends Bullet {
+module.exports = class extends Default {
   constructor(player) {
     super(player);
     this.width = 30;
@@ -41,4 +41,4 @@ module.exports = class extends Bullet {
     }
     return hitCount;
   }
-}
+};

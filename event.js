@@ -5,13 +5,13 @@ module.exports = class {
     });
   }
 
-  static click(canvasElement, Bullet, components, OrangeRed, DeepSkyBlue) {
+  static click(canvasElement, Bullet, components) {
     canvasElement.addEventListener('click', () => {
-      const bullet = components.bullets.createNew(components, Bullet, OrangeRed, DeepSkyBlue);
+      const bullet = components.bullets.createNew(components, Bullet);
       components.bullets.appendNewBullet(bullet, components);
     });
   }
-  static keyInput(canvasElement, components, Bullet, keyMap) {
+  static keyInput(canvasElement, keyMap) {
     ['keydown', 'keyup'].forEach((eventListener) => {
       canvasElement.addEventListener(eventListener, (e) => {
         keyMap[e.keyCode] = e.type === 'keydown';

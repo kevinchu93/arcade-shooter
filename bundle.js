@@ -1,4 +1,307 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+module.exports = {
+  head: null,
+  canvasFill(gameArea) {
+    for (let i = this.head; i != null; i = i.nextBullet) {
+      i.canvasFill(gameArea.canvasElementDrawingContext);
+    }
+  },
+  update(timeElapsed, boundary, components, Bullet, keyMap) {
+    if (keyMap[13] === true) {
+      const bullet = this.createNew(components, Bullet);
+      this.appendNewBullet(bullet, components);
+    }
+    for (let i = this.head; i != null; i = i.nextBullet) {
+      i.update(timeElapsed, boundary, components, Bullet);
+    }
+  },
+  createNew(components, Bullet) {
+    let bullet = {};
+    switch (components.player.bulletType) {
+      case 'white':
+        bullet = new Bullet.Default(components.player);
+        break;
+      case 'orangered':
+        bullet = new Bullet.Red(components.player);
+        break;
+      case 'deepskyblue':
+        bullet = new Bullet.Blue(components.player);
+        break;
+      default:
+        bullet = new Bullet.Default(components.player);
+    }
+    return bullet;
+  },
+  appendNewBullet(bullet, components) {
+    components.bullets.head = bullet.append(components.bullets.head);
+  },
+};
+
+},{}],2:[function(require,module,exports){
+module.exports = {
+  head: null,
+  spawn: {
+    countdown: null,
+    rate: 1000,
+  },
+  canvasFill(gameArea) {
+    for (let i = this.head; i != null; i = i.nextEnemy) {
+      i.canvasFill(gameArea.canvasElementDrawingContext);
+    }
+  },
+  update(timeElapsed, boundaryLeft, boundaryRight, components, Enemy) {
+    this.spawnUpdate(timeElapsed, components, Enemy);
+    for (let i = this.head; i != null; i = i.nextEnemy) {
+      i.update(timeElapsed, boundaryLeft, boundaryRight, components);
+    }
+  },
+  spawnUpdate(timeElapsed, components, Enemy) {
+    components.enemies.spawn.countdown -= timeElapsed;
+    if (components.enemies.spawn.countdown <= 0) {
+      components.enemies.spawn.countdown += components.enemies.spawn.rate;
+      const enemy = this.createNew(Enemy);
+      this.appendNewEnemy(components, enemy);
+    }
+  },
+  createNew(Enemy) {
+    const enemy = new Enemy(Enemy.getDefaultSpec());
+    return enemy;
+  },
+  appendNewEnemy(components, enemy) {
+    components.enemies.head = enemy.append(components.enemies.head);
+  },
+};
+
+},{}],3:[function(require,module,exports){
+const bullets = require('./bullets/index.js');
+const enemies = require('./enemies/index.js');
+const powerUps = require('./powerUps/index.js');
+
+module.exports = {
+  bullets,
+  player: null,
+  enemies,
+  powerUps,
+};
+
+},{"./bullets/index.js":1,"./enemies/index.js":2,"./powerUps/index.js":4}],4:[function(require,module,exports){
+module.exports = {
+  head: null,
+  spawn: {
+    countdown: null,
+    rate() {
+      return Math.floor(Math.random() * 10000);
+    },
+  },
+  types: ['deepskyblue', 'orangered', 'mediumpurple'],
+  canvasFill(gameArea) {
+    for (let i = this.head; i != null; i = i.nextPowerUp) {
+      i.canvasFill(gameArea.canvasElementDrawingContext);
+    }
+  },
+  update(timeElapsed, components, PowerUp, gameArea) {
+    this.spawnUpdate(timeElapsed, components, PowerUp);
+    for (let i = this.head; i != null; i = i.nextPowerUp) {
+      i.update(timeElapsed, gameArea.canvasElement.height, components);
+    }
+  },
+  spawnUpdate(timeElapsed, components, PowerUp) {
+    components.powerUps.spawn.countdown -= timeElapsed;
+    if (components.powerUps.spawn.countdown <= 0) {
+      components.powerUps.spawn.countdown += components.powerUps.spawn.rate();
+      const powerUp = this.createNew(PowerUp);
+      this.appendNewPowerUp(components, powerUp);
+    }
+  },
+  createNew(PowerUp) {
+    const powerUp = new PowerUp(PowerUp.getDefaultSpec());
+    powerUp.positionHorizontal = Math.floor(Math.random() * 1366);
+    powerUp.color = this.types[Math.floor(Math.random() * 3)];
+    return powerUp;
+  },
+  appendNewPowerUp(components, powerUp) {
+    components.powerUps.head = powerUp.append(components.powerUps.head);
+  },
+};
+
+},{}],5:[function(require,module,exports){
+module.exports = class {
+  constructor(obj) {
+    this.width = obj.width;
+    this.height = obj.height;
+    this.positionHorizontal = obj.positionHorizontal;
+    this.positionVertical = obj.positionVertical;
+    this.speed = obj.speed;
+    this.hitState = obj.hitState;
+    this.nextEnemy = obj.nextEnemy;
+  }
+  static getDefaultSpec() {
+    return {
+      width: 20,
+      height: 10,
+      positionHorizontal: 350,
+      positionVertical: 75, // canvas height - height
+      speed: 10,
+      hitState: false,
+      nextEnemy: null,
+    };
+  }
+  canvasFill(drawingContext) {
+    drawingContext.fillRect(
+      this.positionHorizontal,
+      this.positionVertical,
+      this.width,
+      this.height,
+    );
+  }
+  movement(timeElapsed) {
+    this.positionHorizontal += this.speed * (timeElapsed / (1000 / 60));
+  }
+  boundaryCheck(boundaryLeft, boundaryRight) {
+    if (this.positionHorizontal <= boundaryLeft && this.speed < 0) {
+      this.speed = -this.speed;
+    } else if ((this.positionHorizontal + this.width) >= boundaryRight && this.speed > 0) {
+      this.speed = -this.speed;
+    }
+  }
+  update(timeElapsed, boundaryLeft, boundaryRight, components) {
+    this.boundaryCheck(boundaryLeft, boundaryRight);
+    this.movement(timeElapsed);
+    this.hitCheck(components);
+  }
+  hitCheck(components) {
+    if (this.hitState) {
+      components.enemies.head = this.remove(components.enemies.head);
+    }
+  }
+  append(head) {
+    if (head == null) {
+      return this;
+    }
+    for (let i = head; i != null; i = i.nextEnemy) {
+      if (i.nextEnemy == null) {
+        i.nextEnemy = this;
+        i = i.nextEnemy;
+      }
+    }
+    return head;
+  }
+  remove(head) {
+    if (head === this) {
+      return head.nextEnemy;
+    }
+    for (let i = head; i.nextEnemy != null; i = i.nextEnemy) {
+      if (i.nextEnemy === this) {
+        i.nextEnemy = i.nextEnemy.nextEnemy;
+      }
+      if (i.nextEnemy == null) {
+        return head;
+      }
+    }
+    return head;
+  }
+};
+
+},{}],6:[function(require,module,exports){
+module.exports = class {
+  static mouseMove(canvasElement, player) {
+    canvasElement.addEventListener('mousemove', (e) => {
+      player.positionHorizontal = e.clientX;
+    });
+  }
+
+  static click(canvasElement, Bullet, components) {
+    canvasElement.addEventListener('click', () => {
+      const bullet = components.bullets.createNew(components, Bullet);
+      components.bullets.appendNewBullet(bullet, components);
+    });
+  }
+  static keyInput(canvasElement, keyMap) {
+    ['keydown', 'keyup'].forEach((eventListener) => {
+      canvasElement.addEventListener(eventListener, (e) => {
+        keyMap[e.keyCode] = e.type === 'keydown';
+      });
+    });
+  }
+};
+
+},{}],7:[function(require,module,exports){
+const Player = require('./player.js');
+const Enemy = require('./enemy.js');
+
+module.exports = {
+  canvasElement: document.getElementById('canvas'),
+  start(components) {
+    this.canvasElement.width = 1366;
+    this.canvasElement.height = 768;
+    this.canvasElement.tabIndex = 1000;
+    this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
+    components.player = new Player(this.canvasElement.width, this.canvasElement.height);
+    const enemy = new Enemy(Enemy.getDefaultSpec());
+    components.enemies.head = enemy.append(components.enemies.head);
+  },
+  fill() {
+    this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
+    this.canvasElementDrawingContext.fillStyle = 'black';
+    this.canvasElementDrawingContext.fillRect(
+      0,
+      0,
+      this.canvasElement.width,
+      this.canvasElement.height,
+    );
+    this.canvasElementDrawingContext.fillStyle = 'white';
+  },
+  enemySpawnCountdown: 1000,
+  powerUpSpawnCountdown: 1000,
+};
+
+},{"./enemy.js":5,"./player.js":16}],8:[function(require,module,exports){
+const Default = require('./Default.js');
+
+module.exports = class extends Default {
+  constructor(player) {
+    super(player);
+    this.width = 30;
+  }
+  update(timeElapsed, boundary, components) {
+    super.boundaryCheck(boundary, components);
+    super.movement(timeElapsed);
+    components.player.score += this.hitCheck(components.enemies.head);
+  }
+  hitCheck(enemyHead) {
+    let hitCount = 0;
+    for (let i = enemyHead; i != null; i = i.nextEnemy) {
+      if (
+        (
+          (
+            this.positionVertical >= i.positionVertical &&
+            this.positionVertical <= i.positionVertical + i.height
+          ) ||
+          (
+            this.positionVertical + this.height >= i.positionVertical &&
+            this.positionVertical + this.height <= i.positionVertical + i.height
+          )
+        ) &&
+        (
+          (
+            i.positionHorizontal >= this.positionHorizontal &&
+            i.positionHorizontal <= this.positionHorizontal + this.width
+          ) ||
+          (
+            i.positionHorizontal + i.width >= this.positionHorizontal &&
+            i.positionHorizontal <= this.positionHorizontal + this.width
+          )
+        )
+      ) {
+        i.hitState = true;
+        hitCount += 1;
+      }
+    }
+    return hitCount;
+  }
+};
+
+},{"./Default.js":9}],9:[function(require,module,exports){
 module.exports = class {
   constructor(player) {
     this.width = 5;
@@ -99,313 +402,10 @@ module.exports = class {
   }
 };
 
-},{}],2:[function(require,module,exports){
-module.exports = {
-  head: null,
-  canvasFill(gameArea) {
-    for (let i = this.head; i != null; i = i.nextBullet) {
-      i.canvasFill(gameArea.canvasElementDrawingContext);
-    }
-  },
-  update(timeElapsed, boundary, components, Bullet, keyMap, OrangeRed, DeepSkyBlue) {
-    if (keyMap[13] === true) {
-      const bullet = this.createNew(components, Bullet, OrangeRed, DeepSkyBlue);
-      this.appendNewBullet(bullet, components);
-    }
-    for (let i = this.head; i != null; i = i.nextBullet) {
-      i.update(timeElapsed, boundary, components, Bullet);
-    }
-  },
-  createNew(components, Bullet, OrangeRed, DeepSkyBlue) {
-    let bullet = {};
-    switch (components.player.bulletType) {
-      case 'white':
-        bullet = new Bullet(components.player);
-        break;
-      case 'orangered':
-        bullet = new OrangeRed(components.player);
-        break;
-      case 'deepskyblue':
-        bullet = new DeepSkyBlue(components.player);
-        break;
-      default:
-        bullet = new Bullet(components.player);
-    }
-    return bullet;
-  },
-  appendNewBullet(bullet, components) {
-    components.bullets.head = bullet.append(components.bullets.head);
-  },
-};
+},{}],10:[function(require,module,exports){
+const Default = require('./Default.js');
 
-},{}],3:[function(require,module,exports){
-module.exports = {
-  head: null,
-  spawn: {
-    countdown: null,
-    rate: 1000,
-  },
-  canvasFill(gameArea) {
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.canvasFill(gameArea.canvasElementDrawingContext);
-    }
-  },
-  update(timeElapsed, boundaryLeft, boundaryRight, components, Enemy) {
-    this.spawnUpdate(timeElapsed, components, Enemy);
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.update(timeElapsed, boundaryLeft, boundaryRight, components);
-    }
-  },
-  spawnUpdate(timeElapsed, components, Enemy) {
-    components.enemies.spawn.countdown -= timeElapsed;
-    if (components.enemies.spawn.countdown <= 0) {
-      components.enemies.spawn.countdown += components.enemies.spawn.rate;
-      const enemy = this.createNew(Enemy);
-      this.appendNewEnemy(components, enemy);
-    }
-  },
-  createNew(Enemy) {
-    const enemy = new Enemy(Enemy.getDefaultSpec());
-    return enemy;
-  },
-  appendNewEnemy(components, enemy) {
-    components.enemies.head = enemy.append(components.enemies.head);
-  },
-};
-
-},{}],4:[function(require,module,exports){
-const bullets = require('./bullets/index.js');
-const enemies = require('./enemies/index.js');
-const powerUps = require('./powerUps/index.js');
-
-module.exports = {
-  bullets,
-  player: null,
-  enemies,
-  powerUps,
-};
-
-},{"./bullets/index.js":2,"./enemies/index.js":3,"./powerUps/index.js":5}],5:[function(require,module,exports){
-module.exports = {
-  head: null,
-  spawn: {
-    countdown: null,
-    rate() {
-      return Math.floor(Math.random() * 10000);
-    },
-  },
-  types: ['deepskyblue', 'orangered', 'mediumpurple'],
-  canvasFill(gameArea) {
-    for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.canvasFill(gameArea.canvasElementDrawingContext);
-    }
-  },
-  update(timeElapsed, components, PowerUp, gameArea) {
-    this.spawnUpdate(timeElapsed, components, PowerUp);
-    for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.update(timeElapsed, gameArea.canvasElement.height, components);
-    }
-  },
-  spawnUpdate(timeElapsed, components, PowerUp) {
-    components.powerUps.spawn.countdown -= timeElapsed;
-    if (components.powerUps.spawn.countdown <= 0) {
-      components.powerUps.spawn.countdown += components.powerUps.spawn.rate();
-      const powerUp = this.createNew(PowerUp);
-      this.appendNewPowerUp(components, powerUp);
-    }
-  },
-  createNew(PowerUp) {
-    const powerUp = new PowerUp(PowerUp.getDefaultSpec());
-    powerUp.positionHorizontal = Math.floor(Math.random() * 1366);
-    powerUp.color = this.types[Math.floor(Math.random() * 3)];
-    return powerUp;
-  },
-  appendNewPowerUp(components, powerUp) {
-    components.powerUps.head = powerUp.append(components.powerUps.head);
-  },
-};
-
-},{}],6:[function(require,module,exports){
-const Bullet = require('./bullet.js');
-
-module.exports = class extends Bullet {
-  constructor(player) {
-    super(player);
-    this.width = 30;
-  }
-  update(timeElapsed, boundary, components) {
-    super.boundaryCheck(boundary, components);
-    super.movement(timeElapsed);
-    components.player.score += this.hitCheck(components.enemies.head);
-  }
-  hitCheck(enemyHead) {
-    let hitCount = 0;
-    for (let i = enemyHead; i != null; i = i.nextEnemy) {
-      if (
-        (
-          (
-            this.positionVertical >= i.positionVertical &&
-            this.positionVertical <= i.positionVertical + i.height
-          ) ||
-          (
-            this.positionVertical + this.height >= i.positionVertical &&
-            this.positionVertical + this.height <= i.positionVertical + i.height
-          )
-        ) &&
-        (
-          (
-            i.positionHorizontal >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          ) ||
-          (
-            i.positionHorizontal + i.width >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          )
-        )
-      ) {
-        i.hitState = true;
-        hitCount += 1;
-      }
-    }
-    return hitCount;
-  }
-}
-
-},{"./bullet.js":1}],7:[function(require,module,exports){
-module.exports = class {
-  constructor(obj) {
-    this.width = obj.width;
-    this.height = obj.height;
-    this.positionHorizontal = obj.positionHorizontal;
-    this.positionVertical = obj.positionVertical;
-    this.speed = obj.speed;
-    this.hitState = obj.hitState;
-    this.nextEnemy = obj.nextEnemy;
-  }
-  static getDefaultSpec() {
-    return {
-      width: 20,
-      height: 10,
-      positionHorizontal: 350,
-      positionVertical: 75, // canvas height - height
-      speed: 10,
-      hitState: false,
-      nextEnemy: null,
-    };
-  }
-  canvasFill(drawingContext) {
-    drawingContext.fillRect(
-      this.positionHorizontal,
-      this.positionVertical,
-      this.width,
-      this.height,
-    );
-  }
-  movement(timeElapsed) {
-    this.positionHorizontal += this.speed * (timeElapsed / (1000 / 60));
-  }
-  boundaryCheck(boundaryLeft, boundaryRight) {
-    if (this.positionHorizontal <= boundaryLeft && this.speed < 0) {
-      this.speed = -this.speed;
-    } else if ((this.positionHorizontal + this.width) >= boundaryRight && this.speed > 0) {
-      this.speed = -this.speed;
-    }
-  }
-  update(timeElapsed, boundaryLeft, boundaryRight, components) {
-    this.boundaryCheck(boundaryLeft, boundaryRight);
-    this.movement(timeElapsed);
-    this.hitCheck(components);
-  }
-  hitCheck(components) {
-    if (this.hitState) {
-      components.enemies.head = this.remove(components.enemies.head);
-    }
-  }
-  append(head) {
-    if (head == null) {
-      return this;
-    }
-    for (let i = head; i != null; i = i.nextEnemy) {
-      if (i.nextEnemy == null) {
-        i.nextEnemy = this;
-        i = i.nextEnemy;
-      }
-    }
-    return head;
-  }
-  remove(head) {
-    if (head === this) {
-      return head.nextEnemy;
-    }
-    for (let i = head; i.nextEnemy != null; i = i.nextEnemy) {
-      if (i.nextEnemy === this) {
-        i.nextEnemy = i.nextEnemy.nextEnemy;
-      }
-      if (i.nextEnemy == null) {
-        return head;
-      }
-    }
-    return head;
-  }
-};
-
-},{}],8:[function(require,module,exports){
-module.exports = class {
-  static mouseMove(canvasElement, player) {
-    canvasElement.addEventListener('mousemove', (e) => {
-      player.positionHorizontal = e.clientX;
-    });
-  }
-
-  static click(canvasElement, Bullet, components, OrangeRed, DeepSkyBlue) {
-    canvasElement.addEventListener('click', () => {
-      const bullet = components.bullets.createNew(components, Bullet, OrangeRed, DeepSkyBlue);
-      components.bullets.appendNewBullet(bullet, components);
-    });
-  }
-  static keyInput(canvasElement, components, Bullet, keyMap) {
-    ['keydown', 'keyup'].forEach((eventListener) => {
-      canvasElement.addEventListener(eventListener, (e) => {
-        keyMap[e.keyCode] = e.type === 'keydown';
-      });
-    });
-  }
-};
-
-},{}],9:[function(require,module,exports){
-const Player = require('./player.js');
-const Enemy = require('./enemy.js');
-
-module.exports = {
-  canvasElement: document.getElementById('canvas'),
-  start(components) {
-    this.canvasElement.width = 1366;
-    this.canvasElement.height = 768;
-    this.canvasElement.tabIndex = 1000;
-    this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
-    components.player = new Player(this.canvasElement.width, this.canvasElement.height);
-    const enemy = new Enemy(Enemy.getDefaultSpec());
-    components.enemies.head = enemy.append(components.enemies.head);
-  },
-  fill() {
-    this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
-    this.canvasElementDrawingContext.fillStyle = 'black';
-    this.canvasElementDrawingContext.fillRect(
-      0,
-      0,
-      this.canvasElement.width,
-      this.canvasElement.height,
-    );
-    this.canvasElementDrawingContext.fillStyle = 'white';
-  },
-  enemySpawnCountdown: 1000,
-  powerUpSpawnCountdown: 1000,
-};
-
-},{"./enemy.js":7,"./player.js":11}],10:[function(require,module,exports){
-const Bullet = require('./bullet.js');
-
-module.exports = class extends Bullet {
+module.exports = class extends Default {
   constructor(player) {
     super(player);
     this.test = 'test';
@@ -416,7 +416,6 @@ module.exports = class extends Bullet {
   }
   canvasFill(drawingContext) {
     super.canvasFill(drawingContext);
-    console.log(this);
     drawingContext.fillRect(
       this.leftPositionHorizontal,
       this.leftPositionVertical,
@@ -439,7 +438,34 @@ module.exports = class extends Bullet {
   }
 };
 
-},{"./bullet.js":1}],11:[function(require,module,exports){
+},{"./Default.js":9}],11:[function(require,module,exports){
+const Default = require('./Default.js');
+const Red = require('./Red.js');
+const Blue = require('./Blue.js');
+
+module.exports = {
+  Default,
+  Red,
+  Blue,
+};
+
+},{"./Blue.js":8,"./Default.js":9,"./Red.js":10}],12:[function(require,module,exports){
+arguments[4][5][0].apply(exports,arguments)
+},{"dup":5}],13:[function(require,module,exports){
+const Bullet = require('./bullet/index.js');
+const Enemy = require('./enemy/Enemy.js');
+const PowerUp = require('./powerUp/PowerUp.js');
+const Player = require('./player/Player.js');
+
+module.exports = {
+  Bullet,
+  Enemy,
+  PowerUp,
+  Player,
+}
+
+
+},{"./bullet/index.js":11,"./enemy/Enemy.js":12,"./player/Player.js":14,"./powerUp/PowerUp.js":15}],14:[function(require,module,exports){
 module.exports = class {
   constructor(canvasWidth, canvasHeight) {
     this.width = 30;
@@ -507,14 +533,13 @@ module.exports = class {
         i.positionVertical <= this.positionVertical + this.height
       ) {
         this.bulletType = i.color;
-        console.log(this.bulletType);
         i.stateObtained = true;
       }
     }
   }
 };
 
-},{}],12:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = class {
   constructor(obj) {
     this.radius = obj.radius;
@@ -583,15 +608,13 @@ module.exports = class {
   }
 };
 
-},{}],13:[function(require,module,exports){
-const Bullet = require('./bullet.js');
-const OrangeRed = require('./orangered.js');
-const DeepSkyBlue = require('./deepskyblue.js');
+},{}],16:[function(require,module,exports){
+arguments[4][14][0].apply(exports,arguments)
+},{"dup":14}],17:[function(require,module,exports){
 const Event = require('./event.js');
-const Enemy = require('./enemy.js');
 const components = require('./components/index.js');
 const gameArea = require('./gameArea.js');
-const PowerUp = require('./powerUp.js');
+const Objects = require('./objects/index.js');
 
 const keyMap = [];
 
@@ -613,9 +636,9 @@ function update(components, gameArea) {
     timePrevious = timeStamp;
 
     components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
-    components.bullets.update(timeElapsed, 0, components, Bullet, keyMap, OrangeRed, DeepSkyBlue);
-    components.enemies.update(timeElapsed, 0, 1366, components, Enemy);
-    components.powerUps.update(timeElapsed, components, PowerUp, gameArea);
+    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap);
+    components.enemies.update(timeElapsed, 0, 1366, components, Objects.Enemy);
+    components.powerUps.update(timeElapsed, components, Objects.PowerUp, gameArea);
     canvasFill(components, gameArea);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }
@@ -626,8 +649,8 @@ window.onload = () => {
   gameArea.start(components);
   update(components, gameArea);
   Event.mouseMove(gameArea.canvasElement, components.player);
-  Event.click(gameArea.canvasElement, Bullet, components, OrangeRed, DeepSkyBlue);
-  Event.keyInput(gameArea.canvasElement, components, Bullet, keyMap);
+  Event.click(gameArea.canvasElement, Objects.Bullet, components);
+  Event.keyInput(gameArea.canvasElement, keyMap);
 };
 
-},{"./bullet.js":1,"./components/index.js":4,"./deepskyblue.js":6,"./enemy.js":7,"./event.js":8,"./gameArea.js":9,"./orangered.js":10,"./powerUp.js":12}]},{},[13]);
+},{"./components/index.js":3,"./event.js":6,"./gameArea.js":7,"./objects/index.js":13}]},{},[17]);

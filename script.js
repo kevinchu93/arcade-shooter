@@ -1,11 +1,7 @@
-const Bullet = require('./bullet.js');
-const OrangeRed = require('./orangered.js');
-const DeepSkyBlue = require('./deepskyblue.js');
 const Event = require('./event.js');
-const Enemy = require('./enemy.js');
 const components = require('./components/index.js');
 const gameArea = require('./gameArea.js');
-const PowerUp = require('./powerUp.js');
+const Objects = require('./objects/index.js');
 
 const keyMap = [];
 
@@ -27,9 +23,9 @@ function update(components, gameArea) {
     timePrevious = timeStamp;
 
     components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
-    components.bullets.update(timeElapsed, 0, components, Bullet, keyMap, OrangeRed, DeepSkyBlue);
-    components.enemies.update(timeElapsed, 0, 1366, components, Enemy);
-    components.powerUps.update(timeElapsed, components, PowerUp, gameArea);
+    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap);
+    components.enemies.update(timeElapsed, 0, 1366, components, Objects.Enemy);
+    components.powerUps.update(timeElapsed, components, Objects.PowerUp, gameArea);
     canvasFill(components, gameArea);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }
@@ -40,6 +36,6 @@ window.onload = () => {
   gameArea.start(components);
   update(components, gameArea);
   Event.mouseMove(gameArea.canvasElement, components.player);
-  Event.click(gameArea.canvasElement, Bullet, components, OrangeRed, DeepSkyBlue);
-  Event.keyInput(gameArea.canvasElement, components, Bullet, keyMap);
+  Event.click(gameArea.canvasElement, Objects.Bullet, components);
+  Event.keyInput(gameArea.canvasElement, keyMap);
 };
