@@ -20,13 +20,15 @@ module.exports = class extends Default {
     const Ay1 = this.positionVertical;
     const Ay2 = this.positionVertical + this.height
     for (let i = enemyHead; i != null; i = i.nextEnemy) {
-      const Bx1 = i.positionHorizontal;
-      const Bx2 = i.positionHorizontal + i.width;
-      const By1 = i.positionVertical;
-      const By2 = i.positionVertical + i.height;
-      if (super.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-        i.hitState = true;
-        hitCount += 1;
+      if (i.hitState == false) {
+        const Bx1 = i.positionHorizontal;
+        const Bx2 = i.positionHorizontal + i.width;
+        const By1 = i.positionVertical;
+        const By2 = i.positionVertical + i.height;
+        if (super.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
+          i.hitState = true;
+          hitCount += 1;
+        }
       }
     }
     return hitCount;
