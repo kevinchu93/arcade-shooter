@@ -4,7 +4,7 @@ module.exports = class {
     this.height = 10;
     this.speed = 20;
     this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
-    this.positionVertical = player.positionVertical;
+    this.positionVertical = player.positionVertical - this.height;
     this.state = true;
     this.type = player.bulletType;
     this.nextBullet = null;
@@ -41,34 +41,35 @@ module.exports = class {
     );
   }
   hitCheck(enemyHead) {
+    const Ax1 = this.positionHorizontal;
+    const Ax2 = this.positionHorizontal + this.width;
+    const Ay1 = this.positionVertical;
+    const Ay2 = this.positionVertical + this.height
     for (let i = enemyHead; i != null; i = i.nextEnemy) {
-      if (
-        (
-          (
-            this.positionVertical >= i.positionVertical &&
-            this.positionVertical <= i.positionVertical + i.height
-          ) ||
-          (
-            this.positionVertical + this.height >= i.positionVertical &&
-            this.positionVertical + this.height <= i.positionVertical + i.height
-          )
-        ) &&
-        (
-          (
-            i.positionHorizontal >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          ) ||
-          (
-            i.positionHorizontal + i.width >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          )
-        )
-      ) {
+      const Bx1 = i.positionHorizontal;
+      const Bx2 = i.positionHorizontal + i.width;
+      const By1 = i.positionVertical;
+      const By2 = i.positionVertical + i.height;
+      if (this.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
         i.hitState = true;
         return true;
       }
     }
     return false;
+  }
+  rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2) {
+    if (
+      (Ax1 >= Bx1 && Ax1 <= Bx2 && Ay1 >= By1 && Ay1 <= By2) ||
+      (Ax2 >= Bx1 && Ax2 <= Bx2 && Ay1 >= By1 && Ay1 <= By2) ||
+      (Ax1 >= Bx1 && Ax1 <= Bx2 && Ay2 >= By1 && Ay2 <= By2) ||
+      (Ax2 >= Bx1 && Ax2 <= Bx2 && Ay2 >= By1 && Ay2 <= By2) ||
+      (Bx1 >= Ax1 && Bx1 <= Ax2 && By1 >= Ay1 && By1 <= Ay2) ||
+      (Bx2 >= Ax1 && Bx2 <= Ax2 && By1 >= Ay1 && By1 <= Ay2) ||
+      (Bx1 >= Ax1 && Bx1 <= Ax2 && By2 >= Ay1 && By2 <= Ay2) ||
+      (Bx2 >= Ax1 && Bx2 <= Ax2 && By2 >= Ay1 && By2 <= Ay2)
+    ) {
+      return true;
+    }
   }
   append(head) {
     if (head == null) {

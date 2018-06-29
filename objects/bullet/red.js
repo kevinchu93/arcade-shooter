@@ -1,12 +1,12 @@
-const Default = require('./Default.js');
+const Default = require('./default.js');
 
 module.exports = class extends Default {
   constructor(player) {
     super(player);
     this.test = 'test';
-    this.leftPositionHorizontal = this.positionHorizontal - 5;
+    this.leftPositionHorizontal = this.positionHorizontal - 15;
     this.leftPositionVertical = this.positionVertical;
-    this.rightPositionHorizontal = this.positionHorizontal + 5;
+    this.rightPositionHorizontal = this.positionHorizontal + 15;
     this.rightPositionVertical = this.positionVertical;
   }
   canvasFill(drawingContext) {

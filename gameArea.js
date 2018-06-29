@@ -1,5 +1,5 @@
-const Player = require('./player.js');
-const Enemy = require('./enemy.js');
+const Player = require('./objects/player/index.js');
+const Enemy = require('./objects/enemy/index.js');
 
 module.exports = {
   canvasElement: document.getElementById('canvas'),

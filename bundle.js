@@ -1,5 +1,29 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports = {
+  config: {
+    blue: {
+      level1: {
+        width: 5,
+        height: 25,
+      },
+      level2: {
+        width: 7,
+        height: 50,
+      },
+      level3: {
+        width: 10,
+        height: 75,
+      },
+      level4: {
+        width: 25,
+        height: 75,
+      },
+      level5: {
+        width: 30,
+        height: 100,
+      },
+    },
+  },
   head: null,
   canvasFill(gameArea) {
     for (let i = this.head; i != null; i = i.nextBullet) {
@@ -16,6 +40,7 @@ module.exports = {
     }
   },
   createNew(components, Bullet) {
+    console.log(components);
     let bullet = {};
     switch (components.player.bulletType) {
       case 'white':
@@ -25,7 +50,44 @@ module.exports = {
         bullet = new Bullet.Red(components.player);
         break;
       case 'deepskyblue':
-        bullet = new Bullet.Blue(components.player);
+        console.log(components.player.level);
+        switch (components.player.level) {
+          case 1:
+            bullet = new Bullet.Blue(
+              components.player,
+              this.config.blue.level1.width,
+              this.config.blue.level1.height,
+            );
+            break;
+          case 2:
+            bullet = new Bullet.Blue(
+              components.player,
+              this.config.blue.level2.width,
+              this.config.blue.level2.height,
+            );
+            break;
+          case 3:
+            bullet = new Bullet.Blue(
+              components.player,
+              this.config.blue.level3.width,
+              this.config.blue.level3.height,
+            );
+            break;
+          case 4:
+            bullet = new Bullet.Blue(
+              components.player,
+              this.config.blue.level4.width,
+              this.config.blue.level4.height,
+            );
+            break;
+          case 5:
+            bullet = new Bullet.Blue(
+              components.player,
+              this.config.blue.level5.width,
+              this.config.blue.level5.height,
+            );
+            break;
+        }
         break;
       default:
         bullet = new Bullet.Default(components.player);
@@ -41,7 +103,7 @@ module.exports = {
 module.exports = {
   head: null,
   spawn: {
-    countdown: null,
+    countdown: 1000,
     rate: 1000,
   },
   canvasFill(gameArea) {
@@ -87,10 +149,12 @@ module.exports = {
 },{"./bullets/index.js":1,"./enemies/index.js":2,"./powerUps/index.js":4}],4:[function(require,module,exports){
 module.exports = {
   head: null,
-  spawn: {
-    countdown: null,
-    rate() {
-      return Math.floor(Math.random() * 10000);
+  config: {
+    spawn: {
+      countdown: null,
+      rate() {
+        return Math.floor(Math.random() * 1000);
+      },
     },
   },
   types: ['deepskyblue', 'orangered', 'mediumpurple'],
@@ -100,23 +164,23 @@ module.exports = {
     }
   },
   update(timeElapsed, components, PowerUp, gameArea) {
-    this.spawnUpdate(timeElapsed, components, PowerUp);
+    this.spawnUpdate(timeElapsed, components, PowerUp, gameArea);
     for (let i = this.head; i != null; i = i.nextPowerUp) {
       i.update(timeElapsed, gameArea.canvasElement.height, components);
     }
   },
-  spawnUpdate(timeElapsed, components, PowerUp) {
-    components.powerUps.spawn.countdown -= timeElapsed;
-    if (components.powerUps.spawn.countdown <= 0) {
-      components.powerUps.spawn.countdown += components.powerUps.spawn.rate();
-      const powerUp = this.createNew(PowerUp);
+  spawnUpdate(timeElapsed, components, PowerUp, gameArea) {
+    components.powerUps.config.spawn.countdown -= timeElapsed;
+    if (components.powerUps.config.spawn.countdown <= 0) {
+      components.powerUps.config.spawn.countdown += components.powerUps.config.spawn.rate();
+      const powerUp = this.createNew(PowerUp, gameArea);
       this.appendNewPowerUp(components, powerUp);
     }
   },
-  createNew(PowerUp) {
+  createNew(PowerUp, gameArea) {
     const powerUp = new PowerUp(PowerUp.getDefaultSpec());
-    powerUp.positionHorizontal = Math.floor(Math.random() * 1366);
-    powerUp.color = this.types[Math.floor(Math.random() * 3)];
+    powerUp.positionHorizontal = Math.floor(Math.random() * gameArea.canvasElement.width);
+    powerUp.color = this.types[Math.floor(Math.random() * this.types.length)];
     return powerUp;
   },
   appendNewPowerUp(components, powerUp) {
@@ -125,6 +189,244 @@ module.exports = {
 };
 
 },{}],5:[function(require,module,exports){
+module.exports = class {
+  static mouseMove(canvasElement, player) {
+    canvasElement.addEventListener('mousemove', (e) => {
+      player.positionHorizontal = e.clientX;
+    });
+  }
+
+  static click(canvasElement, Bullet, components) {
+    canvasElement.addEventListener('click', () => {
+      const bullet = components.bullets.createNew(components, Bullet);
+      components.bullets.appendNewBullet(bullet, components);
+    });
+  }
+  static keyInput(canvasElement, keyMap) {
+    ['keydown', 'keyup'].forEach((eventListener) => {
+      canvasElement.addEventListener(eventListener, (e) => {
+        keyMap[e.keyCode] = e.type === 'keydown';
+      });
+    });
+  }
+};
+
+},{}],6:[function(require,module,exports){
+const Player = require('./objects/player/index.js');
+const Enemy = require('./objects/enemy/index.js');
+
+module.exports = {
+  canvasElement: document.getElementById('canvas'),
+  start(components) {
+    this.canvasElement.width = 1366;
+    this.canvasElement.height = 768;
+    this.canvasElement.tabIndex = 1000;
+    this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
+    components.player = new Player(this.canvasElement.width, this.canvasElement.height);
+    const enemy = new Enemy(Enemy.getDefaultSpec());
+    components.enemies.head = enemy.append(components.enemies.head);
+  },
+  fill() {
+    this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
+    this.canvasElementDrawingContext.fillStyle = 'black';
+    this.canvasElementDrawingContext.fillRect(
+      0,
+      0,
+      this.canvasElement.width,
+      this.canvasElement.height,
+    );
+    this.canvasElementDrawingContext.fillStyle = 'white';
+  },
+  enemySpawnCountdown: 1000,
+  powerUpSpawnCountdown: 1000,
+};
+
+},{"./objects/enemy/index.js":11,"./objects/player/index.js":13}],7:[function(require,module,exports){
+const Default = require('./default.js');
+
+module.exports = class extends Default {
+  constructor(player, width, height) {
+    super(player);
+    this.width = width;
+    this.height = height;
+    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionVertical - this.height;
+  }
+  update(timeElapsed, boundary, components) {
+    super.boundaryCheck(boundary, components);
+    super.movement(timeElapsed);
+    components.player.score += this.hitCheck(components.enemies.head);
+  }
+  hitCheck(enemyHead) {
+    let hitCount = 0;
+    const Ax1 = this.positionHorizontal;
+    const Ax2 = this.positionHorizontal + this.width;
+    const Ay1 = this.positionVertical;
+    const Ay2 = this.positionVertical + this.height
+    for (let i = enemyHead; i != null; i = i.nextEnemy) {
+      const Bx1 = i.positionHorizontal;
+      const Bx2 = i.positionHorizontal + i.width;
+      const By1 = i.positionVertical;
+      const By2 = i.positionVertical + i.height;
+      if (super.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
+        i.hitState = true;
+        hitCount += 1;
+      }
+    }
+    return hitCount;
+  }
+};
+
+},{"./default.js":8}],8:[function(require,module,exports){
+module.exports = class {
+  constructor(player) {
+    this.width = 5;
+    this.height = 10;
+    this.speed = 20;
+    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionVertical - this.height;
+    this.state = true;
+    this.type = player.bulletType;
+    this.nextBullet = null;
+  }
+  movement(time) {
+    if (this.state) {
+      this.positionVertical -= this.speed * (time / (1000 / 60));
+    }
+  }
+
+  boundaryCheck(boundary, components) {
+    if (this.positionVertical + this.height <= boundary) {
+      this.remove(components.bullets.head);
+      this.state = false;
+    }
+  }
+
+  update(timeElapsed, boundary, components) {
+    this.boundaryCheck(boundary, components);
+    this.movement(timeElapsed);
+    if (this.hitCheck(components.enemies.head)) {
+      components.bullets.head = this.remove(components.bullets.head);
+      components.player.score += 1;
+    }
+  }
+
+  canvasFill(drawingContext) {
+    drawingContext.fillStyle = this.type;
+    drawingContext.fillRect(
+      this.positionHorizontal,
+      this.positionVertical,
+      this.width,
+      this.height,
+    );
+  }
+  hitCheck(enemyHead) {
+    const Ax1 = this.positionHorizontal;
+    const Ax2 = this.positionHorizontal + this.width;
+    const Ay1 = this.positionVertical;
+    const Ay2 = this.positionVertical + this.height
+    for (let i = enemyHead; i != null; i = i.nextEnemy) {
+      const Bx1 = i.positionHorizontal;
+      const Bx2 = i.positionHorizontal + i.width;
+      const By1 = i.positionVertical;
+      const By2 = i.positionVertical + i.height;
+      if (this.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
+        i.hitState = true;
+        return true;
+      }
+    }
+    return false;
+  }
+  rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2) {
+    if (
+      (Ax1 >= Bx1 && Ax1 <= Bx2 && Ay1 >= By1 && Ay1 <= By2) ||
+      (Ax2 >= Bx1 && Ax2 <= Bx2 && Ay1 >= By1 && Ay1 <= By2) ||
+      (Ax1 >= Bx1 && Ax1 <= Bx2 && Ay2 >= By1 && Ay2 <= By2) ||
+      (Ax2 >= Bx1 && Ax2 <= Bx2 && Ay2 >= By1 && Ay2 <= By2) ||
+      (Bx1 >= Ax1 && Bx1 <= Ax2 && By1 >= Ay1 && By1 <= Ay2) ||
+      (Bx2 >= Ax1 && Bx2 <= Ax2 && By1 >= Ay1 && By1 <= Ay2) ||
+      (Bx1 >= Ax1 && Bx1 <= Ax2 && By2 >= Ay1 && By2 <= Ay2) ||
+      (Bx2 >= Ax1 && Bx2 <= Ax2 && By2 >= Ay1 && By2 <= Ay2)
+    ) {
+      return true;
+    }
+  }
+  append(head) {
+    if (head == null) {
+      return this;
+    }
+    for (let i = head; i != null; i = i.nextBullet) {
+      if (i.nextBullet == null) {
+        i.nextBullet = this;
+        i = i.nextBullet;
+      }
+    }
+    return head;
+  }
+  remove(head) {
+    if (head === this) {
+      return head.nextBullet;
+    }
+    for (let i = head; i.nextBullet != null; i = i.nextBullet) {
+      if (i.nextBullet === this) {
+        i.nextBullet = i.nextBullet.nextBullet;
+      }
+      if (i.nextBullet == null) {
+        return head;
+      }
+    }
+    return head;
+  }
+};
+
+},{}],9:[function(require,module,exports){
+const Default = require('./default.js');
+const Red = require('./red.js');
+const Blue = require('./blue.js');
+
+module.exports = {
+  Default,
+  Red,
+  Blue,
+};
+
+},{"./blue.js":7,"./default.js":8,"./red.js":10}],10:[function(require,module,exports){
+const Default = require('./default.js');
+
+module.exports = class extends Default {
+  constructor(player) {
+    super(player);
+    this.test = 'test';
+    this.leftPositionHorizontal = this.positionHorizontal - 15;
+    this.leftPositionVertical = this.positionVertical;
+    this.rightPositionHorizontal = this.positionHorizontal + 15;
+    this.rightPositionVertical = this.positionVertical;
+  }
+  canvasFill(drawingContext) {
+    super.canvasFill(drawingContext);
+    drawingContext.fillRect(
+      this.leftPositionHorizontal,
+      this.leftPositionVertical,
+      this.width,
+      this.height,
+    );
+    drawingContext.fillRect(
+      this.rightPositionHorizontal,
+      this.rightPositionVertical,
+      this.width,
+      this.height,
+    );
+  }
+  movement(time) {
+    super.movement(time);
+    if (this.state) {
+      this.leftPositionVertical -= this.speed * (time / (1000 / 60));
+      this.rightPositionVertical -= this.speed * (time / (1000 / 60));
+    }
+  }
+};
+
+},{"./default.js":8}],11:[function(require,module,exports){
 module.exports = class {
   constructor(obj) {
     this.width = obj.width;
@@ -202,260 +504,11 @@ module.exports = class {
   }
 };
 
-},{}],6:[function(require,module,exports){
-module.exports = class {
-  static mouseMove(canvasElement, player) {
-    canvasElement.addEventListener('mousemove', (e) => {
-      player.positionHorizontal = e.clientX;
-    });
-  }
-
-  static click(canvasElement, Bullet, components) {
-    canvasElement.addEventListener('click', () => {
-      const bullet = components.bullets.createNew(components, Bullet);
-      components.bullets.appendNewBullet(bullet, components);
-    });
-  }
-  static keyInput(canvasElement, keyMap) {
-    ['keydown', 'keyup'].forEach((eventListener) => {
-      canvasElement.addEventListener(eventListener, (e) => {
-        keyMap[e.keyCode] = e.type === 'keydown';
-      });
-    });
-  }
-};
-
-},{}],7:[function(require,module,exports){
-const Player = require('./player.js');
-const Enemy = require('./enemy.js');
-
-module.exports = {
-  canvasElement: document.getElementById('canvas'),
-  start(components) {
-    this.canvasElement.width = 1366;
-    this.canvasElement.height = 768;
-    this.canvasElement.tabIndex = 1000;
-    this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
-    components.player = new Player(this.canvasElement.width, this.canvasElement.height);
-    const enemy = new Enemy(Enemy.getDefaultSpec());
-    components.enemies.head = enemy.append(components.enemies.head);
-  },
-  fill() {
-    this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';
-    this.canvasElementDrawingContext.fillStyle = 'black';
-    this.canvasElementDrawingContext.fillRect(
-      0,
-      0,
-      this.canvasElement.width,
-      this.canvasElement.height,
-    );
-    this.canvasElementDrawingContext.fillStyle = 'white';
-  },
-  enemySpawnCountdown: 1000,
-  powerUpSpawnCountdown: 1000,
-};
-
-},{"./enemy.js":5,"./player.js":16}],8:[function(require,module,exports){
-const Default = require('./Default.js');
-
-module.exports = class extends Default {
-  constructor(player) {
-    super(player);
-    this.width = 30;
-  }
-  update(timeElapsed, boundary, components) {
-    super.boundaryCheck(boundary, components);
-    super.movement(timeElapsed);
-    components.player.score += this.hitCheck(components.enemies.head);
-  }
-  hitCheck(enemyHead) {
-    let hitCount = 0;
-    for (let i = enemyHead; i != null; i = i.nextEnemy) {
-      if (
-        (
-          (
-            this.positionVertical >= i.positionVertical &&
-            this.positionVertical <= i.positionVertical + i.height
-          ) ||
-          (
-            this.positionVertical + this.height >= i.positionVertical &&
-            this.positionVertical + this.height <= i.positionVertical + i.height
-          )
-        ) &&
-        (
-          (
-            i.positionHorizontal >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          ) ||
-          (
-            i.positionHorizontal + i.width >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          )
-        )
-      ) {
-        i.hitState = true;
-        hitCount += 1;
-      }
-    }
-    return hitCount;
-  }
-};
-
-},{"./Default.js":9}],9:[function(require,module,exports){
-module.exports = class {
-  constructor(player) {
-    this.width = 5;
-    this.height = 10;
-    this.speed = 20;
-    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
-    this.positionVertical = player.positionVertical;
-    this.state = true;
-    this.type = player.bulletType;
-    this.nextBullet = null;
-  }
-  movement(time) {
-    if (this.state) {
-      this.positionVertical -= this.speed * (time / (1000 / 60));
-    }
-  }
-
-  boundaryCheck(boundary, components) {
-    if (this.positionVertical + this.height <= boundary) {
-      this.remove(components.bullets.head);
-      this.state = false;
-    }
-  }
-
-  update(timeElapsed, boundary, components) {
-    this.boundaryCheck(boundary, components);
-    this.movement(timeElapsed);
-    if (this.hitCheck(components.enemies.head)) {
-      components.bullets.head = this.remove(components.bullets.head);
-      components.player.score += 1;
-    }
-  }
-
-  canvasFill(drawingContext) {
-    drawingContext.fillStyle = this.type;
-    drawingContext.fillRect(
-      this.positionHorizontal,
-      this.positionVertical,
-      this.width,
-      this.height,
-    );
-  }
-  hitCheck(enemyHead) {
-    for (let i = enemyHead; i != null; i = i.nextEnemy) {
-      if (
-        (
-          (
-            this.positionVertical >= i.positionVertical &&
-            this.positionVertical <= i.positionVertical + i.height
-          ) ||
-          (
-            this.positionVertical + this.height >= i.positionVertical &&
-            this.positionVertical + this.height <= i.positionVertical + i.height
-          )
-        ) &&
-        (
-          (
-            i.positionHorizontal >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          ) ||
-          (
-            i.positionHorizontal + i.width >= this.positionHorizontal &&
-            i.positionHorizontal <= this.positionHorizontal + this.width
-          )
-        )
-      ) {
-        i.hitState = true;
-        return true;
-      }
-    }
-    return false;
-  }
-  append(head) {
-    if (head == null) {
-      return this;
-    }
-    for (let i = head; i != null; i = i.nextBullet) {
-      if (i.nextBullet == null) {
-        i.nextBullet = this;
-        i = i.nextBullet;
-      }
-    }
-    return head;
-  }
-  remove(head) {
-    if (head === this) {
-      return head.nextBullet;
-    }
-    for (let i = head; i.nextBullet != null; i = i.nextBullet) {
-      if (i.nextBullet === this) {
-        i.nextBullet = i.nextBullet.nextBullet;
-      }
-      if (i.nextBullet == null) {
-        return head;
-      }
-    }
-    return head;
-  }
-};
-
-},{}],10:[function(require,module,exports){
-const Default = require('./Default.js');
-
-module.exports = class extends Default {
-  constructor(player) {
-    super(player);
-    this.test = 'test';
-    this.leftPositionHorizontal = this.positionHorizontal - 5;
-    this.leftPositionVertical = this.positionVertical;
-    this.rightPositionHorizontal = this.positionHorizontal + 5;
-    this.rightPositionVertical = this.positionVertical;
-  }
-  canvasFill(drawingContext) {
-    super.canvasFill(drawingContext);
-    drawingContext.fillRect(
-      this.leftPositionHorizontal,
-      this.leftPositionVertical,
-      this.width,
-      this.height,
-    );
-    drawingContext.fillRect(
-      this.rightPositionHorizontal,
-      this.rightPositionVertical,
-      this.width,
-      this.height,
-    );
-  }
-  movement(time) {
-    super.movement(time);
-    if (this.state) {
-      this.leftPositionVertical -= this.speed * (time / (1000 / 60));
-      this.rightPositionVertical -= this.speed * (time / (1000 / 60));
-    }
-  }
-};
-
-},{"./Default.js":9}],11:[function(require,module,exports){
-const Default = require('./Default.js');
-const Red = require('./Red.js');
-const Blue = require('./Blue.js');
-
-module.exports = {
-  Default,
-  Red,
-  Blue,
-};
-
-},{"./Blue.js":8,"./Default.js":9,"./Red.js":10}],12:[function(require,module,exports){
-arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 const Bullet = require('./bullet/index.js');
-const Enemy = require('./enemy/Enemy.js');
-const PowerUp = require('./powerUp/PowerUp.js');
-const Player = require('./player/Player.js');
+const Enemy = require('./enemy/index.js');
+const PowerUp = require('./powerUp/index.js');
+const Player = require('./player/index.js');
 
 module.exports = {
   Bullet,
@@ -465,16 +518,17 @@ module.exports = {
 }
 
 
-},{"./bullet/index.js":11,"./enemy/Enemy.js":12,"./player/Player.js":14,"./powerUp/PowerUp.js":15}],14:[function(require,module,exports){
+},{"./bullet/index.js":9,"./enemy/index.js":11,"./player/index.js":13,"./powerUp/index.js":14}],13:[function(require,module,exports){
 module.exports = class {
   constructor(canvasWidth, canvasHeight) {
     this.width = 30;
     this.height = 20;
     this.positionHorizontal = canvasWidth / 2;
-    this.positionVertical = canvasHeight - 20;
+    this.positionVertical = canvasHeight - 25;
     this.score = 0;
     this.speed = 5;
     this.bulletType = 'white';
+    this.level = 0;
   }
   canvasFill(drawingContext) {
     drawingContext.fillRect(
@@ -532,14 +586,21 @@ module.exports = class {
         i.positionVertical >= this.positionVertical &&
         i.positionVertical <= this.positionVertical + this.height
       ) {
-        this.bulletType = i.color;
+        if (this.bulletType == i.color) {
+          if (this.level < 5) {
+            this.level += 1;
+          }
+        } else {
+          this.bulletType = i.color;
+          this.level = 1;
+        }
         i.stateObtained = true;
       }
     }
   }
 };
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = class {
   constructor(obj) {
     this.radius = obj.radius;
@@ -608,9 +669,7 @@ module.exports = class {
   }
 };
 
-},{}],16:[function(require,module,exports){
-arguments[4][14][0].apply(exports,arguments)
-},{"dup":14}],17:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 const Event = require('./event.js');
 const components = require('./components/index.js');
 const gameArea = require('./gameArea.js');
@@ -653,4 +712,4 @@ window.onload = () => {
   Event.keyInput(gameArea.canvasElement, keyMap);
 };
 
-},{"./components/index.js":3,"./event.js":6,"./gameArea.js":7,"./objects/index.js":13}]},{},[17]);
+},{"./components/index.js":3,"./event.js":5,"./gameArea.js":6,"./objects/index.js":12}]},{},[15]);

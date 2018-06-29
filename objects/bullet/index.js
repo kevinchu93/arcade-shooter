@@ -1,6 +1,6 @@
-const Default = require('./Default.js');
-const Red = require('./Red.js');
-const Blue = require('./Blue.js');
+const Default = require('./default.js');
+const Red = require('./red.js');
+const Blue = require('./blue.js');
 
 module.exports = {
   Default,

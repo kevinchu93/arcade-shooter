@@ -3,10 +3,11 @@ module.exports = class {
     this.width = 30;
     this.height = 20;
     this.positionHorizontal = canvasWidth / 2;
-    this.positionVertical = canvasHeight - 20;
+    this.positionVertical = canvasHeight - 25;
     this.score = 0;
     this.speed = 5;
     this.bulletType = 'white';
+    this.level = 0;
   }
   canvasFill(drawingContext) {
     drawingContext.fillRect(
@@ -64,7 +65,14 @@ module.exports = class {
         i.positionVertical >= this.positionVertical &&
         i.positionVertical <= this.positionVertical + this.height
       ) {
-        this.bulletType = i.color;
+        if (this.bulletType == i.color) {
+          if (this.level < 5) {
+            this.level += 1;
+          }
+        } else {
+          this.bulletType = i.color;
+          this.level = 1;
+        }
         i.stateObtained = true;
       }
     }

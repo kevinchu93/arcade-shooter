@@ -1,7 +1,7 @@
 module.exports = {
   head: null,
   spawn: {
-    countdown: null,
+    countdown: 1000,
     rate: 1000,
   },
   canvasFill(gameArea) {
