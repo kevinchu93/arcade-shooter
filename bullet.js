@@ -6,7 +6,7 @@ module.exports = class {
     this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
     this.positionVertical = player.positionVertical;
     this.state = true;
-    this.type = 'white';
+    this.type = player.bulletType;
     this.nextBullet = null;
   }
   movement(time) {

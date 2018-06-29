@@ -27,7 +27,7 @@ function update(components, gameArea) {
     timePrevious = timeStamp;
 
     components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
-    components.bullets.update(timeElapsed, 0, components, Bullet, keyMap);
+    components.bullets.update(timeElapsed, 0, components, Bullet, keyMap, OrangeRed, DeepSkyBlue);
     components.enemies.update(timeElapsed, 0, 1366, components, Enemy);
     components.powerUps.update(timeElapsed, components, PowerUp, gameArea);
     canvasFill(components, gameArea);

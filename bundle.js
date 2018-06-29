@@ -7,7 +7,7 @@ module.exports = class {
     this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
     this.positionVertical = player.positionVertical;
     this.state = true;
-    this.type = 'white';
+    this.type = player.bulletType;
     this.nextBullet = null;
   }
   movement(time) {
@@ -107,22 +107,30 @@ module.exports = {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
   },
-  update(timeElapsed, boundary, components, Bullet, keyMap) {
+  update(timeElapsed, boundary, components, Bullet, keyMap, OrangeRed, DeepSkyBlue) {
     if (keyMap[13] === true) {
-      const bullet = this.createNew(components, Bullet);
+      const bullet = this.createNew(components, Bullet, OrangeRed, DeepSkyBlue);
       this.appendNewBullet(bullet, components);
     }
     for (let i = this.head; i != null; i = i.nextBullet) {
       i.update(timeElapsed, boundary, components, Bullet);
     }
   },
-  createNew(components, Bullet) {
-    const bullet = new Bullet()
-    bullet.positionHorizontal =
-      components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
-    bullet.positionVertical = components.player.positionVertical;
-    bullet.type = components.player.bulletType;
-    console.log(bullet.type);
+  createNew(components, Bullet, OrangeRed, DeepSkyBlue) {
+    let bullet = {};
+    switch (components.player.bulletType) {
+      case 'white':
+        bullet = new Bullet(components.player);
+        break;
+      case 'orangered':
+        bullet = new OrangeRed(components.player);
+        break;
+      case 'deepskyblue':
+        bullet = new DeepSkyBlue(components.player);
+        break;
+      default:
+        bullet = new Bullet(components.player);
+    }
     return bullet;
   },
   appendNewBullet(bullet, components) {
@@ -228,9 +236,38 @@ module.exports = class extends Bullet {
   update(timeElapsed, boundary, components) {
     super.boundaryCheck(boundary, components);
     super.movement(timeElapsed);
-    if (super.hitCheck(components.enemies.head)) {
-      components.player.score += 1;
+    components.player.score += this.hitCheck(components.enemies.head);
+  }
+  hitCheck(enemyHead) {
+    let hitCount = 0;
+    for (let i = enemyHead; i != null; i = i.nextEnemy) {
+      if (
+        (
+          (
+            this.positionVertical >= i.positionVertical &&
+            this.positionVertical <= i.positionVertical + i.height
+          ) ||
+          (
+            this.positionVertical + this.height >= i.positionVertical &&
+            this.positionVertical + this.height <= i.positionVertical + i.height
+          )
+        ) &&
+        (
+          (
+            i.positionHorizontal >= this.positionHorizontal &&
+            i.positionHorizontal <= this.positionHorizontal + this.width
+          ) ||
+          (
+            i.positionHorizontal + i.width >= this.positionHorizontal &&
+            i.positionHorizontal <= this.positionHorizontal + this.width
+          )
+        )
+      ) {
+        i.hitState = true;
+        hitCount += 1;
+      }
     }
+    return hitCount;
   }
 }
 
@@ -322,24 +359,8 @@ module.exports = class {
 
   static click(canvasElement, Bullet, components, OrangeRed, DeepSkyBlue) {
     canvasElement.addEventListener('click', () => {
-      let bullet = {};
-      switch (components.player.bulletType) {
-        case 'white':
-          bullet = new Bullet(components.player);
-          break;
-        case 'orangered':
-          bullet = new OrangeRed(components.player);
-          break;
-        case 'deepskyblue':
-          bullet = new DeepSkyBlue(components.player);
-          break;
-        default:
-          bullet = new Bullet(components.player);
-      }
-      bullet.positionHorizontal = components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
-      bullet.positionVertical = components.player.positionVertical;
-      bullet.type = components.player.bulletType;
-      components.bullets.head = bullet.append(components.bullets.head);
+      const bullet = components.bullets.createNew(components, Bullet, OrangeRed, DeepSkyBlue);
+      components.bullets.appendNewBullet(bullet, components);
     });
   }
   static keyInput(canvasElement, components, Bullet, keyMap) {
@@ -592,7 +613,7 @@ function update(components, gameArea) {
     timePrevious = timeStamp;
 
     components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
-    components.bullets.update(timeElapsed, 0, components, Bullet, keyMap);
+    components.bullets.update(timeElapsed, 0, components, Bullet, keyMap, OrangeRed, DeepSkyBlue);
     components.enemies.update(timeElapsed, 0, 1366, components, Enemy);
     components.powerUps.update(timeElapsed, components, PowerUp, gameArea);
     canvasFill(components, gameArea);
