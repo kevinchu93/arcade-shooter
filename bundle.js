@@ -1,24 +1,14 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 module.exports = class {
-  constructor(obj) {
-    this.width = obj.width;
-    this.height = obj.height;
-    this.speed = obj.speed;
-    this.positionHorizontal = obj.positionHorizontal;
-    this.positionVertical = obj.positionVertical;
-    this.state = obj.state;
-    this.nextBullet = obj.nextBullet;
-  }
-  static getDefaultSpec() {
-    return {
-      width: 5,
-      height: 10,
-      speed: 20,
-      positionHorizontal: undefined,
-      positionVertical: undefined, // canvas height - height
-      state: true,
-      nextBullet: null,
-    };
+  constructor(player) {
+    this.width = 5;
+    this.height = 10;
+    this.speed = 20;
+    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionVertical;
+    this.state = true;
+    this.type = 'white';
+    this.nextBullet = null;
   }
   movement(time) {
     if (this.state) {
@@ -43,6 +33,7 @@ module.exports = class {
   }
 
   canvasFill(drawingContext) {
+    drawingContext.fillStyle = this.type;
     drawingContext.fillRect(
       this.positionHorizontal,
       this.positionVertical,
@@ -126,10 +117,12 @@ module.exports = {
     }
   },
   createNew(components, Bullet) {
-    const bullet = new Bullet(Bullet.getDefaultSpec());
+    const bullet = new Bullet()
     bullet.positionHorizontal =
       components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
     bullet.positionVertical = components.player.positionVertical;
+    bullet.type = components.player.bulletType;
+    console.log(bullet.type);
     return bullet;
   },
   appendNewBullet(bullet, components) {
@@ -159,11 +152,11 @@ module.exports = {
     components.enemies.spawn.countdown -= timeElapsed;
     if (components.enemies.spawn.countdown <= 0) {
       components.enemies.spawn.countdown += components.enemies.spawn.rate;
-      const enemy = this.createNew(components, Enemy);
+      const enemy = this.createNew(Enemy);
       this.appendNewEnemy(components, enemy);
     }
   },
-  createNew(components, Enemy) {
+  createNew(Enemy) {
     const enemy = new Enemy(Enemy.getDefaultSpec());
     return enemy;
   },
@@ -199,21 +192,21 @@ module.exports = {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
   },
-  update(timeElapsed, components, PowerUp) {
+  update(timeElapsed, components, PowerUp, gameArea) {
     this.spawnUpdate(timeElapsed, components, PowerUp);
     for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.update(timeElapsed);
+      i.update(timeElapsed, gameArea.canvasElement.height, components);
     }
   },
   spawnUpdate(timeElapsed, components, PowerUp) {
     components.powerUps.spawn.countdown -= timeElapsed;
     if (components.powerUps.spawn.countdown <= 0) {
       components.powerUps.spawn.countdown += components.powerUps.spawn.rate();
-      const powerUp = this.createNew(components, PowerUp);
+      const powerUp = this.createNew(PowerUp);
       this.appendNewPowerUp(components, powerUp);
     }
   },
-  createNew(components, PowerUp) {
+  createNew(PowerUp) {
     const powerUp = new PowerUp(PowerUp.getDefaultSpec());
     powerUp.positionHorizontal = Math.floor(Math.random() * 1366);
     powerUp.color = this.types[Math.floor(Math.random() * 3)];
@@ -225,6 +218,23 @@ module.exports = {
 };
 
 },{}],6:[function(require,module,exports){
+const Bullet = require('./bullet.js');
+
+module.exports = class extends Bullet {
+  constructor(player) {
+    super(player);
+    this.width = 30;
+  }
+  update(timeElapsed, boundary, components) {
+    super.boundaryCheck(boundary, components);
+    super.movement(timeElapsed);
+    if (super.hitCheck(components.enemies.head)) {
+      components.player.score += 1;
+    }
+  }
+}
+
+},{"./bullet.js":1}],7:[function(require,module,exports){
 module.exports = class {
   constructor(obj) {
     this.width = obj.width;
@@ -302,7 +312,7 @@ module.exports = class {
   }
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = class {
   static mouseMove(canvasElement, player) {
     canvasElement.addEventListener('mousemove', (e) => {
@@ -310,11 +320,25 @@ module.exports = class {
     });
   }
 
-  static click(canvasElement, Bullet, components, player) {
+  static click(canvasElement, Bullet, components, OrangeRed, DeepSkyBlue) {
     canvasElement.addEventListener('click', () => {
-      const bullet = new Bullet(Bullet.getDefaultSpec());
-      bullet.positionHorizontal = player.positionHorizontal + ((player.width - bullet.width) / 2);
-      bullet.positionVertical = player.positionVertical;
+      let bullet = {};
+      switch (components.player.bulletType) {
+        case 'white':
+          bullet = new Bullet(components.player);
+          break;
+        case 'orangered':
+          bullet = new OrangeRed(components.player);
+          break;
+        case 'deepskyblue':
+          bullet = new DeepSkyBlue(components.player);
+          break;
+        default:
+          bullet = new Bullet(components.player);
+      }
+      bullet.positionHorizontal = components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
+      bullet.positionVertical = components.player.positionVertical;
+      bullet.type = components.player.bulletType;
       components.bullets.head = bullet.append(components.bullets.head);
     });
   }
@@ -327,7 +351,7 @@ module.exports = class {
   }
 };
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 const Player = require('./player.js');
 const Enemy = require('./enemy.js');
 
@@ -338,10 +362,7 @@ module.exports = {
     this.canvasElement.height = 768;
     this.canvasElement.tabIndex = 1000;
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
-    components.player = new Player(Player.getDefaultSpec(
-      this.canvasElement.width,
-      this.canvasElement.height,
-    ));
+    components.player = new Player(this.canvasElement.width, this.canvasElement.height);
     const enemy = new Enemy(Enemy.getDefaultSpec());
     components.enemies.head = enemy.append(components.enemies.head);
   },
@@ -360,25 +381,53 @@ module.exports = {
   powerUpSpawnCountdown: 1000,
 };
 
-},{"./enemy.js":6,"./player.js":9}],9:[function(require,module,exports){
-module.exports = class {
-  constructor(obj) {
-    this.width = obj.width;
-    this.height = obj.height;
-    this.positionHorizontal = obj.positionHorizontal;
-    this.positionVertical = obj.positionVertical;
-    this.score = obj.score;
-    this.speed = obj.speed;
+},{"./enemy.js":7,"./player.js":11}],10:[function(require,module,exports){
+const Bullet = require('./bullet.js');
+
+module.exports = class extends Bullet {
+  constructor(player) {
+    super(player);
+    this.test = 'test';
+    this.leftPositionHorizontal = this.positionHorizontal - 5;
+    this.leftPositionVertical = this.positionVertical;
+    this.rightPositionHorizontal = this.positionHorizontal + 5;
+    this.rightPositionVertical = this.positionVertical;
   }
-  static getDefaultSpec(canvasWidth, canvasHeight) {
-    return {
-      width: 15,
-      height: 20,
-      positionHorizontal: (canvasWidth) / 2,
-      positionVertical: canvasHeight - 20, // canvas height - height
-      score: 0,
-      speed: 5,
-    };
+  canvasFill(drawingContext) {
+    super.canvasFill(drawingContext);
+    console.log(this);
+    drawingContext.fillRect(
+      this.leftPositionHorizontal,
+      this.leftPositionVertical,
+      this.width,
+      this.height,
+    );
+    drawingContext.fillRect(
+      this.rightPositionHorizontal,
+      this.rightPositionVertical,
+      this.width,
+      this.height,
+    );
+  }
+  movement(time) {
+    super.movement(time);
+    if (this.state) {
+      this.leftPositionVertical -= this.speed * (time / (1000 / 60));
+      this.rightPositionVertical -= this.speed * (time / (1000 / 60));
+    }
+  }
+};
+
+},{"./bullet.js":1}],11:[function(require,module,exports){
+module.exports = class {
+  constructor(canvasWidth, canvasHeight) {
+    this.width = 30;
+    this.height = 20;
+    this.positionHorizontal = canvasWidth / 2;
+    this.positionVertical = canvasHeight - 20;
+    this.score = 0;
+    this.speed = 5;
+    this.bulletType = 'white';
   }
   canvasFill(drawingContext) {
     drawingContext.fillRect(
@@ -389,11 +438,12 @@ module.exports = class {
     );
     drawingContext.fillText(this.score, 1200, 55);
   }
-  update(timeElapsed, canvasElement, keyMap) {
+  update(timeElapsed, canvasElement, keyMap, components) {
     this.movementLeft(keyMap, timeElapsed, 0);
     this.movementRight(keyMap, timeElapsed, canvasElement.width);
     this.movementUp(keyMap, timeElapsed, 0);
     this.movementDown(keyMap, timeElapsed, canvasElement.height);
+    this.collisionCheckPowerUp(components.powerUps.head);
   }
   movementLeft(keyMap, time, boundaryLeft) {
     if (keyMap[37] === true && this.positionHorizontal >= boundaryLeft) {
@@ -427,9 +477,23 @@ module.exports = class {
       this.positionVertical = boundaryDown - this.height;
     }
   }
+  collisionCheckPowerUp(powerUpHead) {
+    for (let i = powerUpHead; i != null; i = i.nextPowerUp) {
+      if (
+        i.positionHorizontal >= this.positionHorizontal &&
+        i.positionHorizontal <= this.positionHorizontal + this.width &&
+        i.positionVertical >= this.positionVertical &&
+        i.positionVertical <= this.positionVertical + this.height
+      ) {
+        this.bulletType = i.color;
+        console.log(this.bulletType);
+        i.stateObtained = true;
+      }
+    }
+  }
 };
 
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 module.exports = class {
   constructor(obj) {
     this.radius = obj.radius;
@@ -437,6 +501,7 @@ module.exports = class {
     this.positionHorizontal = obj.positionHorizontal;
     this.positionVertical = obj.positionVertical;
     this.color = obj.color;
+    this.stateObtained = obj.stateObtained;
   }
   static getDefaultSpec() {
     return {
@@ -445,6 +510,7 @@ module.exports = class {
       positionHorizontal: null,
       positionVertical: null,
       color: null,
+      stateObtained: false,
     };
   }
   canvasFill(drawingContext) {
@@ -456,8 +522,12 @@ module.exports = class {
   movement(timeElapsed) {
     this.positionVertical += this.speed * (timeElapsed / (1000 / 60));
   }
-  update(timeElapsed) {
+  update(timeElapsed, boundaryBottom, components) {
     this.movement(timeElapsed);
+    this.boundaryCheck(boundaryBottom, components);
+    if (this.stateObtained) {
+      components.powerUps.head = this.remove(components.powerUps.head);
+    }
   }
   boundaryCheck(boundaryBottom, components) {
     if (this.positionVertical >= boundaryBottom) {
@@ -492,8 +562,10 @@ module.exports = class {
   }
 };
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 const Bullet = require('./bullet.js');
+const OrangeRed = require('./orangered.js');
+const DeepSkyBlue = require('./deepskyblue.js');
 const Event = require('./event.js');
 const Enemy = require('./enemy.js');
 const components = require('./components/index.js');
@@ -519,10 +591,10 @@ function update(components, gameArea) {
     timeElapsed = timeStamp - timePrevious;
     timePrevious = timeStamp;
 
-    components.player.update(timeElapsed, gameArea.canvasElement, keyMap);
+    components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
     components.bullets.update(timeElapsed, 0, components, Bullet, keyMap);
     components.enemies.update(timeElapsed, 0, 1366, components, Enemy);
-    components.powerUps.update(timeElapsed, components, PowerUp);
+    components.powerUps.update(timeElapsed, components, PowerUp, gameArea);
     canvasFill(components, gameArea);
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }
@@ -533,8 +605,8 @@ window.onload = () => {
   gameArea.start(components);
   update(components, gameArea);
   Event.mouseMove(gameArea.canvasElement, components.player);
-  Event.click(gameArea.canvasElement, Bullet, components, components.player);
+  Event.click(gameArea.canvasElement, Bullet, components, OrangeRed, DeepSkyBlue);
   Event.keyInput(gameArea.canvasElement, components, Bullet, keyMap);
 };
 
-},{"./bullet.js":1,"./components/index.js":4,"./enemy.js":6,"./event.js":7,"./gameArea.js":8,"./powerUp.js":10}]},{},[11]);
+},{"./bullet.js":1,"./components/index.js":4,"./deepskyblue.js":6,"./enemy.js":7,"./event.js":8,"./gameArea.js":9,"./orangered.js":10,"./powerUp.js":12}]},{},[13]);

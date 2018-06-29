@@ -1,23 +1,13 @@
 module.exports = class {
-  constructor(obj) {
-    this.width = obj.width;
-    this.height = obj.height;
-    this.speed = obj.speed;
-    this.positionHorizontal = obj.positionHorizontal;
-    this.positionVertical = obj.positionVertical;
-    this.state = obj.state;
-    this.nextBullet = obj.nextBullet;
-  }
-  static getDefaultSpec() {
-    return {
-      width: 5,
-      height: 10,
-      speed: 20,
-      positionHorizontal: undefined,
-      positionVertical: undefined, // canvas height - height
-      state: true,
-      nextBullet: null,
-    };
+  constructor(player) {
+    this.width = 5;
+    this.height = 10;
+    this.speed = 20;
+    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionVertical;
+    this.state = true;
+    this.type = 'white';
+    this.nextBullet = null;
   }
   movement(time) {
     if (this.state) {
@@ -42,6 +32,7 @@ module.exports = class {
   }
 
   canvasFill(drawingContext) {
+    drawingContext.fillStyle = this.type;
     drawingContext.fillRect(
       this.positionHorizontal,
       this.positionVertical,

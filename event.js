@@ -5,11 +5,25 @@ module.exports = class {
     });
   }
 
-  static click(canvasElement, Bullet, components, player) {
+  static click(canvasElement, Bullet, components, OrangeRed, DeepSkyBlue) {
     canvasElement.addEventListener('click', () => {
-      const bullet = new Bullet(Bullet.getDefaultSpec());
-      bullet.positionHorizontal = player.positionHorizontal + ((player.width - bullet.width) / 2);
-      bullet.positionVertical = player.positionVertical;
+      let bullet = {};
+      switch (components.player.bulletType) {
+        case 'white':
+          bullet = new Bullet(components.player);
+          break;
+        case 'orangered':
+          bullet = new OrangeRed(components.player);
+          break;
+        case 'deepskyblue':
+          bullet = new DeepSkyBlue(components.player);
+          break;
+        default:
+          bullet = new Bullet(components.player);
+      }
+      bullet.positionHorizontal = components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
+      bullet.positionVertical = components.player.positionVertical;
+      bullet.type = components.player.bulletType;
       components.bullets.head = bullet.append(components.bullets.head);
     });
   }

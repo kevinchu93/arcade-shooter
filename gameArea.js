@@ -8,10 +8,7 @@ module.exports = {
     this.canvasElement.height = 768;
     this.canvasElement.tabIndex = 1000;
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
-    components.player = new Player(Player.getDefaultSpec(
-      this.canvasElement.width,
-      this.canvasElement.height,
-    ));
+    components.player = new Player(this.canvasElement.width, this.canvasElement.height);
     const enemy = new Enemy(Enemy.getDefaultSpec());
     components.enemies.head = enemy.append(components.enemies.head);
   },

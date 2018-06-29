@@ -12,10 +12,10 @@ module.exports = {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
   },
-  update(timeElapsed, components, PowerUp) {
+  update(timeElapsed, components, PowerUp, gameArea) {
     this.spawnUpdate(timeElapsed, components, PowerUp);
     for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.update(timeElapsed);
+      i.update(timeElapsed, gameArea.canvasElement.height, components);
     }
   },
   spawnUpdate(timeElapsed, components, PowerUp) {

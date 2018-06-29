@@ -5,6 +5,7 @@ module.exports = class {
     this.positionHorizontal = obj.positionHorizontal;
     this.positionVertical = obj.positionVertical;
     this.color = obj.color;
+    this.stateObtained = obj.stateObtained;
   }
   static getDefaultSpec() {
     return {
@@ -13,6 +14,7 @@ module.exports = class {
       positionHorizontal: null,
       positionVertical: null,
       color: null,
+      stateObtained: false,
     };
   }
   canvasFill(drawingContext) {
@@ -24,8 +26,12 @@ module.exports = class {
   movement(timeElapsed) {
     this.positionVertical += this.speed * (timeElapsed / (1000 / 60));
   }
-  update(timeElapsed) {
+  update(timeElapsed, boundaryBottom, components) {
     this.movement(timeElapsed);
+    this.boundaryCheck(boundaryBottom, components);
+    if (this.stateObtained) {
+      components.powerUps.head = this.remove(components.powerUps.head);
+    }
   }
   boundaryCheck(boundaryBottom, components) {
     if (this.positionVertical >= boundaryBottom) {

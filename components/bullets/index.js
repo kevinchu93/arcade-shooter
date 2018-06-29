@@ -15,10 +15,12 @@ module.exports = {
     }
   },
   createNew(components, Bullet) {
-    const bullet = new Bullet(Bullet.getDefaultSpec());
+    const bullet = new Bullet()
     bullet.positionHorizontal =
       components.player.positionHorizontal + ((components.player.width - bullet.width) / 2);
     bullet.positionVertical = components.player.positionVertical;
+    bullet.type = components.player.bulletType;
+    console.log(bullet.type);
     return bullet;
   },
   appendNewBullet(bullet, components) {
