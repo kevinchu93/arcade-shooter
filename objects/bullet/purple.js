@@ -22,8 +22,12 @@ module.exports = class extends Default {
     drawingContext.lineCap = 'round';
     drawingContext.beginPath();
     drawingContext.moveTo(this.positionHorizontal, this.positionVertical);
-    console.log(this.enemyPositionVertical);
-    drawingContext.lineTo(this.enemyPositionHorizontal, this.enemyPositionVertical);
+    drawingContext.quadraticCurveTo(
+      Math.floor(Math.random() * 1300),
+      Math.floor(Math.random() * 800),
+      this.enemyPositionHorizontal,
+      this.enemyPositionVertical,
+    );
     drawingContext.stroke();
   }
 };

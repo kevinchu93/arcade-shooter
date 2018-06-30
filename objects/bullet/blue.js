@@ -34,9 +34,9 @@ module.exports = class extends Default {
     return hitCount;
   }
   canvasFill(drawingContext) {
-    let gradient = drawingContext.createLinearGradient(0, 500, 0, 800);
+    const gradient = drawingContext.createLinearGradient(0, 500, 0, 800);
     gradient.addColorStop(0, 'deepskyblue');
-    gradient.addColorStop(1, "dodgerblue");
+    gradient.addColorStop(1, 'dodgerblue');
     drawingContext.fillStyle = gradient;
     drawingContext.fillRect(
       this.positionHorizontal,

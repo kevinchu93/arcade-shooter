@@ -98,12 +98,11 @@ module.exports = function createBlue(player, Bullet) {
 const config = require('./config.js');
 
 module.exports = function createPurple(components, Bullet) {
-  let enemyTarget = Math.floor(Math.random() * components.enemies.count);
+  const enemyTarget = Math.floor(Math.random() * components.enemies.count);
   let enemyHead = components.enemies.head;
   for (let i = 0; i < enemyTarget; i += 1) {
     enemyHead = enemyHead.nextEnemy;
   }
-  console.log(enemyHead);
   let bullet = {};
   switch (components.player.level) {
     case 1:
@@ -112,6 +111,36 @@ module.exports = function createPurple(components, Bullet) {
       }
       bullet = new Bullet.Purple(components.player, enemyHead);
       components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      break;
+    case 2:
+      if (enemyHead == null) {
+        return null;
+      }
+      bullet = new Bullet.Purple(components.player, enemyHead);
+      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      break;
+    case 3:
+      if (enemyHead == null) {
+        return null;
+      }
+      bullet = new Bullet.Purple(components.player, enemyHead);
+      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      break;
+    case 4:
+      if (enemyHead == null) {
+        return null;
+      }
+      bullet = new Bullet.Purple(components.player, enemyHead);
+      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      break;
+    case 5:
+      if (enemyHead == null) {
+        return null;
+      }
+      bullet = new Bullet.Purple(components.player, enemyHead);
+      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      break;
+    default:
       break;
   }
   return bullet;
@@ -451,9 +480,9 @@ module.exports = class extends Default {
     return hitCount;
   }
   canvasFill(drawingContext) {
-    let gradient = drawingContext.createLinearGradient(0, 500, 0, 800);
+    const gradient = drawingContext.createLinearGradient(0, 500, 0, 800);
     gradient.addColorStop(0, 'deepskyblue');
-    gradient.addColorStop(1, "dodgerblue");
+    gradient.addColorStop(1, 'dodgerblue');
     drawingContext.fillStyle = gradient;
     drawingContext.fillRect(
       this.positionHorizontal,
@@ -605,8 +634,12 @@ module.exports = class extends Default {
     drawingContext.lineCap = 'round';
     drawingContext.beginPath();
     drawingContext.moveTo(this.positionHorizontal, this.positionVertical);
-    console.log(this.enemyPositionVertical);
-    drawingContext.lineTo(this.enemyPositionHorizontal, this.enemyPositionVertical);
+    drawingContext.quadraticCurveTo(
+      Math.floor(Math.random() * 1300),
+      Math.floor(Math.random() * 800),
+      this.enemyPositionHorizontal,
+      this.enemyPositionVertical,
+    );
     drawingContext.stroke();
   }
 };
