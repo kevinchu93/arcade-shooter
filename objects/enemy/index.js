@@ -44,10 +44,11 @@ module.exports = class {
   }
   hitCheck(components) {
     if (this.hitState) {
-      components.enemies.head = this.remove(components.enemies.head);
+      components.enemies.head = this.remove(components.enemies.head, components.enemies);
     }
   }
-  append(head) {
+  append(head, enemies) {
+    enemies.count += 1;
     if (head == null) {
       return this;
     }
@@ -59,7 +60,8 @@ module.exports = class {
     }
     return head;
   }
-  remove(head) {
+  remove(head, enemies) {
+    enemies.count -= 1;
     if (head === this) {
       return head.nextEnemy;
     }

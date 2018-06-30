@@ -65,7 +65,7 @@ module.exports = class {
         i.positionVertical >= this.positionVertical &&
         i.positionVertical <= this.positionVertical + this.height
       ) {
-        if (this.bulletType == i.color) {
+        if (this.bulletType === i.color) {
           if (this.level < 5) {
             this.level += 1;
           }

@@ -18,19 +18,31 @@ module.exports = class extends Default {
     const Ax1 = this.positionHorizontal;
     const Ax2 = this.positionHorizontal + this.width;
     const Ay1 = this.positionVertical;
-    const Ay2 = this.positionVertical + this.height
+    const Ay2 = this.positionVertical + this.height;
     for (let i = enemyHead; i != null; i = i.nextEnemy) {
-      if (i.hitState == false) {
+      if (i.hitState === false) {
         const Bx1 = i.positionHorizontal;
         const Bx2 = i.positionHorizontal + i.width;
         const By1 = i.positionVertical;
         const By2 = i.positionVertical + i.height;
-        if (super.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
+        if (super.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
           i.hitState = true;
           hitCount += 1;
         }
       }
     }
     return hitCount;
+  }
+  canvasFill(drawingContext) {
+    let gradient = drawingContext.createLinearGradient(0, 500, 0, 800);
+    gradient.addColorStop(0, 'deepskyblue');
+    gradient.addColorStop(1, "dodgerblue");
+    drawingContext.fillStyle = gradient;
+    drawingContext.fillRect(
+      this.positionHorizontal,
+      this.positionVertical,
+      this.width,
+      this.height,
+    );
   }
 };

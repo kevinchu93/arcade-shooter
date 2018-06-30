@@ -10,7 +10,7 @@ module.exports = {
     this.canvasElementDrawingContext = this.canvasElement.getContext('2d');
     components.player = new Player(this.canvasElement.width, this.canvasElement.height);
     const enemy = new Enemy(Enemy.getDefaultSpec());
-    components.enemies.head = enemy.append(components.enemies.head);
+    components.enemies.head = enemy.append(components.enemies.head, components.enemies);
   },
   fill() {
     this.canvasElementDrawingContext.font = 'bold 48px Arial, sans-serif';

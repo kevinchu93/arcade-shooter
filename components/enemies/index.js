@@ -1,5 +1,6 @@
 module.exports = {
   head: null,
+  count: 0,
   spawn: {
     countdown: 1000,
     rate: 1000,
@@ -8,6 +9,7 @@ module.exports = {
     for (let i = this.head; i != null; i = i.nextEnemy) {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
+    gameArea.canvasElementDrawingContext.fillText(this.count, 100, 55);
   },
   update(timeElapsed, boundaryLeft, boundaryRight, components, Enemy) {
     this.spawnUpdate(timeElapsed, components, Enemy);
@@ -28,6 +30,6 @@ module.exports = {
     return enemy;
   },
   appendNewEnemy(components, enemy) {
-    components.enemies.head = enemy.append(components.enemies.head);
+    components.enemies.head = enemy.append(components.enemies.head, components.enemies);
   },
 };
