@@ -98,19 +98,40 @@ module.exports = function createBlue(player, Bullet) {
 const config = require('./config.js');
 
 module.exports = function createPurple(components, Bullet) {
-  const enemyTarget = Math.floor(Math.random() * components.enemies.count);
-  let enemyHead = components.enemies.head;
-  for (let i = 0; i < enemyTarget; i += 1) {
-    enemyHead = enemyHead.nextEnemy;
+  function checkTargettedState(components, enemyHead) {
+    const enemyTarget = components.enemies.count - components.enemies.targettedCount - 1;
+    if (enemyHead == null || enemyTarget == -1) {  //case 1: no enemies in list
+      return null
+    };
+    if (enemyTarget == 0) { //case 2: 1 enemy with targettedState = true
+      while (enemyHead.targettedState == true) {
+        enemyHead = enemyHead.nextEnemy;
+      }
+      return enemyHead;
+    }
+    for (let i = 0; i < enemyTarget; i += 1) {  //case 3: multiple enemy with targettedState = false
+      enemyHead = enemyHead.nextEnemy;
+      while (enemyHead.targettedState != false) {
+        enemyHead = enemyHead.nextEnemy;
+      }
+    }
+    return enemyHead
   }
-  let bullet = {};
+  //const enemyTarget = Math.floor(Math.random() * (components.enemies.count - components.enemies.targettedCount));
+  let enemy = checkTargettedState(components, components.enemies.head);
+  let bullet = null; 
   switch (components.player.level) {
     case 1:
-      if (enemyHead == null) {
+      if (enemy == null) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      if (enemy.targettedState == true) {
+        console.log('SHOULD NOT HAPPEN')
+      }
+      if (enemy.targettedState == false) {
+        bullet = new Bullet.Purple(components.player, enemy, components);
+      }
+      return bullet;
       break;
     case 2:
       if (enemyHead == null) {
@@ -303,6 +324,7 @@ module.exports = {
 module.exports = {
   head: null,
   count: 0,
+  targettedCount: 0,
   spawn: {
     countdown: 1000,
     rate: 1000,
@@ -613,19 +635,27 @@ module.exports = {
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(player, enemy) {
+  constructor(player, enemy, components) {
     super(player);
     this.positionHorizontal = player.positionHorizontal + (player.width / 2);
     this.positionVertical = player.positionVertical;
-    this.displayTime = 200;
+    this.displayTime = 500;
     this.enemyPositionHorizontal = enemy.positionHorizontal + (enemy.width / 2);
     this.enemyPositionVertical = enemy.positionVertical + (enemy.height / 2);
+    this.controlPositionHorizontal = Math.floor(Math.random() * 1300);
+    this.controlPositionVertical = Math.floor(Math.random() * 800);
+    this.targetEnemy = enemy;
+    if (enemy.targettedState == false) {
+      components.enemies.targettedCount += 1;
+    }
+    enemy.targettedState = true;
   }
   update(timeElapsed, boundary, components) {
     this.displayTime -= timeElapsed;
     if (this.displayTime <= 0) {
       components.bullets.head = super.remove(components.bullets.head);
       components.player.score += 1;
+      this.targetEnemy.hitState = true;
     }
   }
   canvasFill(drawingContext) {
@@ -635,8 +665,8 @@ module.exports = class extends Default {
     drawingContext.beginPath();
     drawingContext.moveTo(this.positionHorizontal, this.positionVertical);
     drawingContext.quadraticCurveTo(
-      Math.floor(Math.random() * 1300),
-      Math.floor(Math.random() * 800),
+      this.controlPositionHorizontal,
+      this.controlPositionVertical,
       this.enemyPositionHorizontal,
       this.enemyPositionVertical,
     );
@@ -684,6 +714,7 @@ module.exports = class {
     this.speed = obj.speed;
     this.hitState = obj.hitState;
     this.nextEnemy = obj.nextEnemy;
+    this.targettedState = false;
   }
   static getDefaultSpec() {
     return {
@@ -738,6 +769,9 @@ module.exports = class {
     return head;
   }
   remove(head, enemies) {
+    if (this.targettedState == true) {
+      enemies.targettedCount -= 1;
+    }
     enemies.count -= 1;
     if (head === this) {
       return head.nextEnemy;

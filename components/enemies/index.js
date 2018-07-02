@@ -1,6 +1,7 @@
 module.exports = {
   head: null,
   count: 0,
+  targettedCount: 0,
   spawn: {
     countdown: 1000,
     rate: 1000,

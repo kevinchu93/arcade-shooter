@@ -7,6 +7,7 @@ module.exports = class {
     this.speed = obj.speed;
     this.hitState = obj.hitState;
     this.nextEnemy = obj.nextEnemy;
+    this.targettedState = false;
   }
   static getDefaultSpec() {
     return {
@@ -61,6 +62,9 @@ module.exports = class {
     return head;
   }
   remove(head, enemies) {
+    if (this.targettedState == true) {
+      enemies.targettedCount -= 1;
+    }
     enemies.count -= 1;
     if (head === this) {
       return head.nextEnemy;
