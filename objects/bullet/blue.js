@@ -5,8 +5,8 @@ module.exports = class extends Default {
     super(player);
     this.width = width;
     this.height = height;
-    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
-    this.positionVertical = player.positionVertical - this.height;
+    this.positionHorizontal = player.positionX + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionY - this.height;
   }
   update(timeElapsed, boundary, components) {
     super.boundaryCheck(boundary, components);

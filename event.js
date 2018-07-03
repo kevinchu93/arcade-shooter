@@ -7,8 +7,7 @@ module.exports = class {
 
   static click(canvasElement, Bullet, components) {
     canvasElement.addEventListener('click', () => {
-      const bullet = components.bullets.createNew(components, Bullet);
-      components.bullets.appendNewBullet(bullet, components);
+      components.bullets.createNewBullet(components, Bullet);
     });
   }
   static keyInput(canvasElement, keyMap) {

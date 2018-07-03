@@ -44,4 +44,21 @@ module.exports = {
       angleOuter: 0.3,
     },
   },
+  purple: {
+    level1: {
+      maxBullets: 1,
+    },
+    level2: {
+      maxBullets: 2,
+    },
+    level3: {
+      maxBullets: 3,
+    },
+    level4: {
+      maxBullets: 6,
+    },
+    level5: {
+      maxBullets: 100,
+    },
+  },
 };

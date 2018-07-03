@@ -25,38 +25,34 @@ module.exports = function createPurple(components, Bullet) {
   let bullet = null; 
   switch (components.player.level) {
     case 1:
-      if (enemy == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level1.maxBullets) {
         return null;
       }
       return new Bullet.Purple(components.player, enemy, components);
       break;
     case 2:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level2.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 3:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level3.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 4:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level4.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 5:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level5.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     default:
       break;

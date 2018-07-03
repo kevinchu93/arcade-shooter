@@ -6,7 +6,7 @@ module.exports = class extends Default {
     this.offset = offset;
     this.angle = angle;
     this.positionHorizontal =
-      (player.positionHorizontal + ((player.width - this.width) / 2)) +
+      (player.positionX + ((player.width - this.width) / 2)) +
       this.offset;
   }
   movement(time) {

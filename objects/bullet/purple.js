@@ -3,8 +3,8 @@ const Default = require('./default.js');
 module.exports = class extends Default {
   constructor(player, enemy, components) {
     super(player);
-    this.positionHorizontal = player.positionHorizontal + (player.width / 2);
-    this.positionVertical = player.positionVertical;
+    this.positionHorizontal = player.positionX + (player.width / 2);
+    this.positionVertical = player.positionY;
     this.displayTime = 500;
     this.enemyPositionHorizontal = enemy.positionHorizontal + (enemy.width / 2);
     this.enemyPositionVertical = enemy.positionVertical + (enemy.height / 2);
@@ -20,7 +20,7 @@ module.exports = class extends Default {
   update(timeElapsed, boundary, components, Bullet) {
     this.displayTime -= timeElapsed;
     if (this.displayTime <= 0) {
-      components.bullets.head = super.remove(components.bullets.head);
+      components.bullets.head = this.remove(components.bullets.head, components.bullets);
       components.player.score += 1;
       this.targetEnemy.hitState = true;
     }
@@ -44,7 +44,35 @@ module.exports = class extends Default {
     this.enemyPositionHorizontal = this.targetEnemy.positionHorizontal +
       (this.targetEnemy.width / 2);
     this.enemyPositionVertical = this.targetEnemy.positionVertical + (this.targetEnemy.height / 2);
-    this.positionHorizontal = this.targetPlayer.positionHorizontal + (this.targetPlayer.width / 2);
-    this.positionVertical = this.targetPlayer.positionVertical;
+    this.positionHorizontal = this.targetPlayer.positionX + (this.targetPlayer.width / 2);
+    this.positionVertical = this.targetPlayer.positionY;
+  }
+  append(head, bullets) {
+    bullets.bulletCountPurple += 1;
+    if (head == null) {
+      return this;
+    }
+    for (let i = head; i != null; i = i.nextBullet) {
+      if (i.nextBullet == null) {
+        i.nextBullet = this;
+        i = i.nextBullet;
+      }
+    }
+    return head;
+  }
+  remove(head, bullets) {
+    bullets.bulletCountPurple -= 1;
+    if (head === this) {
+      return head.nextBullet;
+    }
+    for (let i = head; i.nextBullet != null; i = i.nextBullet) {
+      if (i.nextBullet === this) {
+        i.nextBullet = i.nextBullet.nextBullet;
+      }
+      if (i.nextBullet == null) {
+        return head;
+      }
+    }
+    return head;
   }
 };

@@ -3,8 +3,8 @@ module.exports = class {
     this.width = 5;
     this.height = 10;
     this.speed = 20;
-    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
-    this.positionVertical = player.positionVertical - this.height;
+    this.positionHorizontal = player.positionX + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionY - this.height;
     this.type = player.bulletType;
     this.nextBullet = null;
   }

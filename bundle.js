@@ -45,6 +45,23 @@ module.exports = {
       angleOuter: 0.3,
     },
   },
+  purple: {
+    level1: {
+      maxBullets: 1,
+    },
+    level2: {
+      maxBullets: 2,
+    },
+    level3: {
+      maxBullets: 3,
+    },
+    level4: {
+      maxBullets: 6,
+    },
+    level5: {
+      maxBullets: 100,
+    },
+  },
 };
 
 },{}],2:[function(require,module,exports){
@@ -122,38 +139,34 @@ module.exports = function createPurple(components, Bullet) {
   let bullet = null; 
   switch (components.player.level) {
     case 1:
-      if (enemy == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level1.maxBullets) {
         return null;
       }
       return new Bullet.Purple(components.player, enemy, components);
       break;
     case 2:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level2.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 3:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level3.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 4:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level4.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 5:
-      if (enemyHead == null) {
+      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level5.maxBullets) {
         return null;
       }
-      bullet = new Bullet.Purple(components.player, enemyHead);
-      components.enemies.head = enemyHead.remove(components.enemies.head, components.enemies);
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     default:
       break;
@@ -265,11 +278,13 @@ const createPurple = require('./createPurple.js');
 module.exports = {
   config,
   bulletCount: 0,
+  bulletCountPurple: 0,
   head: null,
   canvasFill(gameArea) {
     for (let i = this.head; i != null; i = i.nextBullet) {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
+    gameArea.canvasElementDrawingContext.fillText(this.bulletCountPurple, 400, 55);
   },
   update(timeElapsed, boundary, components, Bullet, keyMap, drawingContext) {
     if (keyMap[13] === true) {
@@ -310,7 +325,7 @@ module.exports = {
     }
   },
   appendNewBullet(bullet, components) {
-    components.bullets.head = bullet.append(components.bullets.head);
+    components.bullets.head = bullet.append(components.bullets.head, components.bullets);
   },
 };
 
@@ -416,8 +431,7 @@ module.exports = class {
 
   static click(canvasElement, Bullet, components) {
     canvasElement.addEventListener('click', () => {
-      const bullet = components.bullets.createNew(components, Bullet);
-      components.bullets.appendNewBullet(bullet, components);
+      components.bullets.createNewBullet(components, Bullet);
     });
   }
   static keyInput(canvasElement, keyMap) {
@@ -468,8 +482,8 @@ module.exports = class extends Default {
     super(player);
     this.width = width;
     this.height = height;
-    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
-    this.positionVertical = player.positionVertical - this.height;
+    this.positionHorizontal = player.positionX + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionY - this.height;
   }
   update(timeElapsed, boundary, components) {
     super.boundaryCheck(boundary, components);
@@ -516,8 +530,8 @@ module.exports = class {
     this.width = 5;
     this.height = 10;
     this.speed = 20;
-    this.positionHorizontal = player.positionHorizontal + ((player.width - this.width) / 2);
-    this.positionVertical = player.positionVertical - this.height;
+    this.positionHorizontal = player.positionX + ((player.width - this.width) / 2);
+    this.positionVertical = player.positionY - this.height;
     this.type = player.bulletType;
     this.nextBullet = null;
   }
@@ -632,8 +646,8 @@ const Default = require('./default.js');
 module.exports = class extends Default {
   constructor(player, enemy, components) {
     super(player);
-    this.positionHorizontal = player.positionHorizontal + (player.width / 2);
-    this.positionVertical = player.positionVertical;
+    this.positionHorizontal = player.positionX + (player.width / 2);
+    this.positionVertical = player.positionY;
     this.displayTime = 500;
     this.enemyPositionHorizontal = enemy.positionHorizontal + (enemy.width / 2);
     this.enemyPositionVertical = enemy.positionVertical + (enemy.height / 2);
@@ -649,7 +663,7 @@ module.exports = class extends Default {
   update(timeElapsed, boundary, components, Bullet) {
     this.displayTime -= timeElapsed;
     if (this.displayTime <= 0) {
-      components.bullets.head = super.remove(components.bullets.head);
+      components.bullets.head = this.remove(components.bullets.head, components.bullets);
       components.player.score += 1;
       this.targetEnemy.hitState = true;
     }
@@ -673,8 +687,36 @@ module.exports = class extends Default {
     this.enemyPositionHorizontal = this.targetEnemy.positionHorizontal +
       (this.targetEnemy.width / 2);
     this.enemyPositionVertical = this.targetEnemy.positionVertical + (this.targetEnemy.height / 2);
-    this.positionHorizontal = this.targetPlayer.positionHorizontal + (this.targetPlayer.width / 2);
-    this.positionVertical = this.targetPlayer.positionVertical;
+    this.positionHorizontal = this.targetPlayer.positionX + (this.targetPlayer.width / 2);
+    this.positionVertical = this.targetPlayer.positionY;
+  }
+  append(head, bullets) {
+    bullets.bulletCountPurple += 1;
+    if (head == null) {
+      return this;
+    }
+    for (let i = head; i != null; i = i.nextBullet) {
+      if (i.nextBullet == null) {
+        i.nextBullet = this;
+        i = i.nextBullet;
+      }
+    }
+    return head;
+  }
+  remove(head, bullets) {
+    bullets.bulletCountPurple -= 1;
+    if (head === this) {
+      return head.nextBullet;
+    }
+    for (let i = head; i.nextBullet != null; i = i.nextBullet) {
+      if (i.nextBullet === this) {
+        i.nextBullet = i.nextBullet.nextBullet;
+      }
+      if (i.nextBullet == null) {
+        return head;
+      }
+    }
+    return head;
   }
 };
 
@@ -685,7 +727,7 @@ module.exports = class extends Default {
   constructor(player, offset) {
     super(player);
     this.positionHorizontal =
-      (player.positionHorizontal + ((player.width - this.width) / 2)) +
+      (player.positionX + ((player.width - this.width) / 2)) +
       offset;
   }
 };
@@ -699,7 +741,7 @@ module.exports = class extends Default {
     this.offset = offset;
     this.angle = angle;
     this.positionHorizontal =
-      (player.positionHorizontal + ((player.width - this.width) / 2)) +
+      (player.positionX + ((player.width - this.width) / 2)) +
       this.offset;
   }
   movement(time) {
@@ -810,68 +852,129 @@ module.exports = class {
   constructor(canvasWidth, canvasHeight) {
     this.width = 30;
     this.height = 20;
-    this.positionHorizontal = canvasWidth / 2;
-    this.positionVertical = canvasHeight - 25;
+    this.positionX = canvasWidth / 2;
+    this.positionY = canvasHeight - 25;
     this.score = 0;
-    this.speed = 5;
+    this.speedX = 0;
+    this.speedY = 0;
+    this.maxSpeed = 5;
+    this.accelerationX = 0;
+    this.accelerationY = 0;
+    this.acceleration = 1.2
+    this.friction = 0.3;
     this.bulletType = 'white';
     this.level = 0;
   }
   canvasFill(drawingContext) {
     drawingContext.fillRect(
-      this.positionHorizontal,
-      this.positionVertical,
+      this.positionX,
+      this.positionY,
       this.width,
       this.height,
     );
     drawingContext.fillText(this.score, 1200, 55);
   }
   update(timeElapsed, canvasElement, keyMap, components) {
-    this.movementLeft(keyMap, timeElapsed, 0);
-    this.movementRight(keyMap, timeElapsed, canvasElement.width);
-    this.movementUp(keyMap, timeElapsed, 0);
-    this.movementDown(keyMap, timeElapsed, canvasElement.height);
+    this.movement(keyMap, timeElapsed, canvasElement);
     this.collisionCheckPowerUp(components.powerUps.head);
   }
-  movementLeft(keyMap, time, boundaryLeft) {
-    if (keyMap[37] === true && this.positionHorizontal >= boundaryLeft) {
-      this.positionHorizontal -= this.speed * (time / (1000 / 60));
-    }
-    if (this.positionHorizontal < boundaryLeft) {
-      this.positionHorizontal = boundaryLeft;
+  movement(keyMap, time, canvasElement) {
+    this.positionXUpdate(time, 0, canvasElement.width);
+    this.positionYUpdate(time, 0, canvasElement.height);
+    this.speedXUpdate(time);
+    this.speedYUpdate(time);
+    this.accelerateXUpdate(keyMap, time);
+    this.accelerateYUpdate(keyMap, time);
+  }
+  positionXUpdate(time, boundaryLeft, boundaryRight) {
+    this.positionX += this.speedX * (time / (1000 / 60));
+    if (this.positionX < boundaryLeft) {
+      this.positionX = boundaryLeft;
+    } else if (this.positionX + this.width > boundaryRight) {
+      this.positionX = boundaryRight - this.width;
     }
   }
-  movementRight(keyMap, time, boundaryRight) {
-    if (keyMap[39] === true && this.positionHorizontal + this.width <= boundaryRight) {
-      this.positionHorizontal += this.speed * (time / (1000 / 60));
-    }
-    if (this.positionHorizontal + this.width > boundaryRight) {
-      this.positionHorizontal = boundaryRight - this.width;
-    }
-  }
-  movementUp(keyMap, time, boundaryUp) {
-    if (keyMap[38] === true && this.positionVertical >= boundaryUp) {
-      this.positionVertical -= this.speed * (time / (1000 / 60));
-    }
-    if (this.positionVertical < boundaryUp) {
-      this.positionVertical = boundaryUp;
+  positionYUpdate(time, boundaryUp, boundaryDown) {
+    this.positionY += this.speedY * (time / (1000 / 60));
+    if (this.positionY < boundaryUp) {
+      this.positionY = boundaryUp;
+    } else if (this.positionY + this.height > boundaryDown) {
+      this.positionY = boundaryDown - this.height;
     }
   }
-  movementDown(keyMap, time, boundaryDown) {
-    if (keyMap[40] === true && this.positionVertical + this.height <= boundaryDown) {
-      this.positionVertical += this.speed * (time / (1000 / 60));
+  speedXUpdate(time) {
+    if (this.speedX > -5 && this.speedX < 5) {
+      this.speedX += this.accelerationX * (time / (1000 / 60));
     }
-    if (this.positionVertical + this.height > boundaryDown) {
-      this.positionVertical = boundaryDown - this.height;
+    if (this.speedX > 0) {
+      this.speedX -= this.friction * (time / (1000 / 60));
+      if (this.speedX < 0) {
+        this.speedX = 0;
+      }
+    } else if (this.speedX < 0) {
+      this.speedX += this.friction * (time / (1000 / 60));
+      if (this.speedX > 0) {
+        this.speedX = 0;
+      }
+    }
+    if (this.speedX < -this.maxSpeed) {
+      this.speedX = -this.maxSpeed;
+    } else if (this.speedX > this.maxSpeed) {
+      this.speedX = this.maxSpeed;
+    }
+  }
+  speedYUpdate(time) {
+    if (this.speedY > -5 && this.speedY < 5) {
+      this.speedY += this.accelerationY * (time / (1000 / 60));
+    }
+    if (this.speedY > 0) {
+      this.speedY -= this.friction * (time / (1000 / 60));
+      if (this.speedY < 0) {
+        this.speedY = 0;
+      }
+    } else if (this.speedY < 0) {
+      this.speedY += this.friction * (time / (1000 / 60));
+      if (this.speedY > 0) {
+        this.speedY = 0;
+      }
+    }
+    if (this.speedY < -this.maxSpeed) {
+      this.speedY = -this.maxSpeed;
+    } else if (this.speedY > this.maxSpeed) {
+      this.speedY = this.maxSpeed;
+    }
+  }
+  accelerateXUpdate(keyMap, time) {
+    if (keyMap[37] === true && keyMap[39] !== true) {
+      this.accelerationX = -this.acceleration;
+    } else if (keyMap[37] !== true && keyMap[39] === true) {
+      this.accelerationX = this.acceleration;
+    } else if (
+      (keyMap[37] !== true && keyMap[39] !== true) ||
+      (keyMap[37] === true && keyMap[39] === true)
+    ) {
+      this.accelerationX = 0;
+    }
+  }
+  accelerateYUpdate(keyMap, time) {
+    if (keyMap[38] === true && keyMap[40] !== true) {
+      this.accelerationY = -this.acceleration;
+    } else if (keyMap[38] !== true && keyMap[40] === true) {
+      this.accelerationY = this.acceleration;
+    } else if (
+      (keyMap[38] !== true && keyMap[40] !== true) ||
+      (keyMap[38] === true && keyMap[40] === true)
+    ) {
+      this.accelerationY = 0;
     }
   }
   collisionCheckPowerUp(powerUpHead) {
     for (let i = powerUpHead; i != null; i = i.nextPowerUp) {
       if (
-        i.positionHorizontal >= this.positionHorizontal &&
-        i.positionHorizontal <= this.positionHorizontal + this.width &&
-        i.positionVertical >= this.positionVertical &&
-        i.positionVertical <= this.positionVertical + this.height
+        i.positionHorizontal >= this.positionX &&
+        i.positionHorizontal <= this.positionX + this.width &&
+        i.positionVertical >= this.positionY &&
+        i.positionVertical <= this.positionY + this.height
       ) {
         if (this.bulletType === i.color) {
           if (this.level < 5) {
