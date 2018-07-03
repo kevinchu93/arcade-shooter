@@ -116,62 +116,73 @@ const config = require('./config.js');
 
 module.exports = function createPurple(components, Bullet) {
   function checkTargettedState(components, enemyHead) {
-    const enemyTarget = components.enemies.count - components.enemies.targettedCount - 1;
-    if (enemyHead == null || enemyTarget == -1) {  //case 1: no enemies in list
-      return null
-    };
-    if (enemyTarget == 0) { //case 2: 1 enemy with targettedState = true
-      while (enemyHead.targettedState == true) {
-        enemyHead = enemyHead.nextEnemy;
-      }
-      return enemyHead;
+    let enemy = enemyHead;
+    const enemyTarget = Math.floor(Math.random() *
+      (components.enemies.count - components.enemies.targettedCount));
+    while (enemy != null && enemy.targettedState === true) {
+      enemy = enemy.nextEnemy;
     }
-    for (let i = 0; i < enemyTarget; i += 1) {  //case 3: multiple enemy with targettedState = false
-      enemyHead = enemyHead.nextEnemy;
-      while (enemyHead.targettedState != false) {
-        enemyHead = enemyHead.nextEnemy;
+    if (enemy == null || enemyTarget === -1) { // case 1: no enemies with tragettedState: false
+      return null;
+    }
+    if (enemyTarget === 0) { // case 2: 1 enemy with targettedState: false
+      return enemy;
+    }
+    for (let i = 0; i < enemyTarget; i += 1) { // case 3: > 1 enemy with targettedState: false
+      enemy = enemy.nextEnemy;
+      while (enemy.targettedState !== false) {
+        enemy = enemy.nextEnemy;
       }
     }
-    return enemyHead
+    return enemy;
   }
-  //const enemyTarget = Math.floor(Math.random() * (components.enemies.count - components.enemies.targettedCount));
-  let enemy = checkTargettedState(components, components.enemies.head);
-  let bullet = null; 
+  // const enemyTarget = Math.floor(Math.random() * (components.enemies.count - components.enemies.targettedCount));
+  const enemy = checkTargettedState(components, components.enemies.head);
   switch (components.player.level) {
     case 1:
-      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level1.maxBullets) {
+      if (
+        enemy == null ||
+        components.bullets.bulletCountPurple >= config.purple.level1.maxBullets
+      ) {
         return null;
       }
-      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 2:
-      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level2.maxBullets) {
+      if (
+        enemy == null ||
+        components.bullets.bulletCountPurple >= config.purple.level2.maxBullets
+      ) {
         return null;
       }
-      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 3:
-      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level3.maxBullets) {
+      if (
+        enemy == null ||
+        components.bullets.bulletCountPurple >= config.purple.level3.maxBullets
+      ) {
         return null;
       }
-      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 4:
-      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level4.maxBullets) {
+      if (
+        enemy == null ||
+        components.bullets.bulletCountPurple >= config.purple.level4.maxBullets
+      ) {
         return null;
       }
-      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 5:
-      if (enemy == null || components.bullets.bulletCountPurple >= config.purple.level5.maxBullets) {
+      if (
+        enemy == null ||
+        components.bullets.bulletCountPurple >= config.purple.level5.maxBullets
+      ) {
         return null;
       }
-      return new Bullet.Purple(components.player, enemy, components);
       break;
     default:
       break;
   }
-  return bullet;
+  return new Bullet.Purple(components.player, enemy, components);
 };
 
 },{"./config.js":1}],4:[function(require,module,exports){
@@ -655,12 +666,12 @@ module.exports = class extends Default {
     this.controlPositionVertical = Math.floor(Math.random() * 800);
     this.targetEnemy = enemy;
     this.targetPlayer = player;
-    if (enemy.targettedState == false) {
+    if (enemy.targettedState === false) {
       components.enemies.targettedCount += 1;
     }
     enemy.targettedState = true;
   }
-  update(timeElapsed, boundary, components, Bullet) {
+  update(timeElapsed, boundary, components) {
     this.displayTime -= timeElapsed;
     if (this.displayTime <= 0) {
       components.bullets.head = this.remove(components.bullets.head, components.bullets);
@@ -815,7 +826,7 @@ module.exports = class {
     return head;
   }
   remove(head, enemies) {
-    if (this.targettedState == true) {
+    if (this.targettedState === true) {
       enemies.targettedCount -= 1;
     }
     enemies.count -= 1;
@@ -860,7 +871,7 @@ module.exports = class {
     this.maxSpeed = 5;
     this.accelerationX = 0;
     this.accelerationY = 0;
-    this.acceleration = 1.2
+    this.acceleration = 1.2;
     this.friction = 0.3;
     this.bulletType = 'white';
     this.level = 0;
@@ -883,8 +894,8 @@ module.exports = class {
     this.positionYUpdate(time, 0, canvasElement.height);
     this.speedXUpdate(time);
     this.speedYUpdate(time);
-    this.accelerateXUpdate(keyMap, time);
-    this.accelerateYUpdate(keyMap, time);
+    this.accelerateXUpdate(keyMap);
+    this.accelerateYUpdate(keyMap);
   }
   positionXUpdate(time, boundaryLeft, boundaryRight) {
     this.positionX += this.speedX * (time / (1000 / 60));
@@ -944,7 +955,7 @@ module.exports = class {
       this.speedY = this.maxSpeed;
     }
   }
-  accelerateXUpdate(keyMap, time) {
+  accelerateXUpdate(keyMap) {
     if (keyMap[37] === true && keyMap[39] !== true) {
       this.accelerationX = -this.acceleration;
     } else if (keyMap[37] !== true && keyMap[39] === true) {
@@ -956,7 +967,7 @@ module.exports = class {
       this.accelerationX = 0;
     }
   }
-  accelerateYUpdate(keyMap, time) {
+  accelerateYUpdate(keyMap) {
     if (keyMap[38] === true && keyMap[40] !== true) {
       this.accelerationY = -this.acceleration;
     } else if (keyMap[38] !== true && keyMap[40] === true) {

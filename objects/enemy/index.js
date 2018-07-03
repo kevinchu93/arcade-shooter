@@ -62,7 +62,7 @@ module.exports = class {
     return head;
   }
   remove(head, enemies) {
-    if (this.targettedState == true) {
+    if (this.targettedState === true) {
       enemies.targettedCount -= 1;
     }
     enemies.count -= 1;

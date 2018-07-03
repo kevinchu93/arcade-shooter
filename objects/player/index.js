@@ -10,7 +10,7 @@ module.exports = class {
     this.maxSpeed = 5;
     this.accelerationX = 0;
     this.accelerationY = 0;
-    this.acceleration = 1.2
+    this.acceleration = 1.2;
     this.friction = 0.3;
     this.bulletType = 'white';
     this.level = 0;
@@ -33,8 +33,8 @@ module.exports = class {
     this.positionYUpdate(time, 0, canvasElement.height);
     this.speedXUpdate(time);
     this.speedYUpdate(time);
-    this.accelerateXUpdate(keyMap, time);
-    this.accelerateYUpdate(keyMap, time);
+    this.accelerateXUpdate(keyMap);
+    this.accelerateYUpdate(keyMap);
   }
   positionXUpdate(time, boundaryLeft, boundaryRight) {
     this.positionX += this.speedX * (time / (1000 / 60));
@@ -94,7 +94,7 @@ module.exports = class {
       this.speedY = this.maxSpeed;
     }
   }
-  accelerateXUpdate(keyMap, time) {
+  accelerateXUpdate(keyMap) {
     if (keyMap[37] === true && keyMap[39] !== true) {
       this.accelerationX = -this.acceleration;
     } else if (keyMap[37] !== true && keyMap[39] === true) {
@@ -106,7 +106,7 @@ module.exports = class {
       this.accelerationX = 0;
     }
   }
-  accelerateYUpdate(keyMap, time) {
+  accelerateYUpdate(keyMap) {
     if (keyMap[38] === true && keyMap[40] !== true) {
       this.accelerationY = -this.acceleration;
     } else if (keyMap[38] !== true && keyMap[40] === true) {

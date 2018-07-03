@@ -12,12 +12,12 @@ module.exports = class extends Default {
     this.controlPositionVertical = Math.floor(Math.random() * 800);
     this.targetEnemy = enemy;
     this.targetPlayer = player;
-    if (enemy.targettedState == false) {
+    if (enemy.targettedState === false) {
       components.enemies.targettedCount += 1;
     }
     enemy.targettedState = true;
   }
-  update(timeElapsed, boundary, components, Bullet) {
+  update(timeElapsed, boundary, components) {
     this.displayTime -= timeElapsed;
     if (this.displayTime <= 0) {
       components.bullets.head = this.remove(components.bullets.head, components.bullets);
