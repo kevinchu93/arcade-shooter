@@ -23,8 +23,8 @@ function update(components, gameArea) {
     timePrevious = timeStamp;
 
     components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
-    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap);
     components.enemies.update(timeElapsed, 0, 1366, components, Objects.Enemy);
+    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap);
     components.powerUps.update(timeElapsed, components, Objects.PowerUp, gameArea);
     canvasFill(components, gameArea);
     window.requestAnimationFrame(requestAnimationFrameLoop);

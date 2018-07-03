@@ -28,13 +28,7 @@ module.exports = function createPurple(components, Bullet) {
       if (enemy == null) {
         return null;
       }
-      if (enemy.targettedState == true) {
-        console.log('SHOULD NOT HAPPEN')
-      }
-      if (enemy.targettedState == false) {
-        bullet = new Bullet.Purple(components.player, enemy, components);
-      }
-      return bullet;
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 2:
       if (enemyHead == null) {

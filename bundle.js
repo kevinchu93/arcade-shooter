@@ -125,13 +125,7 @@ module.exports = function createPurple(components, Bullet) {
       if (enemy == null) {
         return null;
       }
-      if (enemy.targettedState == true) {
-        console.log('SHOULD NOT HAPPEN')
-      }
-      if (enemy.targettedState == false) {
-        bullet = new Bullet.Purple(components.player, enemy, components);
-      }
-      return bullet;
+      return new Bullet.Purple(components.player, enemy, components);
       break;
     case 2:
       if (enemyHead == null) {
@@ -277,12 +271,12 @@ module.exports = {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
   },
-  update(timeElapsed, boundary, components, Bullet, keyMap) {
+  update(timeElapsed, boundary, components, Bullet, keyMap, drawingContext) {
     if (keyMap[13] === true) {
       this.createNewBullet(components, Bullet);
     }
     for (let i = this.head; i != null; i = i.nextBullet) {
-      i.update(timeElapsed, boundary, components, Bullet);
+      i.update(timeElapsed, boundary, components, Bullet, drawingContext);
     }
   },
   createNewBullet(components, Bullet) {
@@ -645,22 +639,24 @@ module.exports = class extends Default {
     this.controlPositionHorizontal = Math.floor(Math.random() * 1300);
     this.controlPositionVertical = Math.floor(Math.random() * 800);
     this.targetEnemy = enemy;
+    this.targetPlayer = player;
     if (enemy.targettedState == false) {
       components.enemies.targettedCount += 1;
     }
     enemy.targettedState = true;
   }
-  update(timeElapsed, boundary, components) {
+  update(timeElapsed, boundary, components, Bullet) {
     this.displayTime -= timeElapsed;
     if (this.displayTime <= 0) {
       components.bullets.head = super.remove(components.bullets.head);
       components.player.score += 1;
       this.targetEnemy.hitState = true;
     }
+    this.movementUpdate();
   }
   canvasFill(drawingContext) {
     drawingContext.strokeStyle = 'mediumpurple';
-    drawingContext.lineWidth = 10;
+    drawingContext.lineWidth = 2;
     drawingContext.lineCap = 'round';
     drawingContext.beginPath();
     drawingContext.moveTo(this.positionHorizontal, this.positionVertical);
@@ -671,6 +667,13 @@ module.exports = class extends Default {
       this.enemyPositionVertical,
     );
     drawingContext.stroke();
+  }
+  movementUpdate() {
+    this.enemyPositionHorizontal = this.targetEnemy.positionHorizontal +
+      (this.targetEnemy.width / 2);
+    this.enemyPositionVertical = this.targetEnemy.positionVertical + (this.targetEnemy.height / 2);
+    this.positionHorizontal = this.targetPlayer.positionHorizontal + (this.targetPlayer.width / 2);
+    this.positionVertical = this.targetPlayer.positionVertical;
   }
 };
 
@@ -978,8 +981,8 @@ function update(components, gameArea) {
     timePrevious = timeStamp;
 
     components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
-    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap);
     components.enemies.update(timeElapsed, 0, 1366, components, Objects.Enemy);
+    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap);
     components.powerUps.update(timeElapsed, components, Objects.PowerUp, gameArea);
     canvasFill(components, gameArea);
     window.requestAnimationFrame(requestAnimationFrameLoop);

@@ -12,12 +12,12 @@ module.exports = {
       i.canvasFill(gameArea.canvasElementDrawingContext);
     }
   },
-  update(timeElapsed, boundary, components, Bullet, keyMap) {
+  update(timeElapsed, boundary, components, Bullet, keyMap, drawingContext) {
     if (keyMap[13] === true) {
       this.createNewBullet(components, Bullet);
     }
     for (let i = this.head; i != null; i = i.nextBullet) {
-      i.update(timeElapsed, boundary, components, Bullet);
+      i.update(timeElapsed, boundary, components, Bullet, drawingContext);
     }
   },
   createNewBullet(components, Bullet) {
