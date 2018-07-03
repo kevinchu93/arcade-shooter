@@ -14,6 +14,7 @@ module.exports = class {
   static keyInput(canvasElement, keyMap) {
     ['keydown', 'keyup'].forEach((eventListener) => {
       canvasElement.addEventListener(eventListener, (e) => {
+        e.preventDefault();
         keyMap[e.keyCode] = e.type === 'keydown';
       });
     });
