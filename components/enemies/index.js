@@ -8,29 +8,28 @@ module.exports = {
   },
   canvasFill(gameArea) {
     for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.canvasFill(gameArea.canvasElementDrawingContext);
+      i.canvasFill(gameArea.canvasContext);
     }
-    gameArea.canvasElementDrawingContext.fillText(this.count, 100, 55);
+    gameArea.canvasContext.fillText(this.count, 100, 55);
   },
-  update(timeElapsed, boundaryLeft, boundaryRight, components, Enemy) {
-    this.spawnUpdate(timeElapsed, components, Enemy);
+  update(time, boundaryLeft, boundaryRight, components, Enemy) {
+    this.spawnUpdate(time, components, Enemy);
     for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.update(timeElapsed, boundaryLeft, boundaryRight, components);
+      i.update(time, boundaryLeft, boundaryRight, components);
     }
   },
-  spawnUpdate(timeElapsed, components, Enemy) {
-    components.enemies.spawn.countdown -= timeElapsed;
+  spawnUpdate(time, components, Enemy) {
+    components.enemies.spawn.countdown -= time;
     if (components.enemies.spawn.countdown <= 0) {
       components.enemies.spawn.countdown += components.enemies.spawn.rate;
-      const enemy = this.createNew(Enemy);
-      this.appendNewEnemy(components, enemy);
+      const enemy = this.create(Enemy);
+      this.appendList(components, enemy);
     }
   },
-  createNew(Enemy) {
-    const enemy = new Enemy(Enemy.getDefaultSpec());
-    return enemy;
+  create(Enemy) {
+    return new Enemy();
   },
-  appendNewEnemy(components, enemy) {
+  appendList(components, enemy) {
     components.enemies.head = enemy.append(components.enemies.head, components.enemies);
   },
 };

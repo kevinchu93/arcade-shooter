@@ -1,32 +1,33 @@
-const Event = require('./event.js');
+const events = require('./events.js');
 const components = require('./components/index.js');
 const gameArea = require('./gameArea.js');
 const Objects = require('./objects/index.js');
 
 const keyMap = [];
 
-function canvasFill(components, gameArea) {
+function canvasFill() {
   gameArea.fill();
-  components.player.canvasFill(gameArea.canvasElementDrawingContext);
+  components.player.canvasFill(gameArea.canvasContext);
   components.enemies.canvasFill(gameArea);
   components.bullets.canvasFill(gameArea);
   components.powerUps.canvasFill(gameArea);
 }
 
-function update(components, gameArea) {
-  let timeElapsed;
+function update() {
+  let timeCurrent;
   let timePrevious = 0;
+  let timeElapsed;
 
   function requestAnimationFrameLoop(timeStamp) {
-    timeStamp = timeStamp || 20; // timeStamp is undefined until window.requestAnimationFrame runs
-    timeElapsed = timeStamp - timePrevious;
-    timePrevious = timeStamp;
+    timeCurrent = timeStamp || 20; // timeStamp is undefined until requestAnimationFrame runs
+    timeElapsed = timeCurrent - timePrevious;
+    timePrevious = timeCurrent;
 
-    components.player.update(timeElapsed, gameArea.canvasElement, keyMap, components);
+    components.player.update(timeElapsed, gameArea.canvas, keyMap, components);
     components.enemies.update(timeElapsed, 0, 1366, components, Objects.Enemy);
-    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap);
+    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap, gameArea.canvas);
     components.powerUps.update(timeElapsed, components, Objects.PowerUp, gameArea);
-    canvasFill(components, gameArea);
+    canvasFill();
     window.requestAnimationFrame(requestAnimationFrameLoop);
   }
   requestAnimationFrameLoop(timeElapsed, timePrevious);
@@ -34,8 +35,6 @@ function update(components, gameArea) {
 
 window.onload = () => {
   gameArea.start(components);
-  update(components, gameArea);
-  Event.mouseMove(gameArea.canvasElement, components.player);
-  Event.click(gameArea.canvasElement, Objects.Bullet, components);
-  Event.keyInput(gameArea.canvasElement, keyMap);
+  update();
+  events.listen(gameArea.canvas, components, Objects.Bullet, keyMap);
 };

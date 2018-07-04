@@ -2,7 +2,7 @@ const config = require('./config.js');
 
 module.exports = function createBlue(player, Bullet) {
   let bullet = {};
-  switch (player.level) {
+  switch (player.bulletLevel) {
     case 1:
       bullet = new Bullet.Blue(
         player,

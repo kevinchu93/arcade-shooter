@@ -10,49 +10,49 @@ module.exports = {
   head: null,
   canvasFill(gameArea) {
     for (let i = this.head; i != null; i = i.nextBullet) {
-      i.canvasFill(gameArea.canvasElementDrawingContext);
+      i.canvasFill(gameArea.canvasContext);
     }
-    gameArea.canvasElementDrawingContext.fillText(this.bulletCountPurple, 400, 55);
+    gameArea.canvasContext.fillText(this.bulletCountPurple, 400, 55);
   },
-  update(timeElapsed, boundary, components, Bullet, keyMap, drawingContext) {
+  update(time, boundary, components, Bullet, keyMap, canvas) {
     if (keyMap[13] === true) {
-      this.createNewBullet(components, Bullet);
+      this.create(components, Bullet, canvas);
     }
     for (let i = this.head; i != null; i = i.nextBullet) {
-      i.update(timeElapsed, boundary, components, Bullet, drawingContext);
+      i.update(time, boundary, components, Bullet);
     }
   },
-  createNewBullet(components, Bullet) {
+  create(components, Bullet, canvas) {
     let bullet = {};
     switch (components.player.bulletType) {
       case 'white':
         bullet = new Bullet.Default(components.player);
-        this.appendNewBullet(bullet, components);
+        this.appendList(bullet, components);
         break;
       case 'orangered': {
         const emptyArray = [];
         const bulletArray = createRed(components.player, Bullet, emptyArray);
         for (let i = 0; bulletArray[i] != null; i += 1) {
-          this.appendNewBullet(bulletArray[i], components);
+          this.appendList(bulletArray[i], components);
         }
         break;
       }
       case 'deepskyblue':
         bullet = createBlue(components.player, Bullet);
-        this.appendNewBullet(bullet, components);
+        this.appendList(bullet, components);
         break;
       case 'mediumpurple':
-        bullet = createPurple(components, Bullet);
+        bullet = createPurple(components, Bullet, canvas);
         if (bullet != null) {
-          this.appendNewBullet(bullet, components);
+          this.appendList(bullet, components);
         }
         break;
       default:
         bullet = new Bullet.Default(components.player);
-        this.appendNewBullet(bullet, components);
+        this.appendList(bullet, components);
     }
   },
-  appendNewBullet(bullet, components) {
+  appendList(bullet, components) {
     components.bullets.head = bullet.append(components.bullets.head, components.bullets);
   },
 };

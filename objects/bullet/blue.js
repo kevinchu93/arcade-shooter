@@ -5,42 +5,42 @@ module.exports = class extends Default {
     super(player);
     this.width = width;
     this.height = height;
-    this.positionHorizontal = player.positionX + ((player.width - this.width) / 2);
-    this.positionVertical = player.positionY - this.height;
+    this.positionX = player.positionX + ((player.width - this.width) / 2);
+    this.positionY = player.positionY - this.height;
   }
-  update(timeElapsed, boundary, components) {
+  update(time, boundary, components) {
     super.boundaryCheck(boundary, components);
-    super.movement(timeElapsed);
+    super.movement(time);
     components.player.score += this.hitCheck(components.enemies.head);
   }
   hitCheck(enemyHead) {
     let hitCount = 0;
-    const Ax1 = this.positionHorizontal;
-    const Ax2 = this.positionHorizontal + this.width;
-    const Ay1 = this.positionVertical;
-    const Ay2 = this.positionVertical + this.height;
+    const Ax1 = this.positionX;
+    const Ax2 = this.positionX + this.width;
+    const Ay1 = this.positionY;
+    const Ay2 = this.positionY + this.height;
     for (let i = enemyHead; i != null; i = i.nextEnemy) {
-      if (i.hitState === false) {
-        const Bx1 = i.positionHorizontal;
-        const Bx2 = i.positionHorizontal + i.width;
-        const By1 = i.positionVertical;
-        const By2 = i.positionVertical + i.height;
+      if (i.stateHit === false) {
+        const Bx1 = i.positionX;
+        const Bx2 = i.positionX + i.width;
+        const By1 = i.positionY;
+        const By2 = i.positionY + i.height;
         if (super.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-          i.hitState = true;
+          i.stateHit = true;
           hitCount += 1;
         }
       }
     }
     return hitCount;
   }
-  canvasFill(drawingContext) {
-    const gradient = drawingContext.createLinearGradient(0, 500, 0, 800);
+  canvasFill(context) {
+    const gradient = context.createLinearGradient(0, 500, 0, 800);
     gradient.addColorStop(0, 'deepskyblue');
     gradient.addColorStop(1, 'dodgerblue');
-    drawingContext.fillStyle = gradient;
-    drawingContext.fillRect(
-      this.positionHorizontal,
-      this.positionVertical,
+    context.fillStyle = gradient;
+    context.fillRect(
+      this.positionX,
+      this.positionY,
       this.width,
       this.height,
     );

@@ -1,50 +1,39 @@
 module.exports = class {
-  constructor(obj) {
-    this.width = obj.width;
-    this.height = obj.height;
-    this.positionHorizontal = obj.positionHorizontal;
-    this.positionVertical = obj.positionVertical;
-    this.speed = obj.speed;
-    this.hitState = obj.hitState;
-    this.nextEnemy = obj.nextEnemy;
-    this.targettedState = false;
+  constructor() {
+    this.width = 20;
+    this.height = 10;
+    this.positionX = 350;
+    this.positionY = 75;
+    this.speed = 10;
+    this.stateHit = false;
+    this.nextEnemy = null;
+    this.stateTargetted = false;
   }
-  static getDefaultSpec() {
-    return {
-      width: 20,
-      height: 10,
-      positionHorizontal: 350,
-      positionVertical: 75, // canvas height - height
-      speed: 10,
-      hitState: false,
-      nextEnemy: null,
-    };
-  }
-  canvasFill(drawingContext) {
-    drawingContext.fillRect(
-      this.positionHorizontal,
-      this.positionVertical,
+  canvasFill(context) {
+    context.fillRect(
+      this.positionX,
+      this.positionY,
       this.width,
       this.height,
     );
   }
-  movement(timeElapsed) {
-    this.positionHorizontal += this.speed * (timeElapsed / (1000 / 60));
+  movement(time) {
+    this.positionX += this.speed * (time / (1000 / 60));
   }
   boundaryCheck(boundaryLeft, boundaryRight) {
-    if (this.positionHorizontal <= boundaryLeft && this.speed < 0) {
+    if (this.positionX <= boundaryLeft && this.speed < 0) {
       this.speed = -this.speed;
-    } else if ((this.positionHorizontal + this.width) >= boundaryRight && this.speed > 0) {
+    } else if ((this.positionX + this.width) >= boundaryRight && this.speed > 0) {
       this.speed = -this.speed;
     }
   }
-  update(timeElapsed, boundaryLeft, boundaryRight, components) {
+  update(time, boundaryLeft, boundaryRight, components) {
     this.boundaryCheck(boundaryLeft, boundaryRight);
-    this.movement(timeElapsed);
+    this.movement(time);
     this.hitCheck(components);
   }
   hitCheck(components) {
-    if (this.hitState) {
+    if (this.stateHit) {
       components.enemies.head = this.remove(components.enemies.head, components.enemies);
     }
   }
@@ -62,7 +51,7 @@ module.exports = class {
     return head;
   }
   remove(head, enemies) {
-    if (this.targettedState === true) {
+    if (this.stateTargetted === true) {
       enemies.targettedCount -= 1;
     }
     enemies.count -= 1;

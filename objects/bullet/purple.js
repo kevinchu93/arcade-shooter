@@ -1,51 +1,48 @@
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(player, enemy, components) {
+  constructor(player, enemy, components, canvas) {
     super(player);
-    this.positionHorizontal = player.positionX + (player.width / 2);
-    this.positionVertical = player.positionY;
-    this.displayTime = 500;
-    this.enemyPositionHorizontal = enemy.positionHorizontal + (enemy.width / 2);
-    this.enemyPositionVertical = enemy.positionVertical + (enemy.height / 2);
-    this.controlPositionHorizontal = Math.floor(Math.random() * 1300);
-    this.controlPositionVertical = Math.floor(Math.random() * 800);
+    this.positionX = player.positionX + (player.width / 2);
+    this.positionY = player.positionY;
+    this.enemyPositionX = enemy.positionX + (enemy.width / 2);
+    this.enemyPositionY = enemy.positionY + (enemy.height / 2);
+    this.controlPositionX = Math.floor(Math.random() * canvas.width);
+    this.controlPositionY = Math.floor(Math.random() * canvas.height);
+    this.reqKillTime = 500;
     this.targetEnemy = enemy;
     this.targetPlayer = player;
-    if (enemy.targettedState === false) {
+    if (enemy.stateTargetted === false) {
       components.enemies.targettedCount += 1;
     }
-    enemy.targettedState = true;
+    enemy.stateTargetted = true;
   }
-  update(timeElapsed, boundary, components) {
-    this.displayTime -= timeElapsed;
-    if (this.displayTime <= 0) {
+  update(time, boundary, components) {
+    this.reqKillTime -= time;
+    if (this.reqKillTime <= 0) {
       components.bullets.head = this.remove(components.bullets.head, components.bullets);
       components.player.score += 1;
-      this.targetEnemy.hitState = true;
+      this.targetEnemy.stateHit = true;
     }
     this.movementUpdate();
   }
-  canvasFill(drawingContext) {
-    drawingContext.strokeStyle = 'mediumpurple';
-    drawingContext.lineWidth = 2;
-    drawingContext.lineCap = 'round';
-    drawingContext.beginPath();
-    drawingContext.moveTo(this.positionHorizontal, this.positionVertical);
-    drawingContext.quadraticCurveTo(
-      this.controlPositionHorizontal,
-      this.controlPositionVertical,
-      this.enemyPositionHorizontal,
-      this.enemyPositionVertical,
+  canvasFill(context) {
+    context.strokeStyle = 'mediumpurple';
+    context.lineWidth = 2;
+    context.lineCap = 'round';
+    context.beginPath();
+    context.moveTo(this.positionX, this.positionY);
+    context.quadraticCurveTo(
+      this.controlPositionX, this.controlPositionY,
+      this.enemyPositionX, this.enemyPositionY,
     );
-    drawingContext.stroke();
+    context.stroke();
   }
   movementUpdate() {
-    this.enemyPositionHorizontal = this.targetEnemy.positionHorizontal +
-      (this.targetEnemy.width / 2);
-    this.enemyPositionVertical = this.targetEnemy.positionVertical + (this.targetEnemy.height / 2);
-    this.positionHorizontal = this.targetPlayer.positionX + (this.targetPlayer.width / 2);
-    this.positionVertical = this.targetPlayer.positionY;
+    this.enemyPositionX = this.targetEnemy.positionX + (this.targetEnemy.width / 2);
+    this.enemyPositionY = this.targetEnemy.positionY + (this.targetEnemy.height / 2);
+    this.positionX = this.targetPlayer.positionX + (this.targetPlayer.width / 2);
+    this.positionY = this.targetPlayer.positionY;
   }
   append(head, bullets) {
     bullets.bulletCountPurple += 1;

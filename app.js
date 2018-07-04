@@ -13,4 +13,3 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(3000, '127.0.0.1');
-console.log('listening to port 3000');

@@ -4,7 +4,6 @@ module.exports = class {
     this.height = 20;
     this.positionX = canvasWidth / 2;
     this.positionY = canvasHeight - 25;
-    this.score = 0;
     this.speedX = 0;
     this.speedY = 0;
     this.maxSpeed = 5;
@@ -13,24 +12,26 @@ module.exports = class {
     this.acceleration = 1.2;
     this.friction = 0.3;
     this.bulletType = 'white';
-    this.level = 0;
+    this.bulletLevel = 0;
+    this.maxBulletLevel = 5;
+    this.score = 0;
   }
-  canvasFill(drawingContext) {
-    drawingContext.fillRect(
+  canvasFill(context) {
+    context.fillRect(
       this.positionX,
       this.positionY,
       this.width,
       this.height,
     );
-    drawingContext.fillText(this.score, 1200, 55);
+    context.fillText(this.score, 1200, 55);
   }
-  update(timeElapsed, canvasElement, keyMap, components) {
-    this.movement(keyMap, timeElapsed, canvasElement);
-    this.collisionCheckPowerUp(components.powerUps.head);
+  update(timeElapsed, canvas, keyMap, components) {
+    this.movement(keyMap, timeElapsed, canvas);
+    this.powerUpCollisionCheck(components.powerUps.head);
   }
-  movement(keyMap, time, canvasElement) {
-    this.positionXUpdate(time, 0, canvasElement.width);
-    this.positionYUpdate(time, 0, canvasElement.height);
+  movement(keyMap, time, canvas) {
+    this.positionXUpdate(time, 0, canvas.width);
+    this.positionYUpdate(time, 0, canvas.height);
     this.speedXUpdate(time);
     this.speedYUpdate(time);
     this.accelerateXUpdate(keyMap);
@@ -53,7 +54,7 @@ module.exports = class {
     }
   }
   speedXUpdate(time) {
-    if (this.speedX > -5 && this.speedX < 5) {
+    if (this.speedX > -this.maxSpeed && this.speedX < this.maxSpeed) {
       this.speedX += this.accelerationX * (time / (1000 / 60));
     }
     if (this.speedX > 0) {
@@ -74,7 +75,7 @@ module.exports = class {
     }
   }
   speedYUpdate(time) {
-    if (this.speedY > -5 && this.speedY < 5) {
+    if (this.speedY > -this.maxSpeed && this.speedY < this.maxSpeed) {
       this.speedY += this.accelerationY * (time / (1000 / 60));
     }
     if (this.speedY > 0) {
@@ -118,21 +119,21 @@ module.exports = class {
       this.accelerationY = 0;
     }
   }
-  collisionCheckPowerUp(powerUpHead) {
+  powerUpCollisionCheck(powerUpHead) {
     for (let i = powerUpHead; i != null; i = i.nextPowerUp) {
       if (
-        i.positionHorizontal >= this.positionX &&
-        i.positionHorizontal <= this.positionX + this.width &&
-        i.positionVertical >= this.positionY &&
-        i.positionVertical <= this.positionY + this.height
+        i.positionX >= this.positionX &&
+        i.positionX <= this.positionX + this.width &&
+        i.positionY >= this.positionY &&
+        i.positionY <= this.positionY + this.height
       ) {
         if (this.bulletType === i.color) {
-          if (this.level < 5) {
-            this.level += 1;
+          if (this.bulletLevel < this.maxBulletLevel) {
+            this.bulletLevel += 1;
           }
         } else {
           this.bulletType = i.color;
-          this.level = 1;
+          this.bulletLevel = 1;
         }
         i.stateObtained = true;
       }

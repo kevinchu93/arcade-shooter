@@ -1,30 +1,28 @@
 const config = require('./config.js');
 
-module.exports = function createPurple(components, Bullet) {
-  function checkTargettedState(components, enemyHead) {
+module.exports = function createPurple(components, Bullet, canvas) {
+  function checkStateTargetted(enemyHead) {
     let enemy = enemyHead;
-    const enemyTarget = Math.floor(Math.random() *
+    const nonTargettedEnemyCount = Math.floor(Math.random() *
       (components.enemies.count - components.enemies.targettedCount));
-    while (enemy != null && enemy.targettedState === true) {
+    while (enemy != null && enemy.stateTargetted === true) {
       enemy = enemy.nextEnemy;
     }
-    if (enemy == null || enemyTarget === -1) { // case 1: no enemies with tragettedState: false
+    if (enemy == null || nonTargettedEnemyCount === -1) { // no enemies with stateTargetted: false
       return null;
-    }
-    if (enemyTarget === 0) { // case 2: 1 enemy with targettedState: false
+    } else if (nonTargettedEnemyCount === 0) { // 1 enemy with stateTargetted: false
       return enemy;
     }
-    for (let i = 0; i < enemyTarget; i += 1) { // case 3: > 1 enemy with targettedState: false
+    for (let i = 0; i < nonTargettedEnemyCount; i += 1) { // > 1 enemy with stateTargetted: false
       enemy = enemy.nextEnemy;
-      while (enemy.targettedState !== false) {
+      while (enemy.stateTargetted !== false) {
         enemy = enemy.nextEnemy;
       }
     }
     return enemy;
   }
-  // const enemyTarget = Math.floor(Math.random() * (components.enemies.count - components.enemies.targettedCount));
-  const enemy = checkTargettedState(components, components.enemies.head);
-  switch (components.player.level) {
+  const enemy = checkStateTargetted(components.enemies.head);
+  switch (components.player.bulletLevel) {
     case 1:
       if (
         enemy == null ||
@@ -68,5 +66,5 @@ module.exports = function createPurple(components, Bullet) {
     default:
       break;
   }
-  return new Bullet.Purple(components.player, enemy, components);
+  return new Bullet.Purple(components.player, enemy, components, canvas);
 };

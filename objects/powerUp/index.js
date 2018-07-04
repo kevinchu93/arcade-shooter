@@ -1,33 +1,24 @@
 module.exports = class {
-  constructor(obj) {
-    this.radius = obj.radius;
-    this.speed = obj.speed;
-    this.positionHorizontal = obj.positionHorizontal;
-    this.positionVertical = obj.positionVertical;
-    this.color = obj.color;
-    this.stateObtained = obj.stateObtained;
+  constructor() {
+    this.radius = 5;
+    this.speed = 2;
+    this.positionX = null;
+    this.positionY = null;
+    this.color = null;
+    this.stateObtained = false;
+    this.nextPowerUp = null;
   }
-  static getDefaultSpec() {
-    return {
-      radius: 5,
-      speed: 2,
-      positionHorizontal: null,
-      positionVertical: null,
-      color: null,
-      stateObtained: false,
-    };
+  canvasFill(context) {
+    context.fillStyle = this.color;
+    context.beginPath();
+    context.arc(this.positionX, this.positionY, this.radius, 0, 2 * Math.PI);
+    context.fill();
   }
-  canvasFill(drawingContext) {
-    drawingContext.fillStyle = this.color;
-    drawingContext.beginPath();
-    drawingContext.arc(this.positionHorizontal, this.positionVertical, this.radius, 0, 2 * Math.PI);
-    drawingContext.fill();
+  movement(time) {
+    this.positionY += this.speed * (time / (1000 / 60));
   }
-  movement(timeElapsed) {
-    this.positionVertical += this.speed * (timeElapsed / (1000 / 60));
-  }
-  update(timeElapsed, boundaryBottom, components) {
-    this.movement(timeElapsed);
+  update(time, boundaryBottom, components) {
+    this.movement(time);
     this.boundaryCheck(boundaryBottom, components);
     if (this.stateObtained) {
       components.powerUps.head = this.remove(components.powerUps.head);

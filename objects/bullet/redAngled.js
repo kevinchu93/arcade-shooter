@@ -5,12 +5,10 @@ module.exports = class extends Default {
     super(player);
     this.offset = offset;
     this.angle = angle;
-    this.positionHorizontal =
-      (player.positionX + ((player.width - this.width) / 2)) +
-      this.offset;
+    this.positionX = (player.positionX + ((player.width - this.width) / 2)) + this.offset;
   }
   movement(time) {
-    this.positionVertical -= this.speed * (time / (1000 / 60));
-    this.positionHorizontal += this.angle * this.speed * (time / (1000 / 60));
+    this.positionX += this.angle * this.speed * (time / (1000 / 60));
+    this.positionY -= this.speed * (time / (1000 / 60));
   }
 };

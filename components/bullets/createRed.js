@@ -1,7 +1,7 @@
 const config = require('./config.js');
 
 module.exports = function createRed(player, Bullet, bulletArray) {
-  switch (player.level) {
+  switch (player.bulletLevel) {
     case 1:
       bulletArray[0] = new Bullet.Red(player, -config.red.level1.offset);
       bulletArray[1] = new Bullet.Red(player, config.red.level1.offset);
