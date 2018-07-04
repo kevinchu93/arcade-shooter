@@ -3,8 +3,6 @@ const components = require('./components/index.js');
 const gameArea = require('./gameArea.js');
 const Objects = require('./objects/index.js');
 
-const keyMap = [];
-
 function canvasFill() {
   gameArea.fill();
   components.player.canvasFill(gameArea.canvasContext);
@@ -23,9 +21,9 @@ function update() {
     timeElapsed = timeCurrent - timePrevious;
     timePrevious = timeCurrent;
 
-    components.player.update(timeElapsed, gameArea.canvas, keyMap, components);
+    components.player.update(timeElapsed, gameArea.canvas, components.keyMap, components);
     components.enemies.update(timeElapsed, 0, 1366, components, Objects.Enemy);
-    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap, gameArea.canvas);
+    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, gameArea.canvas);
     components.powerUps.update(timeElapsed, components, Objects.PowerUp, gameArea);
     canvasFill();
     window.requestAnimationFrame(requestAnimationFrameLoop);
@@ -36,5 +34,5 @@ function update() {
 window.onload = () => {
   gameArea.start(components);
   update();
-  events.listen(gameArea.canvas, components, Objects.Bullet, keyMap);
+  events.listen(gameArea.canvas, components, Objects.Bullet, components.keyMap);
 };

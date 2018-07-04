@@ -295,8 +295,8 @@ module.exports = {
     }
     gameArea.canvasContext.fillText(this.bulletCountPurple, 400, 55);
   },
-  update(time, boundary, components, Bullet, keyMap, canvas) {
-    if (keyMap[13] === true) {
+  update(time, boundary, components, Bullet, canvas) {
+    if (components.keyMap[13] === true) {
       this.create(components, Bullet, canvas);
     }
     for (let i = this.head; i != null; i = i.nextBullet) {
@@ -381,6 +381,7 @@ const enemies = require('./enemies/index.js');
 const powerUps = require('./powerUps/index.js');
 
 module.exports = {
+  keyMap: [],
   bullets,
   player: null,
   enemies,
@@ -1042,8 +1043,6 @@ const components = require('./components/index.js');
 const gameArea = require('./gameArea.js');
 const Objects = require('./objects/index.js');
 
-const keyMap = [];
-
 function canvasFill() {
   gameArea.fill();
   components.player.canvasFill(gameArea.canvasContext);
@@ -1062,9 +1061,9 @@ function update() {
     timeElapsed = timeCurrent - timePrevious;
     timePrevious = timeCurrent;
 
-    components.player.update(timeElapsed, gameArea.canvas, keyMap, components);
+    components.player.update(timeElapsed, gameArea.canvas, components.keyMap, components);
     components.enemies.update(timeElapsed, 0, 1366, components, Objects.Enemy);
-    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, keyMap, gameArea.canvas);
+    components.bullets.update(timeElapsed, 0, components, Objects.Bullet, gameArea.canvas);
     components.powerUps.update(timeElapsed, components, Objects.PowerUp, gameArea);
     canvasFill();
     window.requestAnimationFrame(requestAnimationFrameLoop);
@@ -1075,7 +1074,7 @@ function update() {
 window.onload = () => {
   gameArea.start(components);
   update();
-  events.listen(gameArea.canvas, components, Objects.Bullet, keyMap);
+  events.listen(gameArea.canvas, components, Objects.Bullet, components.keyMap);
 };
 
 },{"./components/index.js":7,"./events.js":9,"./gameArea.js":10,"./objects/index.js":18}]},{},[21]);

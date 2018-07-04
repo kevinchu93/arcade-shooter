@@ -14,8 +14,8 @@ module.exports = {
     }
     gameArea.canvasContext.fillText(this.bulletCountPurple, 400, 55);
   },
-  update(time, boundary, components, Bullet, keyMap, canvas) {
-    if (keyMap[13] === true) {
+  update(time, boundary, components, Bullet, canvas) {
+    if (components.keyMap[13] === true) {
       this.create(components, Bullet, canvas);
     }
     for (let i = this.head; i != null; i = i.nextBullet) {
