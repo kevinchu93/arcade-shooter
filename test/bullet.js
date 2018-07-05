@@ -1,152 +1,94 @@
 const sinon = require('sinon');
-const Bullet = require('../bullet.js');
-const Enemy = require('../enemy.js');
+const Bullet = require('../objects/bullet/default.js');
 const { expect } = require('chai');
 
-const mockBulletSpecDefault = {
+const mockPlayer = {
   width: 10,
   height: 20,
-  speed: 10,
-  positionHorizontal: 100,
-  positionVertical: 100,
-  state: false,
-  nextBullet: null,
+  positionX: 30,
+  positionY: 40,
+  bulletType: 'white',
 };
 
-const mockBulletSpecFarPosition = {
-  width: 10,
-  height: 20,
-  speed: 10,
-  positionHorizontal: 1000,
-  positionVertical: 1000,
-  state: false,
+const mockBulletSpecs = {
+  width: 5,
+  height: 10,
+  speed: 20,
+  positionX: 32.5,
+  positionY: 30,
+  type: 'white',
   nextBullet: null,
-};
-
-const mockEnemySpecDefault = {
-  width: 10,
-  height: 20,
-  positionHorizontal: 100,
-  positionVertical: 100,
-  hitState: false,
 };
 
 describe('Bullet', () => {
   describe('constructor', () => {
     it('should create mockBullet with correct parameters', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      expect(mockBullet).to.deep.equal(mockBulletSpecDefault);
-    });
-  });
-  describe('getDefaultSpec', () => {
-    it('should return correct default property values', () => {
-      expect(Bullet.getDefaultSpec()).to.deep.equal({
-        width: 5,
-        height: 10,
-        speed: 20,
-        positionHorizontal: undefined,
-        positionVertical: undefined,
-        state: true,
-        nextBullet: null,
-      });
+      expect(new Bullet(mockPlayer)).to.deep.equal(mockBulletSpecs);
     });
   });
   describe('movement', () => {
-    it('should update speed accordingly using time input when state is true', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      mockBullet.state = true;
+    it('should update positionY using time input', () => {
+      const mockBullet = new Bullet(mockPlayer);
       mockBullet.movement(100);
-      expect(mockBullet.positionVertical).to.equal(100 - (10 * (100 / (1000 / 60))));
-    });
-    it('should not update speed when state is not true', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      mockBullet.state = false;
-      mockBullet.movement(100);
-      expect(mockBullet.positionVertical).to.equal(100);
+      expect(mockBullet.positionY)
+        .to.equal(mockBulletSpecs.positionY - (mockBulletSpecs.speed * (100 / (1000 / 60))));
     });
   });
   describe('boundaryCheck', () => {
-    it('should set state to false when positionVertical + height are within boundary input', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+    it('should call remove when positionVertical + height are not within boundary input', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const components = {
         bullets: {
           head: 'head',
         },
       };
       sinon.stub(mockBullet, 'remove');
-      mockBullet.state = true;
-      mockBullet.boundaryCheck(130, components);
-      expect(mockBullet.state).to.equal(false);
-      mockBullet.remove.restore();
-    });
-    it('should call remove when positionVertical + height are within boundary input', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      const components = {
-        bullets: {
-          head: 'head',
-        },
-      };
-      sinon.stub(mockBullet, 'remove');
-      mockBullet.state = true;
-      mockBullet.boundaryCheck(130, components);
+      mockBullet.boundaryCheck(100, components);
       sinon.assert.calledWithExactly(mockBullet.remove, 'head');
-      mockBullet.remove.restore();
-    });
-    it('should not set state to false when positionVertical + height exceed boundary input', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      const components = {
-        bullets: {
-          head: 'head',
-        },
-      };
-      sinon.stub(mockBullet, 'remove');
-      mockBullet.state = true;
-      mockBullet.boundaryCheck(110, components);
-      expect(mockBullet.state).to.equal(true);
       mockBullet.remove.restore();
     });
   });
   describe('update', () => {
-    it('should call boundaryCheck(boundary) with correct parameters', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+    it('should call boundaryCheck with correct parameters', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
           head: null,
         },
       };
-      sinon.stub(mockBullet, 'movement');
       sinon.stub(mockBullet, 'boundaryCheck');
-      sinon.stub(mockBullet, 'hitCheck');
-      mockBullet.update(10, 20, mockComponents);
-      sinon.assert.calledWithExactly(mockBullet.boundaryCheck, 20, mockComponents);
+      sinon.stub(mockBullet, 'movement');
+      sinon.stub(mockBullet, 'hitCheck').returns(false);
+      mockBullet.update('time', 'boundary', mockComponents);
+      sinon.assert.calledWithExactly(mockBullet.boundaryCheck, 'boundary', mockComponents);
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
       mockBullet.hitCheck.restore();
     });
-    it('should call movement(timeElapsed) with correct parameters', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+    it('should call movement with correct parameters', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
           head: null,
         },
       };
-      sinon.stub(mockBullet, 'movement');
       sinon.stub(mockBullet, 'boundaryCheck');
-      sinon.stub(mockBullet, 'hitCheck');
-      mockBullet.update(10, 20, mockComponents);
-      sinon.assert.calledWithExactly(mockBullet.movement, 10);
+      sinon.stub(mockBullet, 'movement');
+      sinon.stub(mockBullet, 'hitCheck').returns(false);
+      mockBullet.update('time', 'boundary', mockComponents);
+      sinon.assert.calledWithExactly(mockBullet.movement, 'time');
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
       mockBullet.hitCheck.restore();
     });
-    it('should call remove(components.mockBullets.head) with correct parameters when hitCheck returns true', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+    it('should call remove with correct parameters when hitCheck returns true', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
           head: null,
         },
         bullets: {
-          head: mockBullet,
+          head: 'bulletHead',
         },
         player: {
           score: 0,
@@ -156,39 +98,45 @@ describe('Bullet', () => {
       sinon.stub(mockBullet, 'boundaryCheck');
       sinon.stub(mockBullet, 'hitCheck').returns(true);
       sinon.stub(mockBullet, 'remove');
-      mockBullet.update(10, 20, mockComponents);
-      sinon.assert.calledWithExactly(mockBullet.remove, mockBullet);
+      mockBullet.update('time', 'boundary', mockComponents);
+      sinon.assert.calledWithExactly(mockBullet.remove, 'bulletHead');
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
       mockBullet.hitCheck.restore();
       mockBullet.remove.restore();
     });
-    it('should not call remove(components.mockBullets.head) when hitCheck returns false', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+    it('should not call remove with correct parameters when hitCheck returns false', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
           head: null,
+        },
+        bullets: {
+          head: 'bulletHead',
+        },
+        player: {
+          score: 0,
         },
       };
       sinon.stub(mockBullet, 'movement');
       sinon.stub(mockBullet, 'boundaryCheck');
       sinon.stub(mockBullet, 'hitCheck').returns(false);
       sinon.stub(mockBullet, 'remove');
-      mockBullet.update(10, 20, mockComponents);
+      mockBullet.update('time', 'boundary', mockComponents);
       sinon.assert.notCalled(mockBullet.remove);
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
       mockBullet.hitCheck.restore();
       mockBullet.remove.restore();
     });
-    it('should increment score by 1 when hitCheck returns true', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+    it('should increment player.score by 1 when hitCheck returns true', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
           head: null,
         },
         bullets: {
-          head: mockBullet,
+          head: 'bulletHead',
         },
         player: {
           score: 0,
@@ -198,8 +146,32 @@ describe('Bullet', () => {
       sinon.stub(mockBullet, 'boundaryCheck');
       sinon.stub(mockBullet, 'hitCheck').returns(true);
       sinon.stub(mockBullet, 'remove');
-      mockBullet.update(10, 20, mockComponents, mockBullet);
+      mockBullet.update('time', 'boundary', mockComponents);
       expect(mockComponents.player.score).to.equal(1);
+      mockBullet.movement.restore();
+      mockBullet.boundaryCheck.restore();
+      mockBullet.hitCheck.restore();
+      mockBullet.remove.restore();
+    });
+    it('should not increment player.score by 1 when hitCheck returns false', () => {
+      const mockBullet = new Bullet(mockPlayer);
+      const mockComponents = {
+        enemies: {
+          head: null,
+        },
+        bullets: {
+          head: 'bulletHead',
+        },
+        player: {
+          score: 0,
+        },
+      };
+      sinon.stub(mockBullet, 'movement');
+      sinon.stub(mockBullet, 'boundaryCheck');
+      sinon.stub(mockBullet, 'hitCheck').returns(false);
+      sinon.stub(mockBullet, 'remove');
+      mockBullet.update('time', 'boundary', mockComponents);
+      expect(mockComponents.player.score).to.equal(0);
       mockBullet.movement.restore();
       mockBullet.boundaryCheck.restore();
       mockBullet.hitCheck.restore();
@@ -207,96 +179,154 @@ describe('Bullet', () => {
     });
   });
   describe('canvasFill', () => {
-    it('should call drawingContext.fillRect with correct parameters', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      const drawingContext = {
+    it('should set fillStyle to equal type', () => {
+      const mockBullet = new Bullet(mockPlayer);
+      const context = {
+        fillStyle: null,
         fillRect() {},
       };
-      sinon.stub(drawingContext, 'fillRect');
-      mockBullet.canvasFill(drawingContext);
-      sinon.assert.calledWithExactly(drawingContext.fillRect, 100, 100, 10, 20);
-      drawingContext.fillRect.restore();
+      sinon.stub(context, 'fillRect');
+      mockBullet.canvasFill(context);
+      expect(context.fillStyle).to.equal(mockBulletSpecs.type);
+      context.fillRect.restore();
+    });
+    it('should call context.fillRect with correct parameters', () => {
+      const mockBullet = new Bullet(mockPlayer);
+      const context = {
+        fillStyle: null,
+        fillRect() {},
+      };
+      sinon.stub(context, 'fillRect');
+      mockBullet.canvasFill(context);
+      sinon.assert.calledWithExactly(
+        context.fillRect,
+        mockBulletSpecs.positionX,
+        mockBulletSpecs.positionY,
+        mockBulletSpecs.width,
+        mockBulletSpecs.height,
+      );
+      context.fillRect.restore();
     });
   });
   describe('hitCheck', () => {
-    it('should return true when bullet position within enemy position', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      const mockEnemy = new Enemy(mockEnemySpecDefault);
+    it('should call rectangleCollision with correct parameters when stateHit is false', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
-          head: mockEnemy,
+          head: {
+            width: 'width',
+            height: 'height',
+            positionX: 'X',
+            positionY: 'Y',
+            stateHit: false,
+          },
         },
         bullets: {
           head: mockBullet,
         },
-        player: {
-          score: 0,
-        },
       };
-      sinon.spy(mockComponents.bullets.head, 'hitCheck');
+      sinon.stub(mockBullet.constructor, 'rectangleCollision');
       mockComponents.bullets.head.hitCheck(mockComponents.enemies.head);
-      expect((mockBullet.hitCheck).returned(true)).to.equal(true);
+      sinon.assert.calledWithExactly(
+        mockBullet.constructor.rectangleCollision,
+        mockBulletSpecs.positionX,
+        mockBulletSpecs.positionX + mockBulletSpecs.width,
+        mockBulletSpecs.positionY,
+        mockBulletSpecs.positionY + mockBulletSpecs.height,
+        'X',
+        'Xwidth',
+        'Y',
+        'Yheight',
+      );
+      mockBullet.constructor.rectangleCollision.restore();
     });
-    it('should set hitState to true when bullet position within enemy position', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
-      const mockEnemy = new Enemy(mockEnemySpecDefault);
+    it('should set stateHit to true when stateHit is false and rectangleCollision returns true', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
-          head: mockEnemy,
+          head: {
+            width: 'width',
+            height: 'height',
+            positionX: 'X',
+            positionY: 'Y',
+            stateHit: false,
+          },
         },
         bullets: {
           head: mockBullet,
         },
-        player: {
-          score: 0,
-        },
       };
-      sinon.spy(mockComponents.bullets.head, 'hitCheck');
+      sinon.stub(mockBullet.constructor, 'rectangleCollision').returns(true);
       mockComponents.bullets.head.hitCheck(mockComponents.enemies.head);
-      expect(mockComponents.enemies.head.hitState).to.equal(true);
+      expect(mockComponents.enemies.head.stateHit).to.equal(true);
+      mockBullet.constructor.rectangleCollision.restore();
     });
-    it('should return false when bullet position exceeds enemy position', () => {
-      const mockEnemy = new Enemy(mockEnemySpecDefault);
+    it('should return true when stateHit is false and rectangleCollision returns true', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
-          head: mockEnemy,
+          head: {
+            width: 'width',
+            height: 'height',
+            positionX: 'X',
+            positionY: 'Y',
+            stateHit: false,
+          },
         },
         bullets: {
-          head: new Bullet(mockBulletSpecFarPosition),
-        },
-        player: {
-          score: 0,
+          head: mockBullet,
         },
       };
-      sinon.spy(mockComponents.bullets.head, 'hitCheck');
-      mockComponents.bullets.head.hitCheck(mockComponents.enemies.head);
-      expect((mockComponents.bullets.head.hitCheck).returned(false)).to.equal(true);
+      sinon.stub(mockBullet.constructor, 'rectangleCollision').returns(true);
+      expect(mockComponents.bullets.head.hitCheck(mockComponents.enemies.head)).to.equal(true);
+      mockBullet.constructor.rectangleCollision.restore();
     });
-    it('should not set hitState to true when bullet position exceeds enemy position', () => {
-      const mockEnemy = new Enemy(mockEnemySpecDefault);
+    it('should return false when rectangleCollision returns false', () => {
+      const mockBullet = new Bullet(mockPlayer);
       const mockComponents = {
         enemies: {
-          head: mockEnemy,
+          head: {
+            width: 'width',
+            height: 'height',
+            positionX: 'X',
+            positionY: 'Y',
+            stateHit: false,
+          },
         },
         bullets: {
-          head: new Bullet(mockBulletSpecFarPosition),
-        },
-        player: {
-          score: 0,
+          head: mockBullet,
         },
       };
-      sinon.spy(mockComponents.bullets.head, 'hitCheck');
-      mockComponents.bullets.head.hitCheck(mockComponents.enemies.head);
-      expect(mockComponents.enemies.head.hitState).to.equal(false);
+      sinon.stub(mockBullet.constructor, 'rectangleCollision').returns(false);
+      expect(mockComponents.bullets.head.hitCheck(mockComponents.enemies.head)).to.equal(false);
+      mockBullet.constructor.rectangleCollision.restore();
+    });
+  });
+  describe('rectangleCollision', () => {
+    it('should return true if coordinates of A and B overlap', () => {
+      const A = [0, 2, 0, 2];
+      const B = [1, 3, 1, 3];
+      expect(Bullet.rectangleCollision(
+        A[0], A[1], A[2], A[3],
+        B[0], B[1], B[2], B[3],
+      )).to.equal(true);
+    });
+    it('should return false if coordinates of A and B do not overlap', () => {
+      const A = [0, 2, 0, 2];
+      const B = [3, 5, 3, 5];
+      expect(Bullet.rectangleCollision(
+        A[0], A[1], A[2], A[3],
+        B[0], B[1], B[2], B[3],
+      )).to.equal(false);
     });
   });
   describe('append', () => {
     it('should return mockBullet if head is null', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+      const mockBullet = new Bullet(mockPlayer);
       expect(mockBullet.append(null)).to.equal(mockBullet);
     });
     it('should set firstBullet.nextBullet to equal mockBullet', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+      const mockBullet = new Bullet(mockPlayer);
       const firstBullet = {
         nextBullet: null,
       };
@@ -305,13 +335,13 @@ describe('Bullet', () => {
   });
   describe('remove', () => {
     it('should return firstBullet.nextBullet if firstBullet equals mockbullet', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+      const mockBullet = new Bullet(mockPlayer);
       mockBullet.nextBullet = 'secondBullet';
       const firstBullet = mockBullet;
       expect(mockBullet.remove(firstBullet)).to.equal('secondBullet');
     });
     it('should return firstBullet and set firstBullet.nextBullet to equal mockBullet.nextBullet', () => {
-      const mockBullet = new Bullet(mockBulletSpecDefault);
+      const mockBullet = new Bullet(mockPlayer);
       mockBullet.nextBullet = 'thirdBullet';
       const firstBullet = {
         nextBullet: mockBullet,

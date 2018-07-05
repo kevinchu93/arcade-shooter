@@ -4,83 +4,73 @@ const enemies = require('../components/enemies/index.js');
 
 describe('enemies', () => {
   describe('canvasFill', () => {
-    it('should call canvasFill with correct parameters for all enemies', () => {
-      let mockEnemy1 = {};
-      let mockEnemy2 = {};
-      let mockEnemy3 = {};
-      mockEnemy1 = {
+    it('should call canvasFill with correct parameters', () => {
+      const mockEnemy = {
         canvasFill() {},
-        nextEnemy: mockEnemy2 = {
-          canvasFill() {},
-          nextEnemy: mockEnemy3 = {
-            canvasFill() {},
-            nextEnemy: null,
-          },
-        },
+        nextEnemy: null,
       };
       const mockGameArea = {
-        canvasElementDrawingContext: null,
+        canvasContext: {
+          fillText() {},
+        },
       };
-      enemies.head = mockEnemy1;
-      sinon.stub(mockEnemy1, 'canvasFill');
-      sinon.stub(mockEnemy2, 'canvasFill');
-      sinon.stub(mockEnemy3, 'canvasFill');
+      enemies.head = mockEnemy;
+      sinon.stub(mockEnemy, 'canvasFill');
+      sinon.stub(mockGameArea.canvasContext, 'fillText');
       enemies.canvasFill(mockGameArea);
-      sinon.assert.calledWithExactly(
-        mockEnemy1.canvasFill,
-        mockGameArea.canvasElementDrawingContext,
-      );
-      sinon.assert.calledWithExactly(
-        mockEnemy2.canvasFill,
-        mockGameArea.canvasElementDrawingContext,
-      );
-      sinon.assert.calledWithExactly(
-        mockEnemy3.canvasFill,
-        mockGameArea.canvasElementDrawingContext,
-      );
-      mockEnemy1.canvasFill.restore();
-      mockEnemy2.canvasFill.restore();
-      mockEnemy3.canvasFill.restore();
+      sinon.assert.calledWithExactly(mockEnemy.canvasFill, mockGameArea.canvasContext);
+      mockEnemy.canvasFill.restore();
+      mockGameArea.canvasContext.fillText.restore();
+    });
+    it('should call fillText with correct parameters', () => {
+      const mockEnemy = {
+        canvasFill() {},
+        nextEnemy: null,
+      };
+      const mockGameArea = {
+        canvasContext: {
+          fillText() {},
+        },
+      };
+      enemies.head = mockEnemy;
+      sinon.stub(mockEnemy, 'canvasFill');
+      sinon.stub(mockGameArea.canvasContext, 'fillText');
+      enemies.canvasFill(mockGameArea);
+      sinon.assert.calledWithExactly(mockGameArea.canvasContext.fillText, 0, 100, 55);
+      mockEnemy.canvasFill.restore();
+      mockGameArea.canvasContext.fillText.restore();
     });
   });
   describe('update', () => {
-    it('should call update with correct parameters for all enemies', () => {
-      let mockEnemy1 = {};
-      let mockEnemy2 = {};
-      let mockEnemy3 = {};
-      mockEnemy1 = {
-        update() {},
-        nextEnemy: mockEnemy2 = {
-          update() {},
-          nextEnemy: mockEnemy3 = {
-            update() {},
-            nextEnemy: null,
-          },
-        },
-      };
-      enemies.head = mockEnemy1;
-      sinon.stub(mockEnemy1, 'update');
-      sinon.stub(mockEnemy2, 'update');
-      sinon.stub(mockEnemy3, 'update');
-      sinon.stub(enemies, 'spawnUpdate');
-      enemies.update('timeElapsed', 'boundaryLeft', 'boundaryRight', 'components');
-      sinon.assert.calledWithExactly(mockEnemy1.update, 'timeElapsed', 'boundaryLeft', 'boundaryRight', 'components');
-      sinon.assert.calledWithExactly(mockEnemy2.update, 'timeElapsed', 'boundaryLeft', 'boundaryRight', 'components');
-      sinon.assert.calledWithExactly(mockEnemy3.update, 'timeElapsed', 'boundaryLeft', 'boundaryRight', 'components');
-      mockEnemy1.update.restore();
-      mockEnemy2.update.restore();
-      mockEnemy3.update.restore();
-      enemies.spawnUpdate.restore();
-    });
     it('should call spawnUpdate with correct parameters', () => {
+      const mockEnemy = {
+        update() {},
+        nextEnemy: null,
+      };
+      enemies.head = mockEnemy;
+      sinon.stub(mockEnemy, 'update');
       sinon.stub(enemies, 'spawnUpdate');
-      enemies.update('timeElapsed', 'boundaryLeft', 'boundaryRight', 'components', 'Enemy');
-      sinon.assert.calledWithExactly(enemies.spawnUpdate, 'timeElapsed', 'components', 'Enemy');
+      enemies.update('time', 'boundaryLeft', 'boundaryRight', 'components', 'Enemy');
+      sinon.assert.calledWithExactly(enemies.spawnUpdate, 'time', 'components', 'Enemy');
       enemies.spawnUpdate.restore();
+      mockEnemy.update.restore();
+    });
+    it('should call update with correct parameters', () => {
+      const mockEnemy = {
+        update() {},
+        nextEnemy: null,
+      };
+      enemies.head = mockEnemy;
+      sinon.stub(enemies, 'spawnUpdate');
+      sinon.stub(mockEnemy, 'update');
+      enemies.update('time', 'boundaryLeft', 'boundaryRight', 'components', 'Enemy');
+      sinon.assert.calledWithExactly(mockEnemy.update, 'time', 'boundaryLeft', 'boundaryRight', 'components');
+      enemies.spawnUpdate.restore();
+      mockEnemy.update.restore();
     });
   });
   describe('spawnUpdate', () => {
-    it('should decrement countdown by timeElapsed', () => {
+    it('should decrement countdown by time', () => {
       const mockComponents = {
         enemies: {
           spawn: {
@@ -101,14 +91,14 @@ describe('enemies', () => {
           },
         },
       };
-      sinon.stub(enemies, 'createNew');
-      sinon.stub(enemies, 'appendNewEnemy');
+      sinon.stub(enemies, 'create');
+      sinon.stub(enemies, 'appendList');
       enemies.spawnUpdate(0, mockComponents, 'Enemy');
       expect(mockComponents.enemies.spawn.countdown).to.equal(900);
-      enemies.createNew.restore();
-      enemies.appendNewEnemy.restore();
+      enemies.create.restore();
+      enemies.appendList.restore();
     });
-    it('should call createNew with correct parameters when countdown <= 0', () => {
+    it('should call create with correct parameters when countdown <= 0', () => {
       const mockComponents = {
         enemies: {
           spawn: {
@@ -117,14 +107,14 @@ describe('enemies', () => {
           },
         },
       };
-      sinon.stub(enemies, 'createNew');
-      sinon.stub(enemies, 'appendNewEnemy');
+      sinon.stub(enemies, 'create');
+      sinon.stub(enemies, 'appendList');
       enemies.spawnUpdate(0, mockComponents, 'Enemy');
-      sinon.assert.calledWithExactly(enemies.createNew, 'Enemy');
-      enemies.createNew.restore();
-      enemies.appendNewEnemy.restore();
+      sinon.assert.calledWithExactly(enemies.create, 'Enemy');
+      enemies.create.restore();
+      enemies.appendList.restore();
     });
-    it('should call appendNewEnemy with correct parameters when countdown <= 0', () => {
+    it('should call appendList with correct parameters when countdown <= 0', () => {
       const mockComponents = {
         enemies: {
           spawn: {
@@ -133,12 +123,12 @@ describe('enemies', () => {
           },
         },
       };
-      sinon.stub(enemies, 'createNew').returns('mockEnemy');
-      sinon.stub(enemies, 'appendNewEnemy');
+      sinon.stub(enemies, 'create').returns('mockEnemy');
+      sinon.stub(enemies, 'appendList');
       enemies.spawnUpdate(0, mockComponents, 'Enemy');
-      sinon.assert.calledWithExactly(enemies.appendNewEnemy, mockComponents, 'mockEnemy');
-      enemies.createNew.restore();
-      enemies.appendNewEnemy.restore();
+      sinon.assert.calledWithExactly(enemies.appendList, mockComponents, 'mockEnemy');
+      enemies.create.restore();
+      enemies.appendList.restore();
     });
     it('should not increment countdown by rate when countdown > 0', () => {
       const mockComponents = {
@@ -149,14 +139,14 @@ describe('enemies', () => {
           },
         },
       };
-      sinon.stub(enemies, 'createNew');
-      sinon.stub(enemies, 'appendNewEnemy');
+      sinon.stub(enemies, 'create');
+      sinon.stub(enemies, 'appendList');
       enemies.spawnUpdate(0, mockComponents, 'Enemy');
       expect(mockComponents.enemies.spawn.countdown).to.equal(100);
-      enemies.createNew.restore();
-      enemies.appendNewEnemy.restore();
+      enemies.create.restore();
+      enemies.appendList.restore();
     });
-    it('should not call createNew countdown > 0', () => {
+    it('should not call create countdown > 0', () => {
       const mockComponents = {
         enemies: {
           spawn: {
@@ -165,14 +155,14 @@ describe('enemies', () => {
           },
         },
       };
-      sinon.stub(enemies, 'createNew');
-      sinon.stub(enemies, 'appendNewEnemy');
+      sinon.stub(enemies, 'create');
+      sinon.stub(enemies, 'appendList');
       enemies.spawnUpdate(0, mockComponents, 'Enemy');
-      sinon.assert.notCalled(enemies.createNew);
-      enemies.createNew.restore();
-      enemies.appendNewEnemy.restore();
+      sinon.assert.notCalled(enemies.create);
+      enemies.create.restore();
+      enemies.appendList.restore();
     });
-    it('should not call appendNewEnemy countdown > 0', () => {
+    it('should not call appendList countdown > 0', () => {
       const mockComponents = {
         enemies: {
           spawn: {
@@ -181,32 +171,27 @@ describe('enemies', () => {
           },
         },
       };
-      sinon.stub(enemies, 'createNew');
-      sinon.stub(enemies, 'appendNewEnemy');
+      sinon.stub(enemies, 'create');
+      sinon.stub(enemies, 'appendList');
       enemies.spawnUpdate(0, mockComponents, 'Enemy');
-      sinon.assert.notCalled(enemies.appendNewEnemy);
-      enemies.createNew.restore();
-      enemies.appendNewEnemy.restore();
+      sinon.assert.notCalled(enemies.appendList);
+      enemies.create.restore();
+      enemies.appendList.restore();
     });
   });
-  describe('createNew', () => {
-    it('should call Enemy constructor with correct parameter', () => {
+  describe('create', () => {
+    it('should call Enemy constructor', () => {
       const namespace = {
         Enemy() {
         },
       };
-      namespace.Enemy.getDefaultSpec = function getDefaultSpec() {
-        return {
-          value: 'mockEnemy',
-        };
-      };
       sinon.stub(namespace, 'Enemy');
-      enemies.createNew(namespace.Enemy);
-      sinon.assert.calledWithExactly(namespace.Enemy, { value: 'mockEnemy' });
+      enemies.create(namespace.Enemy);
+      sinon.assert.calledWithExactly(namespace.Enemy);
       namespace.Enemy.restore();
     });
   });
-  describe('appendNewEnemy', () => {
+  describe('appendList', () => {
     it('should call append with correct parameter', () => {
       const mockComponents = {
         enemies: {
@@ -217,9 +202,9 @@ describe('enemies', () => {
         append() {
         },
       };
-      sinon.stub(mockEnemy, 'append');
-      enemies.appendNewEnemy(mockComponents, mockEnemy);
-      sinon.assert.calledWithExactly(mockEnemy.append, 'enemyHead');
+      sinon.stub(mockEnemy, 'append').returns('enemyHead');
+      enemies.appendList(mockComponents, mockEnemy);
+      sinon.assert.calledWithExactly(mockEnemy.append, 'enemyHead', { head: 'enemyHead' });
       mockEnemy.append.restore();
     });
   });

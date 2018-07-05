@@ -1,4 +1,54 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+const { blue } = require('./config.js');
+
+module.exports = {
+  config: blue,
+  createBlue(player, Bullet) {
+    let bullet = {};
+    switch (player.bulletLevel) {
+      case 1:
+        bullet = new Bullet.Blue(
+          player,
+          this.config.level1.width,
+          this.config.level1.height,
+        );
+        break;
+      case 2:
+        bullet = new Bullet.Blue(
+          player,
+          this.config.level2.width,
+          this.config.level2.height,
+        );
+        break;
+      case 3:
+        bullet = new Bullet.Blue(
+          player,
+          this.config.level3.width,
+          this.config.level3.height,
+        );
+        break;
+      case 4:
+        bullet = new Bullet.Blue(
+          player,
+          this.config.level4.width,
+          this.config.level4.height,
+        );
+        break;
+      case 5:
+        bullet = new Bullet.Blue(
+          player,
+          this.config.level5.width,
+          this.config.level5.height,
+        );
+        break;
+      default:
+        break;
+    }
+    return bullet;
+  },
+};
+
+},{"./config.js":2}],2:[function(require,module,exports){
 module.exports = {
   blue: {
     level1: {
@@ -64,225 +114,11 @@ module.exports = {
   },
 };
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 const config = require('./config.js');
-
-module.exports = function createBlue(player, Bullet) {
-  let bullet = {};
-  switch (player.bulletLevel) {
-    case 1:
-      bullet = new Bullet.Blue(
-        player,
-        config.blue.level1.width,
-        config.blue.level1.height,
-      );
-      break;
-    case 2:
-      bullet = new Bullet.Blue(
-        player,
-        config.blue.level2.width,
-        config.blue.level2.height,
-      );
-      break;
-    case 3:
-      bullet = new Bullet.Blue(
-        player,
-        config.blue.level3.width,
-        config.blue.level3.height,
-      );
-      break;
-    case 4:
-      bullet = new Bullet.Blue(
-        player,
-        config.blue.level4.width,
-        config.blue.level4.height,
-      );
-      break;
-    case 5:
-      bullet = new Bullet.Blue(
-        player,
-        config.blue.level5.width,
-        config.blue.level5.height,
-      );
-      break;
-    default:
-      break;
-  }
-  return bullet;
-};
-
-},{"./config.js":1}],3:[function(require,module,exports){
-const config = require('./config.js');
-
-module.exports = function createPurple(components, Bullet, canvas) {
-  function checkStateTargetted(enemyHead) {
-    let enemy = enemyHead;
-    const nonTargettedEnemyCount = Math.floor(Math.random() *
-      (components.enemies.count - components.enemies.targettedCount));
-    while (enemy != null && enemy.stateTargetted === true) {
-      enemy = enemy.nextEnemy;
-    }
-    if (enemy == null || nonTargettedEnemyCount === -1) { // no enemies with stateTargetted: false
-      return null;
-    } else if (nonTargettedEnemyCount === 0) { // 1 enemy with stateTargetted: false
-      return enemy;
-    }
-    for (let i = 0; i < nonTargettedEnemyCount; i += 1) { // > 1 enemy with stateTargetted: false
-      enemy = enemy.nextEnemy;
-      while (enemy.stateTargetted !== false) {
-        enemy = enemy.nextEnemy;
-      }
-    }
-    return enemy;
-  }
-  const enemy = checkStateTargetted(components.enemies.head);
-  switch (components.player.bulletLevel) {
-    case 1:
-      if (
-        enemy == null ||
-        components.bullets.bulletCountPurple >= config.purple.level1.maxBullets
-      ) {
-        return null;
-      }
-      break;
-    case 2:
-      if (
-        enemy == null ||
-        components.bullets.bulletCountPurple >= config.purple.level2.maxBullets
-      ) {
-        return null;
-      }
-      break;
-    case 3:
-      if (
-        enemy == null ||
-        components.bullets.bulletCountPurple >= config.purple.level3.maxBullets
-      ) {
-        return null;
-      }
-      break;
-    case 4:
-      if (
-        enemy == null ||
-        components.bullets.bulletCountPurple >= config.purple.level4.maxBullets
-      ) {
-        return null;
-      }
-      break;
-    case 5:
-      if (
-        enemy == null ||
-        components.bullets.bulletCountPurple >= config.purple.level5.maxBullets
-      ) {
-        return null;
-      }
-      break;
-    default:
-      break;
-  }
-  return new Bullet.Purple(components.player, enemy, components, canvas);
-};
-
-},{"./config.js":1}],4:[function(require,module,exports){
-const config = require('./config.js');
-
-module.exports = function createRed(player, Bullet, bulletArray) {
-  switch (player.bulletLevel) {
-    case 1:
-      bulletArray[0] = new Bullet.Red(player, -config.red.level1.offset);
-      bulletArray[1] = new Bullet.Red(player, config.red.level1.offset);
-      break;
-    case 2:
-      bulletArray[0] = new Bullet.Red(player, -config.red.level2.offset);
-      bulletArray[1] = new Bullet.Red(player, 0);
-      bulletArray[2] = new Bullet.Red(player, config.red.level2.offset);
-      break;
-    case 3:
-      bulletArray[0] = new Bullet.RedAngled(
-        player,
-        -config.red.level3.offset,
-        -config.red.level3.angle,
-      );
-      bulletArray[1] = new Bullet.Red(player, -config.red.level3.offset);
-      bulletArray[2] = new Bullet.Red(player, 0);
-      bulletArray[3] = new Bullet.Red(player, config.red.level3.offset);
-      bulletArray[4] = new Bullet.RedAngled(
-        player,
-        config.red.level3.offset,
-        config.red.level3.angle,
-      );
-      break;
-    case 4:
-      bulletArray[0] = new Bullet.RedAngled(
-        player,
-        -config.red.level4.offset,
-        -config.red.level4.angleOuter,
-      );
-      bulletArray[1] = new Bullet.RedAngled(
-        player,
-        -config.red.level4.offset,
-        -config.red.level4.angleInner,
-      );
-      bulletArray[2] = new Bullet.Red(player, -config.red.level4.offset);
-      bulletArray[3] = new Bullet.Red(player, 0);
-      bulletArray[4] = new Bullet.Red(player, config.red.level4.offset);
-      bulletArray[5] = new Bullet.RedAngled(
-        player,
-        config.red.level4.offset,
-        config.red.level4.angleInner,
-      );
-      bulletArray[6] = new Bullet.RedAngled(
-        player,
-        config.red.level4.offset,
-        config.red.level4.angleOuter,
-      );
-      break;
-    case 5:
-      bulletArray[0] = new Bullet.RedAngled(
-        player,
-        -config.red.level5.offset,
-        -config.red.level5.angleOuter,
-      );
-      bulletArray[1] = new Bullet.RedAngled(
-        player,
-        -config.red.level5.offset,
-        -config.red.level5.angleMiddle,
-      );
-      bulletArray[2] = new Bullet.RedAngled(
-        player,
-        -config.red.level5.offset,
-        -config.red.level5.angleInner,
-      );
-      bulletArray[3] = new Bullet.Red(player, -config.red.level5.offset);
-      bulletArray[4] = new Bullet.Red(player, 0);
-      bulletArray[5] = new Bullet.Red(player, config.red.level5.offset);
-      bulletArray[6] = new Bullet.RedAngled(
-        player,
-        config.red.level5.offset,
-        config.red.level5.angleInner,
-      );
-      bulletArray[7] = new Bullet.RedAngled(
-        player,
-        config.red.level5.offset,
-        config.red.level5.angleMiddle,
-      );
-      bulletArray[8] = new Bullet.RedAngled(
-        player,
-        config.red.level5.offset,
-        config.red.level5.angleOuter,
-      );
-      break;
-    default:
-      break;
-  }
-  return bulletArray;
-};
-
-},{"./config.js":1}],5:[function(require,module,exports){
-const config = require('./config.js');
-const createBlue = require('./createBlue.js');
-const createRed = require('./createRed.js');
-const createPurple = require('./createPurple.js');
+const blue = require('./blue.js');
+const red = require('./red.js');
+const purple = require('./purple.js');
 
 module.exports = {
   config,
@@ -312,18 +148,18 @@ module.exports = {
         break;
       case 'orangered': {
         const emptyArray = [];
-        const bulletArray = createRed(components.player, Bullet, emptyArray);
+        const bulletArray = red.createRed(components.player, Bullet, emptyArray);
         for (let i = 0; bulletArray[i] != null; i += 1) {
           this.appendList(bulletArray[i], components);
         }
         break;
       }
       case 'deepskyblue':
-        bullet = createBlue(components.player, Bullet);
+        bullet = blue.createBlue(components.player, Bullet);
         this.appendList(bullet, components);
         break;
       case 'mediumpurple':
-        bullet = createPurple(components, Bullet, canvas);
+        bullet = purple.createPurple(components, Bullet, canvas);
         if (bullet != null) {
           this.appendList(bullet, components);
         }
@@ -338,7 +174,180 @@ module.exports = {
   },
 };
 
-},{"./config.js":1,"./createBlue.js":2,"./createPurple.js":3,"./createRed.js":4}],6:[function(require,module,exports){
+},{"./blue.js":1,"./config.js":2,"./purple.js":4,"./red.js":5}],4:[function(require,module,exports){
+const { purple } = require('./config.js');
+
+module.exports = {
+  config: purple,
+  createPurple(components, Bullet, canvas) {
+    function checkStateTargetted(enemyHead) {
+      let enemy = enemyHead;
+      const nonTargettedEnemyCount = Math.floor(Math.random() *
+        (components.enemies.count - components.enemies.targettedCount));
+      while (enemy != null && enemy.stateTargetted === true) {
+        enemy = enemy.nextEnemy;
+      }
+      if (enemy == null || nonTargettedEnemyCount === -1) { // no enemies with stateTargetted: false
+        return null;
+      } else if (nonTargettedEnemyCount === 0) { // 1 enemy with stateTargetted: false
+        return enemy;
+      }
+      for (let i = 0; i < nonTargettedEnemyCount; i += 1) { // > 1 enemy with stateTargetted: false
+        enemy = enemy.nextEnemy;
+        while (enemy.stateTargetted !== false) {
+          enemy = enemy.nextEnemy;
+        }
+      }
+      return enemy;
+    }
+    const enemy = checkStateTargetted(components.enemies.head);
+    switch (components.player.bulletLevel) {
+      case 1:
+        if (
+          enemy == null ||
+          components.bullets.bulletCountPurple >= this.config.level1.maxBullets
+        ) {
+          return null;
+        }
+        break;
+      case 2:
+        if (
+          enemy == null ||
+          components.bullets.bulletCountPurple >= this.config.level2.maxBullets
+        ) {
+          return null;
+        }
+        break;
+      case 3:
+        if (
+          enemy == null ||
+          components.bullets.bulletCountPurple >= this.config.level3.maxBullets
+        ) {
+          return null;
+        }
+        break;
+      case 4:
+        if (
+          enemy == null ||
+          components.bullets.bulletCountPurple >= this.config.level4.maxBullets
+        ) {
+          return null;
+        }
+        break;
+      case 5:
+        if (
+          enemy == null ||
+          components.bullets.bulletCountPurple >= this.config.level5.maxBullets
+        ) {
+          return null;
+        }
+        break;
+      default:
+        break;
+    }
+    return new Bullet.Purple(components.player, enemy, components, canvas);
+  },
+};
+
+},{"./config.js":2}],5:[function(require,module,exports){
+const { red } = require('./config.js');
+
+module.exports = {
+  config: red,
+  createRed(player, Bullet, bulletArray) {
+    switch (player.bulletLevel) {
+      case 1:
+        bulletArray[0] = new Bullet.Red(player, -this.config.level1.offset);
+        bulletArray[1] = new Bullet.Red(player, this.config.level1.offset);
+        break;
+      case 2:
+        bulletArray[0] = new Bullet.Red(player, -this.config.level2.offset);
+        bulletArray[1] = new Bullet.Red(player, 0);
+        bulletArray[2] = new Bullet.Red(player, this.config.level2.offset);
+        break;
+      case 3:
+        bulletArray[0] = new Bullet.RedAngled(
+          player,
+          -this.config.level3.offset,
+          -this.config.level3.angle,
+        );
+        bulletArray[1] = new Bullet.Red(player, -this.config.level3.offset);
+        bulletArray[2] = new Bullet.Red(player, 0);
+        bulletArray[3] = new Bullet.Red(player, this.config.level3.offset);
+        bulletArray[4] = new Bullet.RedAngled(
+          player,
+          this.config.level3.offset,
+          this.config.level3.angle,
+        );
+        break;
+      case 4:
+        bulletArray[0] = new Bullet.RedAngled(
+          player,
+          -this.config.level4.offset,
+          -this.config.level4.angleOuter,
+        );
+        bulletArray[1] = new Bullet.RedAngled(
+          player,
+          -this.config.level4.offset,
+          -this.config.level4.angleInner,
+        );
+        bulletArray[2] = new Bullet.Red(player, -this.config.level4.offset);
+        bulletArray[3] = new Bullet.Red(player, 0);
+        bulletArray[4] = new Bullet.Red(player, this.config.level4.offset);
+        bulletArray[5] = new Bullet.RedAngled(
+          player,
+          this.config.level4.offset,
+          this.config.level4.angleInner,
+        );
+        bulletArray[6] = new Bullet.RedAngled(
+          player,
+          this.config.level4.offset,
+          this.config.level4.angleOuter,
+        );
+        break;
+      case 5:
+        bulletArray[0] = new Bullet.RedAngled(
+          player,
+          -this.config.level5.offset,
+          -this.config.level5.angleOuter,
+        );
+        bulletArray[1] = new Bullet.RedAngled(
+          player,
+          -this.config.level5.offset,
+          -this.config.level5.angleMiddle,
+        );
+        bulletArray[2] = new Bullet.RedAngled(
+          player,
+          -this.config.level5.offset,
+          -this.config.level5.angleInner,
+        );
+        bulletArray[3] = new Bullet.Red(player, -this.config.level5.offset);
+        bulletArray[4] = new Bullet.Red(player, 0);
+        bulletArray[5] = new Bullet.Red(player, this.config.level5.offset);
+        bulletArray[6] = new Bullet.RedAngled(
+          player,
+          this.config.level5.offset,
+          this.config.level5.angleInner,
+        );
+        bulletArray[7] = new Bullet.RedAngled(
+          player,
+          this.config.level5.offset,
+          this.config.level5.angleMiddle,
+        );
+        bulletArray[8] = new Bullet.RedAngled(
+          player,
+          this.config.level5.offset,
+          this.config.level5.angleOuter,
+        );
+        break;
+      default:
+        break;
+    }
+    return bulletArray;
+  },
+};
+
+},{"./config.js":2}],6:[function(require,module,exports){
 module.exports = {
   head: null,
   count: 0,
@@ -388,7 +397,7 @@ module.exports = {
   powerUps,
 };
 
-},{"./bullets/index.js":5,"./enemies/index.js":6,"./powerUps/index.js":8}],8:[function(require,module,exports){
+},{"./bullets/index.js":3,"./enemies/index.js":6,"./powerUps/index.js":8}],8:[function(require,module,exports){
 module.exports = {
   head: null,
   config: {

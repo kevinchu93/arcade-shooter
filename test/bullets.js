@@ -1,149 +1,217 @@
 const sinon = require('sinon');
-const { expect } = require('chai');
 const bullets = require('../components/bullets/index.js');
+const red = require('../components/bullets/red.js');
+const blue = require('../components/bullets/blue.js');
+const purple = require('../components/bullets/purple.js');
+
+const mockPlayer = {
+  width: 10,
+  height: 20,
+  positionX: 30,
+  positionY: 40,
+  bulletType: 'white',
+};
 
 describe('bullets', () => {
   describe('canvasFill', () => {
     it('should call canvasFill with correct parameters for all bullets', () => {
-      let mockBullet1 = {};
-      let mockBullet2 = {};
-      let mockBullet3 = {};
-      mockBullet1 = {
+      const mockBullet = {
         canvasFill() {},
-        nextBullet: mockBullet2 = {
-          canvasFill() {},
-          nextBullet: mockBullet3 = {
-            canvasFill() {},
-            nextBullet: null,
-          },
-        },
+        nextBullet: null,
       };
       const mockGameArea = {
-        canvasElementDrawingContext: null,
+        canvasContext: {
+          fillText() {},
+        },
       };
-      bullets.head = mockBullet1;
-      sinon.stub(mockBullet1, 'canvasFill');
-      sinon.stub(mockBullet2, 'canvasFill');
-      sinon.stub(mockBullet3, 'canvasFill');
+      bullets.head = mockBullet;
+      sinon.stub(mockBullet, 'canvasFill');
+      sinon.stub(mockGameArea.canvasContext, 'fillText');
       bullets.canvasFill(mockGameArea);
-      sinon.assert.calledWithExactly(
-        mockBullet1.canvasFill,
-        mockGameArea.canvasElementDrawingContext,
-      );
-      sinon.assert.calledWithExactly(
-        mockBullet2.canvasFill,
-        mockGameArea.canvasElementDrawingContext,
-      );
-      sinon.assert.calledWithExactly(
-        mockBullet3.canvasFill,
-        mockGameArea.canvasElementDrawingContext,
-      );
-      mockBullet1.canvasFill.restore();
-      mockBullet2.canvasFill.restore();
-      mockBullet3.canvasFill.restore();
+      sinon.assert.calledWithExactly(mockBullet.canvasFill, mockGameArea.canvasContext);
+      mockBullet.canvasFill.restore();
+      mockGameArea.canvasContext.fillText.restore();
     });
   });
   describe('update', () => {
-    it('should call update with correct parameters for all bullets', () => {
-      let mockBullet1 = {};
-      let mockBullet2 = {};
-      let mockBullet3 = {};
-      mockBullet1 = {
+    it('should call create with correct parameters if keyMap[13] === true', () => {
+      const mockBullet = {
         update() {},
-        nextBullet: mockBullet2 = {
-          update() {},
-          nextBullet: mockBullet3 = {
-            update() {},
-            nextBullet: null,
-          },
-        },
+        nextBullet: null,
       };
-      bullets.head = mockBullet1;
-      sinon.stub(mockBullet1, 'update');
-      sinon.stub(mockBullet2, 'update');
-      sinon.stub(mockBullet3, 'update');
-      bullets.update('timeElapsed', 'boundary', 'components', 'Bullet', 'keyMap');
-      sinon.assert.calledWithExactly(mockBullet1.update, 'timeElapsed', 'boundary', 'components', 'Bullet');
-      sinon.assert.calledWithExactly(mockBullet2.update, 'timeElapsed', 'boundary', 'components', 'Bullet');
-      sinon.assert.calledWithExactly(mockBullet3.update, 'timeElapsed', 'boundary', 'components', 'Bullet');
-      mockBullet1.update.restore();
-      mockBullet2.update.restore();
-      mockBullet3.update.restore();
+      const mockComponents = {
+        keyMap: [],
+      };
+      mockComponents.keyMap[13] = true;
+      bullets.head = mockBullet;
+      sinon.stub(bullets, 'create');
+      sinon.stub(mockBullet, 'update');
+      bullets.update('time', 'boundary', mockComponents, 'Bullet', 'canvas');
+      sinon.assert.calledWithExactly(bullets.create, mockComponents, 'Bullet', 'canvas');
+      bullets.create.restore();
+      mockBullet.update.restore();
     });
-    it('should call createNew with correct parameters if keyMap[13] === true', () => {
-      const keyMap = [];
-      keyMap[13] = true;
-      const mockBullet = 'mockBullet';
-      sinon.stub(bullets, 'createNew').returns(mockBullet);
-      sinon.stub(bullets, 'appendNewBullet');
-      bullets.update('timeElapsed', 'boundary', 'components', 'Bullet', keyMap);
-      sinon.assert.calledWithExactly(bullets.createNew, 'components', 'Bullet');
-      bullets.createNew.restore();
-      bullets.appendNewBullet.restore();
-    });
-    it('should call appendNewBullet with correct parameters if keyMap[13] === true', () => {
-      const keyMap = [];
-      keyMap[13] = true;
-      const mockBullet = 'mockBullet';
-      sinon.stub(bullets, 'createNew').returns(mockBullet);
-      sinon.stub(bullets, 'appendNewBullet');
-      bullets.update('timeElapsed', 'boundary', 'components', 'Bullet', keyMap);
-      sinon.assert.calledWithExactly(bullets.appendNewBullet, 'mockBullet', 'components');
-      bullets.createNew.restore();
-      bullets.appendNewBullet.restore();
+    it('should call update with correct parameters for all bullets', () => {
+      const mockBullet = {
+        update() {},
+        nextBullet: null,
+      };
+      const mockComponents = {
+        keyMap: [],
+      };
+      mockComponents.keyMap[13] = false;
+      bullets.head = mockBullet;
+      sinon.stub(mockBullet, 'update');
+      bullets.update('time', 'boundary', mockComponents, 'Bullet', 'canvas');
+      sinon.assert.calledWithExactly(mockBullet.update, 'time', 'boundary', mockComponents, 'Bullet');
+      mockBullet.update.restore();
     });
   });
-  describe('createNew', () => {
-    it('should call Bullet constructor with correct parameter', () => {
-      const mockComponents = {
-        player: {
-          positionHorizontal: 10,
-          positionVertical: 20,
-          width: 10,
-        },
-      };
-      const namespace = {
-        Bullet() {
-        },
-      };
-      namespace.Bullet.getDefaultSpec = function getDefaultSpec() {
-        return {
-          value: 'mockBullet',
+  describe('create', () => {
+    describe('case - white', () => {
+      it('should call Bullet.Default with correct parameter', () => {
+        const mockComponents = {
+          player: mockPlayer,
         };
-      };
-      sinon.stub(namespace, 'Bullet');
-      bullets.createNew(mockComponents, namespace.Bullet);
-      sinon.assert.calledWithExactly(namespace.Bullet, { value: 'mockBullet' });
-      namespace.Bullet.restore();
-    });
-    it('should return bullet with correct properties', () => {
-      const mockComponents = {
-        player: {
-          positionHorizontal: 10,
-          positionVertical: 20,
-          width: 15,
-        },
-      };
-      const namespace = {
-        Bullet(obj) {
-          this.width = obj.width;
-        },
-      };
-      namespace.Bullet.getDefaultSpec = function getDefaultSpec() {
-        return {
-          width: 5,
+        const mockBulletConstructor = {
+          Default: function Default() {},
         };
-      };
-      sinon.spy(namespace, 'Bullet');
-      expect(bullets.createNew(mockComponents, namespace.Bullet)).to.deep.equal({
-        positionHorizontal: 15,
-        positionVertical: 20,
-        width: 5,
+        mockComponents.player.bulletType = 'white';
+        sinon.stub(mockBulletConstructor, 'Default');
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, mockBulletConstructor, 'canvas');
+        sinon.assert.calledWithExactly(mockBulletConstructor.Default, mockPlayer);
+        mockBulletConstructor.Default.restore();
+        bullets.appendList.restore();
       });
-      namespace.Bullet.restore();
+      it('should call appendList with correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        const mockBulletConstructor = {
+          Default: function Default() {
+            this.value = 'mockBullet';
+          },
+        };
+        mockComponents.player.bulletType = 'white';
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, mockBulletConstructor, 'canvas');
+        sinon.assert.calledWithExactly(bullets.appendList, { value: 'mockBullet' }, mockComponents);
+        bullets.appendList.restore();
+      });
+    });
+    describe('case - orangered', () => {
+      it('should call createRed correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        mockComponents.player.bulletType = 'orangered';
+        sinon.stub(red, 'createRed').returns(['mockBullet']);
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, 'Bullet', 'canvas');
+        sinon.assert.calledWithExactly(red.createRed, mockPlayer, 'Bullet', []);
+        red.createRed.restore();
+        bullets.appendList.restore();
+      });
+      it('should call appendList with correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        mockComponents.player.bulletType = 'orangered';
+        sinon.stub(red, 'createRed').returns(['mockBullet']);
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, 'Bullet', 'canvas');
+        sinon.assert.calledWithExactly(bullets.appendList, 'mockBullet', mockComponents);
+        red.createRed.restore();
+        bullets.appendList.restore();
+      });
+    });
+    describe('case - deepskyblue', () => {
+      it('should call createBlue correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        mockComponents.player.bulletType = 'deepskyblue';
+        sinon.stub(blue, 'createBlue').returns('mockBullet');
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, 'Bullet', 'canvas');
+        sinon.assert.calledWithExactly(blue.createBlue, mockPlayer, 'Bullet');
+        blue.createBlue.restore();
+        bullets.appendList.restore();
+      });
+      it('should call appendList with correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        mockComponents.player.bulletType = 'deepskyblue';
+        sinon.stub(blue, 'createBlue').returns('mockBullet');
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, 'Bullet', 'canvas');
+        sinon.assert.calledWithExactly(bullets.appendList, 'mockBullet', mockComponents);
+        blue.createBlue.restore();
+        bullets.appendList.restore();
+      });
+    });
+    describe('case - mediumpurple', () => {
+      it('should call createPurple correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        mockComponents.player.bulletType = 'mediumpurple';
+        sinon.stub(purple, 'createPurple').returns('mockBullet');
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, 'Bullet', 'canvas');
+        sinon.assert.calledWithExactly(purple.createPurple, mockComponents, 'Bullet', 'canvas');
+        purple.createPurple.restore();
+        bullets.appendList.restore();
+      });
+      it('should call appendList with correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        mockComponents.player.bulletType = 'mediumpurple';
+        sinon.stub(purple, 'createPurple').returns('mockBullet');
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, 'Bullet', 'canvas');
+        sinon.assert.calledWithExactly(bullets.appendList, 'mockBullet', mockComponents);
+        purple.createPurple.restore();
+        bullets.appendList.restore();
+      });
+    });
+    describe('case - default', () => {
+      it('should call Bullet.Default with correct parameter', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        const mockBulletConstructor = {
+          Default: function Default() {},
+        };
+        mockComponents.player.bulletType = 'default';
+        sinon.stub(mockBulletConstructor, 'Default');
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, mockBulletConstructor, 'canvas');
+        sinon.assert.calledWithExactly(mockBulletConstructor.Default, mockPlayer);
+        mockBulletConstructor.Default.restore();
+        bullets.appendList.restore();
+      });
+      it('should call appendList with correct parameters', () => {
+        const mockComponents = {
+          player: mockPlayer,
+        };
+        const mockBulletConstructor = {
+          Default: function Default() {
+            this.value = 'mockBullet';
+          },
+        };
+        mockComponents.player.bulletType = 'default';
+        sinon.stub(bullets, 'appendList');
+        bullets.create(mockComponents, mockBulletConstructor, 'canvas');
+        sinon.assert.calledWithExactly(bullets.appendList, { value: 'mockBullet' }, mockComponents);
+        bullets.appendList.restore();
+      });
     });
   });
-  describe('appendNewBullet', () => {
+  describe('appendList', () => {
     it('should called bullet append with correct parameter', () => {
       const mockBullet = {
         append() {
@@ -154,9 +222,9 @@ describe('bullets', () => {
           head: 'head',
         },
       };
-      sinon.stub(mockBullet, 'append');
-      bullets.appendNewBullet(mockBullet, mockComponents);
-      sinon.assert.calledWithExactly(mockBullet.append, 'head');
+      sinon.stub(mockBullet, 'append').returns('head');
+      bullets.appendList(mockBullet, mockComponents);
+      sinon.assert.calledWithExactly(mockBullet.append, 'head', { head: 'head' });
       mockBullet.append.restore();
     });
   });

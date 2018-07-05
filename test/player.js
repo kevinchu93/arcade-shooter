@@ -1,41 +1,72 @@
 const sinon = require('sinon');
-const Player = require('../player.js');
+const Player = require('../objects/player/index.js');
 const { expect } = require('chai');
 
-const mockPlayerSpecDefault = {
-  width: 15,
+const canvasWidth = 1366;
+const canvasHeight = 768;
+
+const mockPlayerSpecs = {
+  width: 30,
   height: 20,
-  positionHorizontal: 683,
-  positionVertical: 748,
+  positionX: canvasWidth / 2,
+  positionY: canvasHeight - 25,
+  speedX: 0,
+  speedY: 0,
+  maxSpeed: 5,
+  accelerationX: 0,
+  accelerationY: 0,
+  acceleration: 1.2,
+  friction: 0.3,
+  bulletType: 'white',
+  bulletLevel: 0,
+  maxBulletLevel: 5,
   score: 0,
-  speed: 5,
 };
 
 describe('Player', () => {
   describe('constructor', () => {
     it('should create new player instance with correct parameters', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      expect(player).to.deep.equal(mockPlayerSpecDefault);
-    });
-  });
-  describe('getDefaultSpec', () => {
-    it('should return correct default property values', () => {
-      const canvasWidth = 1366;
-      const canvasHeight = 768;
-      expect(Player.getDefaultSpec(canvasWidth, canvasHeight)).to.deep.equal(mockPlayerSpecDefault);
+      const player = new Player(canvasWidth, canvasHeight);
+      expect(player).to.deep.equal(mockPlayerSpecs);
     });
   });
   describe('canvasFill', () => {
-    it('should call drawingContext.fillRect with correct parameters', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      const drawingContext = {
+    it('should call context.fillRect with correct parameters', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      const context = {
         fillRect() {},
         fillText() {},
       };
-      sinon.stub(drawingContext, 'fillRect');
-      player.canvasFill(drawingContext);
-      sinon.assert.calledWithExactly(drawingContext.fillRect, 683, 748, 15, 20);
-      drawingContext.fillRect.restore();
+      sinon.stub(context, 'fillRect');
+      sinon.stub(context, 'fillText');
+      player.canvasFill(context);
+      sinon.assert.calledWithExactly(
+        context.fillRect, 
+        mockPlayerSpecs.positionX,
+        mockPlayerSpecs.positionY,
+        mockPlayerSpecs.width,
+        mockPlayerSpecs.height,
+      );
+      context.fillRect.restore();
+      context.fillText.restore();
+    });
+    it('should call context.fillRect with correct parameters', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      const context = {
+        fillRect() {},
+        fillText() {},
+      };
+      sinon.stub(context, 'fillRect');
+      sinon.stub(context, 'fillText');
+      player.canvasFill(context);
+      sinon.assert.calledWithExactly(
+        context.fillText, 
+        mockPlayerSpecs.score,
+        1200,
+        55,
+      );
+      context.fillRect.restore();
+      context.fillText.restore();
     });
   });
   describe('update', () => {

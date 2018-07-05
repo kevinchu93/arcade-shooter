@@ -1,7 +1,7 @@
 const config = require('./config.js');
-const createBlue = require('./createBlue.js');
-const createRed = require('./createRed.js');
-const createPurple = require('./createPurple.js');
+const blue = require('./blue.js');
+const red = require('./red.js');
+const purple = require('./purple.js');
 
 module.exports = {
   config,
@@ -31,18 +31,18 @@ module.exports = {
         break;
       case 'orangered': {
         const emptyArray = [];
-        const bulletArray = createRed(components.player, Bullet, emptyArray);
+        const bulletArray = red.createRed(components.player, Bullet, emptyArray);
         for (let i = 0; bulletArray[i] != null; i += 1) {
           this.appendList(bulletArray[i], components);
         }
         break;
       }
       case 'deepskyblue':
-        bullet = createBlue(components.player, Bullet);
+        bullet = blue.createBlue(components.player, Bullet);
         this.appendList(bullet, components);
         break;
       case 'mediumpurple':
-        bullet = createPurple(components, Bullet, canvas);
+        bullet = purple.createPurple(components, Bullet, canvas);
         if (bullet != null) {
           this.appendList(bullet, components);
         }
