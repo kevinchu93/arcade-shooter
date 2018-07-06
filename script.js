@@ -32,7 +32,7 @@ function update() {
 }
 
 window.onload = () => {
-  gameArea.start(components);
+  gameArea.start(components, Objects.Player);
   update();
   events.listen(gameArea.canvas, components, Objects.Bullet, components.keyMap);
 };

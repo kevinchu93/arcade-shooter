@@ -41,7 +41,7 @@ describe('Player', () => {
       sinon.stub(context, 'fillText');
       player.canvasFill(context);
       sinon.assert.calledWithExactly(
-        context.fillRect, 
+        context.fillRect,
         mockPlayerSpecs.positionX,
         mockPlayerSpecs.positionY,
         mockPlayerSpecs.width,
@@ -60,7 +60,7 @@ describe('Player', () => {
       sinon.stub(context, 'fillText');
       player.canvasFill(context);
       sinon.assert.calledWithExactly(
-        context.fillText, 
+        context.fillText,
         mockPlayerSpecs.score,
         1200,
         55,
@@ -70,141 +70,318 @@ describe('Player', () => {
     });
   });
   describe('update', () => {
-    it('should call movement methods with correct parameters', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      sinon.stub(player, 'movementLeft');
-      sinon.stub(player, 'movementRight');
-      sinon.stub(player, 'movementUp');
-      sinon.stub(player, 'movementDown');
-      const canvasElement = {
+    it('should call movement with correct parameters', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      const mockComponents = {
+        powerUps: {
+          head: 'head',
+        },
+      };
+      sinon.stub(player, 'movement');
+      sinon.stub(player, 'powerUpCollisionCheck');
+      player.update('time', 'canvas', 'keyMap', mockComponents);
+      sinon.assert.calledWithExactly(player.movement, 'keyMap', 'time', 'canvas');
+      player.movement.restore();
+      player.powerUpCollisionCheck.restore();
+    });
+    it('should call powerUpCollisionCheck with correct parameters', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      const mockComponents = {
+        powerUps: {
+          head: 'head',
+        },
+      };
+      sinon.stub(player, 'movement');
+      sinon.stub(player, 'powerUpCollisionCheck');
+      player.update('time', 'canvas', 'keyMap', mockComponents);
+      sinon.assert.calledWithExactly(player.powerUpCollisionCheck, 'head');
+      player.movement.restore();
+      player.powerUpCollisionCheck.restore();
+    });
+  });
+  describe('movement', () => {
+    it('should call positionXUpdate, positionYUpdate, speedXUpdate, speedYUpdate, accelerateXUpdate, accelerateYUpdate with correct parameters', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      const canvas = {
         width: 'width',
         height: 'height',
       };
-      player.update('timeElapsed', canvasElement, 'keyMap');
-      sinon.assert.calledWithExactly(player.movementLeft, 'keyMap', 'timeElapsed', 0);
-      sinon.assert.calledWithExactly(player.movementRight, 'keyMap', 'timeElapsed', 'width');
-      sinon.assert.calledWithExactly(player.movementUp, 'keyMap', 'timeElapsed', 0);
-      sinon.assert.calledWithExactly(player.movementDown, 'keyMap', 'timeElapsed', 'height');
-      player.movementLeft.restore();
-      player.movementRight.restore();
-      player.movementUp.restore();
-      player.movementDown.restore();
+      sinon.stub(player, 'positionXUpdate');
+      sinon.stub(player, 'positionYUpdate');
+      sinon.stub(player, 'speedXUpdate');
+      sinon.stub(player, 'speedYUpdate');
+      sinon.stub(player, 'accelerateXUpdate');
+      sinon.stub(player, 'accelerateYUpdate');
+      player.movement('keyMap', 'time', canvas);
+      sinon.assert.calledWithExactly(player.positionXUpdate, 'time', 0, 'width');
+      sinon.assert.calledWithExactly(player.positionYUpdate, 'time', 0, 'height');
+      sinon.assert.calledWithExactly(player.speedXUpdate, 'time');
+      sinon.assert.calledWithExactly(player.speedYUpdate, 'time');
+      sinon.assert.calledWithExactly(player.accelerateXUpdate, 'keyMap');
+      sinon.assert.calledWithExactly(player.accelerateYUpdate, 'keyMap');
+      player.positionXUpdate.restore();
+      player.positionYUpdate.restore();
+      player.speedXUpdate.restore();
+      player.speedYUpdate.restore();
+      player.accelerateXUpdate.restore();
+      player.accelerateYUpdate.restore();
     });
   });
-  describe('movementLeft', () => {
-    it('should update positionHorizontal correctly when keyMap[37] equals true and within boundaryLeft', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionHorizontal = 500;
-      player.speed = 10;
+  describe('positionXUpdate', () => {
+    it('should update positionX using time input', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.speedX = 5;
+      const time = 100;
+      player.positionXUpdate(time, 'boundaryLeft', 'boundaryRight');
+      expect(player.positionX)
+        .to.equal(mockPlayerSpecs.positionX + (player.speedX * (time / (1000 / 60))));
+    });
+    it('should set positionX = boundaryLeft when positionX < boundaryLeft', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.positionX = 100;
+      player.speedX = 0;
+      const time = 100;
+      const boundaryLeft = 10000;
+      player.positionXUpdate(time, boundaryLeft, 'boundaryRight');
+      expect(player.positionX).to.equal(boundaryLeft);
+    });
+    it('should set positionX = boundaryRight when positionX + width > boundaryRight', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.positionX = 100;
+      player.width = 10;
+      player.speedX = 0;
+      const time = 100;
+      const boundaryRight = -10000;
+      player.positionXUpdate(time, 'boundaryLeft', boundaryRight);
+      expect(player.positionX + player.width).to.equal(boundaryRight);
+    });
+  });
+  describe('positionYUpdate', () => {
+    it('should update positionY using time input', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.speedY = 5;
+      const time = 100;
+      player.positionYUpdate(time, 'boundaryLeft', 'boundaryRight');
+      expect(player.positionY)
+        .to.equal(mockPlayerSpecs.positionY + (player.speedY * (time / (1000 / 60))));
+    });
+    it('should set positionY = boundaryUp when positionY < boundaryUp', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.positionY = 100;
+      player.speedY = 0;
+      const time = 100;
+      const boundaryUp = 10000;
+      player.positionYUpdate(time, boundaryUp, 'boundaryDown');
+      expect(player.positionY).to.equal(boundaryUp);
+    });
+    it('should set positionY = boundaryDown when positionY + height > boundaryDown', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.positionY = 100;
+      player.height = 10;
+      player.speedY = 0;
+      const time = 100;
+      const boundaryDown = -10000;
+      player.positionYUpdate(time, 'boundaryUp', boundaryDown);
+      expect(player.positionY + player.height).to.equal(boundaryDown);
+    });
+  });
+  describe('speedXUpdate', () => {
+    it('should update speedX if within maxSpeed', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.friction = 0;
+      player.speedX = 0;
+      player.maxSpeed = 5;
+      player.accelerationX = 1;
+      const time = 50;
+      player.speedXUpdate(time);
+      expect(player.speedX).to.equal(3);
+    });
+    it('should decrement speedX using friction if speed > 0', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.friction = 1;
+      player.speedX = 2;
+      player.maxSpeed = 5;
+      player.accelerationX = 1;
+      const time = 50;
+      player.speedXUpdate(time);
+      expect(player.speedX).to.equal(2);
+    });
+    it('should increment speedX using friction if speed < 0', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.friction = 1;
+      player.speedX = -2;
+      player.maxSpeed = 5;
+      player.accelerationX = -1;
+      const time = 50;
+      player.speedXUpdate(time);
+      expect(player.speedX).to.equal(-2);
+    });
+    it('should set speedX = maxSpeed if speed exceeds maxSpeed', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.speedX = 10;
+      player.maxSpeed = 5;
+      const time = 50;
+      player.speedXUpdate(time);
+      expect(player.speedX).to.equal(player.maxSpeed);
+    });
+    it('should set speedX = -maxSpeed if speed exceeds -maxSpeed', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.speedX = -10;
+      player.maxSpeed = 5;
+      const time = 50;
+      player.speedXUpdate(time);
+      expect(player.speedX).to.equal(-player.maxSpeed);
+    });
+  });
+  describe('speedYUpdate', () => {
+    it('should update speedY if within maxSpeed', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.friction = 0;
+      player.speedY = 0;
+      player.maxSpeed = 5;
+      player.accelerationY = 1;
+      const time = 50;
+      player.speedYUpdate(time);
+      expect(player.speedY).to.equal(3);
+    });
+    it('should decrement speedY using friction if speed > 0', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.friction = 1;
+      player.speedY = 2;
+      player.maxSpeed = 5;
+      player.accelerationY = 1;
+      const time = 50;
+      player.speedYUpdate(time);
+      expect(player.speedY).to.equal(2);
+    });
+    it('should increment speedY using friction if speed < 0', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.friction = 1;
+      player.speedY = -2;
+      player.maxSpeed = 5;
+      player.accelerationY = -1;
+      const time = 50;
+      player.speedYUpdate(time);
+      expect(player.speedY).to.equal(-2);
+    });
+    it('should set speedY = maxSpeed if speed exceeds maxSpeed', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.speedY = 10;
+      player.maxSpeed = 5;
+      const time = 50;
+      player.speedYUpdate(time);
+      expect(player.speedY).to.equal(player.maxSpeed);
+    });
+    it('should set speedY = -maxSpeed if speed exceeds -maxSpeed', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.speedY = -10;
+      player.maxSpeed = 5;
+      const time = 50;
+      player.speedYUpdate(time);
+      expect(player.speedY).to.equal(-player.maxSpeed);
+    });
+  });
+  describe('accelerateXUpdate', () => {
+    it('should set accelerationX = -acceleration when keyMap[37] === true && keyMap[39] !== true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
       const keyMap = [];
       keyMap[37] = true;
-      player.movementLeft(keyMap, 100, 0);
-      expect(player.positionHorizontal).to.equal(440);
+      keyMap[39] = false;
+      player.accelerateXUpdate(keyMap);
+      expect(player.accelerationX).to.equal(-player.acceleration);
     });
-    it('should not update positionHorizontal when keyMap[37] equals false', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionHorizontal = 500;
-      player.speed = 10;
+    it('should set accelerationX = acceleration when keyMap[37] !== true && keyMap[39] === true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
       const keyMap = [];
       keyMap[37] = false;
-      player.movementLeft(keyMap, 100, 0);
-      expect(player.positionHorizontal).to.equal(500);
+      keyMap[39] = true;
+      player.accelerateXUpdate(keyMap);
+      expect(player.accelerationX).to.equal(player.acceleration);
     });
-    it('should set positionHorizontal to equal boundaryLeft if not within boundaryLeft', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionHorizontal = 500;
-      player.speed = 10;
+    it('should set accelerationX = 0 when keyMap[37] !== true && keyMap[39] !== true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      const keyMap = [];
+      keyMap[37] = false;
+      keyMap[39] = false;
+      player.accelerateXUpdate(keyMap);
+      expect(player.accelerationX).to.equal(0);
+    });
+    it('should set accelerationX = 0 when keyMap[37] === true && keyMap[39] === true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
       const keyMap = [];
       keyMap[37] = true;
-      player.movementLeft(keyMap, 100, 1000);
-      expect(player.positionHorizontal).to.equal(1000);
+      keyMap[39] = true;
+      player.accelerateXUpdate(keyMap);
+      expect(player.accelerationX).to.equal(0);
     });
   });
-  describe('movementRight', () => {
-    it('should update positionHorizontal correctly when keyMap[39] equals true and within boundaryRight - width', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionHorizontal = 500;
-      player.speed = 10;
-      const keyMap = [];
-      keyMap[39] = true;
-      player.movementRight(keyMap, 100, 1000);
-      expect(player.positionHorizontal).to.equal(560);
-    });
-    it('should not update positionHorizontal when keyMap[39] equals false', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionHorizontal = 500;
-      player.speed = 10;
-      const keyMap = [];
-      keyMap[39] = false;
-      player.movementRight(keyMap, 100, 1000);
-      expect(player.positionHorizontal).to.equal(500);
-    });
-    it('should set positionHorizontal to equal boundaryRight - width if not within boundaryRight', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionHorizontal = 500;
-      player.speed = 10;
-      const keyMap = [];
-      keyMap[39] = true;
-      player.movementRight(keyMap, 100, 0);
-      expect(player.positionHorizontal).to.equal(-15);
-    });
-  });
-  describe('movementUp', () => {
-    it('should update positionVertical correctly when keyMap[38] equals true and within boundaryUp', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionVertical = 500;
-      player.speed = 10;
+  describe('accelerateYUpdate', () => {
+    it('should set accelerationY = -acceleration when keyMap[37] === true && keyMap[39] !== true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
       const keyMap = [];
       keyMap[38] = true;
-      player.movementUp(keyMap, 100, 0);
-      expect(player.positionVertical).to.equal(440);
+      keyMap[40] = false;
+      player.accelerateYUpdate(keyMap);
+      expect(player.accelerationY).to.equal(-player.acceleration);
     });
-    it('should not update positionVertical when keyMap[38] equals false', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionVertical = 500;
-      player.speed = 10;
+    it('should set accelerationY = acceleration when keyMap[37] !== true && keyMap[39] === true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
       const keyMap = [];
       keyMap[38] = false;
-      player.movementUp(keyMap, 100, 0);
-      expect(player.positionVertical).to.equal(500);
+      keyMap[40] = true;
+      player.accelerateYUpdate(keyMap);
+      expect(player.accelerationY).to.equal(player.acceleration);
     });
-    it('should set positionVertical to equal boundaryUp if not within boundaryUp', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionVertical = 500;
-      player.speed = 10;
+    it('should set accelerationY = 0 when keyMap[37] !== true && keyMap[39] !== true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      const keyMap = [];
+      keyMap[38] = false;
+      keyMap[40] = false;
+      player.accelerateYUpdate(keyMap);
+      expect(player.accelerationY).to.equal(0);
+    });
+    it('should set accelerationY = 0 when keyMap[37] === true && keyMap[39] === true', () => {
+      const player = new Player(canvasWidth, canvasHeight);
       const keyMap = [];
       keyMap[38] = true;
-      player.movementUp(keyMap, 100, 1000);
-      expect(player.positionVertical).to.equal(1000);
+      keyMap[40] = true;
+      player.accelerateYUpdate(keyMap);
+      expect(player.accelerationY).to.equal(0);
     });
   });
-  describe('movementDown', () => {
-    it('should update positionVertical correctly when keyMap[40] equals true and within boundaryDown - height', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionVertical = 500;
-      player.speed = 10;
-      const keyMap = [];
-      keyMap[40] = true;
-      player.movementDown(keyMap, 100, 1000);
-      expect(player.positionVertical).to.equal(560);
+  describe('powerUpCollisionCheck', () => {
+    it('should increment bulletLevel by 1 if powerUp position within player position, if bulletType = powerUp color and if bulletLevel < maxBulletLevel', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.positionX = 9;
+      player.positionY = 9;
+      player.width = 2;
+      player.height = 2;
+      player.bulletType = 'orangered';
+      player.bulletLevel = 1;
+      const powerUp = {
+        positionX: 10,
+        positionY: 10,
+        color: 'orangered',
+      };
+      player.powerUpCollisionCheck(powerUp);
+      expect(player.bulletLevel).to.equal(2);
     });
-    it('should not update positionVertical when keyMap[40] equals false', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionVertical = 500;
-      player.speed = 10;
-      const keyMap = [];
-      keyMap[40] = false;
-      player.movementDown(keyMap, 100, 1000);
-      expect(player.positionVertical).to.equal(500);
-    });
-    it('should set positionVertical to equal boundaryDown - height if not within boundaryDown', () => {
-      const player = new Player(mockPlayerSpecDefault);
-      player.positionVertical = 500;
-      player.speed = 10;
-      const keyMap = [];
-      keyMap[40] = true;
-      player.movementDown(keyMap, 100, 0);
-      expect(player.positionVertical).to.equal(-20);
+    it('should set bulletType to powerUp color and set bulletLevel to 1 if powerUp position within player position, if bulletType != powerUp color', () => {
+      const player = new Player(canvasWidth, canvasHeight);
+      player.positionX = 9;
+      player.positionY = 9;
+      player.width = 2;
+      player.height = 2;
+      player.bulletType = 'orangered';
+      player.bulletLevel = 1;
+      const powerUp = {
+        positionX: 10,
+        positionY: 10,
+        color: 'deepskyblue',
+      };
+      player.powerUpCollisionCheck(powerUp);
+      expect(player.bulletType).to.equal('deepskyblue');
+      expect(player.bulletLevel).to.equal(1);
     });
   });
 });

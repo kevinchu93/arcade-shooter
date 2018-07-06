@@ -25,8 +25,8 @@ module.exports = class {
     );
     context.fillText(this.score, 1200, 55);
   }
-  update(timeElapsed, canvas, keyMap, components) {
-    this.movement(keyMap, timeElapsed, canvas);
+  update(time, canvas, keyMap, components) {
+    this.movement(keyMap, time, canvas);
     this.powerUpCollisionCheck(components.powerUps.head);
   }
   movement(keyMap, time, canvas) {

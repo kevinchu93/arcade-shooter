@@ -403,8 +403,9 @@ module.exports = {
   config: {
     spawn: {
       countdown: null,
-      rate() {
-        return Math.floor(Math.random() * 1000);
+      rate: 1000,
+      randomRate() {
+        return Math.floor(Math.random() * this.rate);
       },
     },
   },
@@ -423,7 +424,7 @@ module.exports = {
   spawnUpdate(time, components, PowerUp, gameArea) {
     components.powerUps.config.spawn.countdown -= time;
     if (components.powerUps.config.spawn.countdown <= 0) {
-      components.powerUps.config.spawn.countdown += components.powerUps.config.spawn.rate();
+      components.powerUps.config.spawn.countdown += components.powerUps.config.spawn.randomRate();
       const powerUp = this.create(PowerUp, gameArea);
       this.appendList(components, powerUp);
     }
@@ -470,11 +471,9 @@ module.exports = {
 };
 
 },{}],10:[function(require,module,exports){
-const Player = require('./objects/player/index.js');
-
 module.exports = {
   canvas: document.getElementById('canvas'),
-  start(components) {
+  start(components, Player) {
     this.canvas.width = 1366;
     this.canvas.height = 768;
     this.canvas.tabIndex = 1000;
@@ -490,7 +489,7 @@ module.exports = {
   },
 };
 
-},{"./objects/player/index.js":19}],11:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 const Default = require('./default.js');
 
 module.exports = class extends Default {
@@ -870,8 +869,8 @@ module.exports = class {
     );
     context.fillText(this.score, 1200, 55);
   }
-  update(timeElapsed, canvas, keyMap, components) {
-    this.movement(keyMap, timeElapsed, canvas);
+  update(time, canvas, keyMap, components) {
+    this.movement(keyMap, time, canvas);
     this.powerUpCollisionCheck(components.powerUps.head);
   }
   movement(keyMap, time, canvas) {
@@ -1014,7 +1013,7 @@ module.exports = class {
     }
   }
   boundaryCheck(boundaryBottom, components) {
-    if (this.positionVertical >= boundaryBottom) {
+    if (this.positionY >= boundaryBottom) {
       this.remove(components.powerUps.head);
     }
   }
@@ -1081,7 +1080,7 @@ function update() {
 }
 
 window.onload = () => {
-  gameArea.start(components);
+  gameArea.start(components, Objects.Player);
   update();
   events.listen(gameArea.canvas, components, Objects.Bullet, components.keyMap);
 };

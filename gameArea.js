@@ -1,8 +1,6 @@
-const Player = require('./objects/player/index.js');
-
 module.exports = {
   canvas: document.getElementById('canvas'),
-  start(components) {
+  start(components, Player) {
     this.canvas.width = 1366;
     this.canvas.height = 768;
     this.canvas.tabIndex = 1000;

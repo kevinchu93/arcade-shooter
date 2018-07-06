@@ -25,7 +25,7 @@ module.exports = class {
     }
   }
   boundaryCheck(boundaryBottom, components) {
-    if (this.positionVertical >= boundaryBottom) {
+    if (this.positionY >= boundaryBottom) {
       this.remove(components.powerUps.head);
     }
   }

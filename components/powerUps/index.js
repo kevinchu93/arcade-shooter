@@ -3,8 +3,9 @@ module.exports = {
   config: {
     spawn: {
       countdown: null,
-      rate() {
-        return Math.floor(Math.random() * 1000);
+      rate: 1000,
+      randomRate() {
+        return Math.floor(Math.random() * this.rate);
       },
     },
   },
@@ -23,7 +24,7 @@ module.exports = {
   spawnUpdate(time, components, PowerUp, gameArea) {
     components.powerUps.config.spawn.countdown -= time;
     if (components.powerUps.config.spawn.countdown <= 0) {
-      components.powerUps.config.spawn.countdown += components.powerUps.config.spawn.rate();
+      components.powerUps.config.spawn.countdown += components.powerUps.config.spawn.randomRate();
       const powerUp = this.create(PowerUp, gameArea);
       this.appendList(components, powerUp);
     }
