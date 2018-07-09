@@ -16,7 +16,7 @@ env:
 script:
 - npm run lint
 - npm run test
-- docker built -t kevinchu/arcade-shooter .
+- docker build -t kevinchu/arcade-shooter .
 
 after_success:
 - if [ "$TRAVIS_BRANCH" == "master" ]; then docker login -u "$DOCKER_USERNAME" -p
