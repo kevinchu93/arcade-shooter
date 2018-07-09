@@ -1,9 +1,23 @@
 sudo: required
 
 language: node_js
+
 node_js:
-  - "node"
+- node
+
+services:
+- docker
+
+env:
+  global:
+  - secure: FAIZwUDa9aJwFYW4oxuntf+OoEay5+wqeZr0EeRBckC2NC8nTeJ9vR95cymO+tkQ+wChGP3LBw9ILISR3Y8TxtbI3C41cqzZ89X1s6VMLZAVeN4H3EP8pogfC3ntEpu/y10VHAY2cAlTvi2/rMho/8g70jkg6JKiY7IsA8uIanQIGqSJb3vtXmd34VZFwmt0d1is+B8QqRxkxNj8LPZhp6kFgtiplNpa5ijGWE2wnTq9Jbtyb9YY+GgbpgGHpj93W9ocDXhGpkoC1OyuXECHJfqIu7XhjGXqBtN9C+jsLidiX80Ljz3VxwCC7LpMGjUTM8uXU/kp3HGlemi88xDuu4NbOXeMML8tYXC0UEROjn5qzav91QvJ4A4HoNM2jAdxPSQzLnDcYTB2IWBxG805M6U8FD0tGhNlWkePPOzpuBXt7DHZWEna9TZbM24h3DUSvbk7DXGa7jiUt8sNc48uRtfY3lq4tZA/W320EtdT6snSjurIqtMfFy+bW3ZwKFH5jf20KKQQOkZzoQ+a5wtDhJ8Kq3lgTnfDNbR0jmwvyQstG7dp5sGN4/sQb1+4RG7m6Mhwr1IEbARtNyP+noqbUsOA7Ak70i3hWl+G5ySCBAF/CQnHylmLwtS9uGPpbCSbNrHZVemAa26Wr3lczG4zu/+dkAarpc3xwS3wFfh74xI=
+  - secure: E8s9VBnfE7cCBMY1OyLVH43T7nlfx7L3py3pTig4gDzVz0Q77BjptGkGxwfJYDC5aq1zzco9ZT9Wdk+2i1e7QYVf4DaU3Lt/jFhMmvjUEJjaNx/f7AHIPdBzlRBcZLbkLBbDAplAfzCmNIx2iP+003I9eXwOl+dj6Lfb5lIJCMMjK03mIzl3LmUUV3hhIS9ai4+UYTVbOvYNxyyhObcSczQ5SCk/vIZeSL4FBKKlvgMOvu3pEIuJfYYII0yecDXrwQ/1sAWcc9qcHotBB9gBV66QX77EbV6VVYk8RqItkcpkrfQnWEmX6OQKKVvZOW+2mCUjhV7EAoI3EN2tMAJpjtnDcTvzuDzHcdd6Lugfy8dyTKsn4el6veuemViHfLIeCykSjnULWxGIVQ+y3AQzUUAmQ/CCPm6rzopRJoe5sP5Qhw2Cm7DjDAyuMgZUoqSvKZXE2Xzmx6ttY95N8TWfbbQRRWkuPaPcSb8nh7uD5GwD51beKKhf8/9KCa95/3yNPmoPBO8dNUx4ukixG1uq7zL6OzXoSRWpIwbDcup3kvhPMEQgQ3xNUbW53l/g0KgCEOtbANSsY4Njwwry+RYYtP3dPIiO6jYe7M+mj0ATd2qIZfSXPwKaxRXWEWxvnZj+FCervP4Ay0dScYS4porOGFdfyMVJ7iDYkYBqiqDm4n4=
 
 script:
-  - npm run lint
-  - npm run test
+- npm run lint
+- npm run test
+- docker built -t kevinchu/arcade-shooter .
+
+after_success:
+- if [ "$TRAVIS_BRANCH" == "master" ]; then docker login -u "$DOCKER_USERNAME" -p
+  "$DOCKER_PASSWORD"; docker push kevinchu/arcade-shooter; fi
