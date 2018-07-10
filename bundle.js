@@ -455,7 +455,7 @@ module.exports = {
   },
   click(canvas, Bullet, components) {
     canvas.addEventListener('click', () => {
-      components.bullets.create(components, Bullet);
+      components.bullets.create(components, Bullet, canvas);
     });
   },
   keyInput(canvas, keyMap) {
