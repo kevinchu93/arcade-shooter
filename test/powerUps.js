@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const powerUps = require('../components/powerUps/index.js');
+const powerUps = require('../src/components/powerUps/index.js');
 
 describe('powerUps', () => {
   describe('rate', () => {

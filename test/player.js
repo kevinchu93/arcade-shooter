@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const Player = require('../objects/player/index.js');
+const Player = require('../src/objects/player/index.js');
 const { expect } = require('chai');
 
 const canvasWidth = 1366;

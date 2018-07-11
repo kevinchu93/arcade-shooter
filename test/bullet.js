@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const Bullet = require('../objects/bullet/default.js');
+const Bullet = require('../src/objects/bullet/default.js');
 const { expect } = require('chai');
 
 const mockPlayer = {

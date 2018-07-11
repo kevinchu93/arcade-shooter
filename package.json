@@ -18,7 +18,7 @@
   "scripts": {
     "test": "mocha --recursive",
     "lint": "eslint .",
-    "watch": "watchify script.js -o public/bundle.js -v"
+    "watch": "watchify src/script.js -o dist/bundle.js -v"
   },
   "author": "",
   "license": "ISC"

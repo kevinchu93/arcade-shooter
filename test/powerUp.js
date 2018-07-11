@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const PowerUp = require('../objects/powerUp/index.js');
+const PowerUp = require('../src/objects/powerUp/index.js');
 
 const mockPowerUpSpecs = {
   radius: 5,

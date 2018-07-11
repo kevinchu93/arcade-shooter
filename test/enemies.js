@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const enemies = require('../components/enemies/index.js');
+const enemies = require('../src/components/enemies/index.js');
 
 describe('enemies', () => {
   describe('canvasFill', () => {

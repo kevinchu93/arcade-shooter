@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const Enemy = require('../objects/enemy/index.js');
+const Enemy = require('../src/objects/enemy/index.js');
 const { expect } = require('chai');
 
 const mockEnemySpecs = {

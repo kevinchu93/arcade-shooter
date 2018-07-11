@@ -1,8 +1,8 @@
 const sinon = require('sinon');
-const bullets = require('../components/bullets/index.js');
-const red = require('../components/bullets/red.js');
-const blue = require('../components/bullets/blue.js');
-const purple = require('../components/bullets/purple.js');
+const bullets = require('../src/components/bullets/index.js');
+const red = require('../src/components/bullets/red.js');
+const blue = require('../src/components/bullets/blue.js');
+const purple = require('../src/components/bullets/purple.js');
 
 const mockPlayer = {
   width: 10,
