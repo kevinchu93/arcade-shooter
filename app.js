@@ -1,15 +1,18 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+const express = require('express');
+const socket = require('socket.io');
 
-const server = http.createServer((req, res) => {
-  if (req.url === '/') {
-    res.writeHead(200, { 'content-Type': 'text/html' });
-    fs.createReadStream(path.join(__dirname, '/index.html')).pipe(res);
-  } else if (req.url === '/bundle.js') {
-    res.writeHead(200, { 'Content-Type': 'text/javascript' });
-    fs.createReadStream(path.join(__dirname, '/bundle.js')).pipe(res);
-  }
+const app = express();
+const server = app.listen(3000);
+
+app.use(express.static('public'));
+
+const io = socket(server);
+
+io.on('connection', (socket) => {
+  console.log('a user connected');
+
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
 });
 
-server.listen(3000);
