@@ -1,75 +1,82 @@
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(player, enemy, components, canvas) {
-    super(player);
-    this.positionX = player.positionX + (player.width / 2);
-    this.positionY = player.positionY;
+  constructor(game, enemy) {
+    super(game);
+    this.positionX = game.player.positionX + (game.player.width / 2);
+    this.positionY = game.player.positionY;
     this.enemyPositionX = enemy.positionX + (enemy.width / 2);
     this.enemyPositionY = enemy.positionY + (enemy.height / 2);
-    this.controlPositionX = Math.floor(Math.random() * canvas.width);
-    this.controlPositionY = Math.floor(Math.random() * canvas.height);
+    this.controlPositionX = Math.floor(Math.random() * game.canvas.width);
+    this.controlPositionY = Math.floor(Math.random() * game.canvas.height);
     this.reqKillTime = 500;
     this.targetEnemy = enemy;
-    this.targetPlayer = player;
+    this.targetPlayer = game.player;
     if (enemy.stateTargetted === false) {
-      components.enemies.targettedCount += 1;
+      game.enemies.targettedCount += 1;
     }
     enemy.stateTargetted = true;
   }
-  update(time, boundary, components) {
-    this.reqKillTime -= time;
-    if (this.reqKillTime <= 0) {
-      components.bullets.head = this.remove(components.bullets.head, components.bullets);
-      components.player.score += 1;
-      this.targetEnemy.stateHit = true;
+  update() {
+    if (this.removeFromGame === true) {
+      this.game.bullets.head = this.remove();
     }
-    this.movementUpdate();
+    this.movement();
+    this.killCheck();
   }
-  canvasFill(context) {
-    context.strokeStyle = 'mediumpurple';
-    context.lineWidth = 2;
-    context.lineCap = 'round';
-    context.beginPath();
-    context.moveTo(this.positionX, this.positionY);
-    context.quadraticCurveTo(
+  killCheck() {
+    this.reqKillTime -= this.game.timer.deltaTime;
+    if (this.reqKillTime <= 0) {
+      this.removeFromGame = true;
+      this.targetEnemy.removeFromGame = true;
+      this.game.player.score += 1;
+    }
+  }
+
+  draw() {
+    this.game.canvasContext.strokeStyle = 'mediumpurple';
+    this.game.canvasContext.lineWidth = 2;
+    this.game.canvasContext.lineCap = 'round';
+    this.game.canvasContext.beginPath();
+    this.game.canvasContext.moveTo(this.positionX, this.positionY);
+    this.game.canvasContext.quadraticCurveTo(
       this.controlPositionX, this.controlPositionY,
       this.enemyPositionX, this.enemyPositionY,
     );
-    context.stroke();
+    this.game.canvasContext.stroke();
   }
-  movementUpdate() {
+  movement() {
     this.enemyPositionX = this.targetEnemy.positionX + (this.targetEnemy.width / 2);
     this.enemyPositionY = this.targetEnemy.positionY + (this.targetEnemy.height / 2);
     this.positionX = this.targetPlayer.positionX + (this.targetPlayer.width / 2);
     this.positionY = this.targetPlayer.positionY;
   }
-  append(head, bullets) {
-    bullets.bulletCountPurple += 1;
-    if (head == null) {
+  append() {
+    this.game.bullets.bulletCountPurple += 1;
+    if (this.game.bullets.head == null) {
       return this;
     }
-    for (let i = head; i != null; i = i.nextBullet) {
+    for (let i = this.game.bullets.head; i != null; i = i.nextBullet) {
       if (i.nextBullet == null) {
         i.nextBullet = this;
         i = i.nextBullet;
       }
     }
-    return head;
+    return this.game.bullets.head;
   }
-  remove(head, bullets) {
-    bullets.bulletCountPurple -= 1;
-    if (head === this) {
-      return head.nextBullet;
+  remove() {
+    this.game.bullets.bulletCountPurple -= 1;
+    if (this.game.bullets.head === this) {
+      return this.game.bullets.head.nextBullet;
     }
-    for (let i = head; i.nextBullet != null; i = i.nextBullet) {
+    for (let i = this.game.bullets.head; i.nextBullet != null; i = i.nextBullet) {
       if (i.nextBullet === this) {
         i.nextBullet = i.nextBullet.nextBullet;
       }
       if (i.nextBullet == null) {
-        return head;
+        return this.game.bullets.head;
       }
     }
-    return head;
+    return this.game.bullets.head;
   }
 };

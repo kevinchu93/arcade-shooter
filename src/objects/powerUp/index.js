@@ -1,58 +1,59 @@
 module.exports = class {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.radius = 5;
     this.speed = 2;
     this.positionX = null;
     this.positionY = null;
     this.color = null;
-    this.stateObtained = false;
+    this.removeFromGame = false;
     this.nextPowerUp = null;
   }
-  canvasFill(context) {
-    context.fillStyle = this.color;
-    context.beginPath();
-    context.arc(this.positionX, this.positionY, this.radius, 0, 2 * Math.PI);
-    context.fill();
+  draw() {
+    this.game.canvasContext.fillStyle = this.color;
+    this.game.canvasContext.beginPath();
+    this.game.canvasContext.arc(this.positionX, this.positionY, this.radius, 0, 2 * Math.PI);
+    this.game.canvasContext.fill();
   }
-  movement(time) {
-    this.positionY += this.speed * (time / (1000 / 60));
+  movement() {
+    this.positionY += this.speed * (this.game.timer.deltaTime / (1000 / 60));
   }
-  update(time, boundaryBottom, components) {
-    this.movement(time);
-    this.boundaryCheck(boundaryBottom, components);
-    if (this.stateObtained) {
-      components.powerUps.head = this.remove(components.powerUps.head);
+  update() {
+    if (this.removeFromGame) {
+      this.game.powerUps.head = this.remove();
+    }
+    this.movement();
+    this.boundaryCheck();
+  }
+  boundaryCheck() {
+    if (this.positionY >= this.game.canvas.height) {
+      this.removeFromGame = true;
     }
   }
-  boundaryCheck(boundaryBottom, components) {
-    if (this.positionY >= boundaryBottom) {
-      this.remove(components.powerUps.head);
-    }
-  }
-  append(head) {
-    if (head == null) {
+  append() {
+    if (this.game.powerUps.head == null) {
       return this;
     }
-    for (let i = head; i != null; i = i.nextPowerUp) {
+    for (let i = this.game.powerUps.head; i != null; i = i.nextPowerUp) {
       if (i.nextPowerUp == null) {
         i.nextPowerUp = this;
         i = i.nextPowerUp;
       }
     }
-    return head;
+    return this.game.powerUps.head;
   }
-  remove(head) {
-    if (head === this) {
-      return head.nextPowerUp;
+  remove() {
+    if (this.game.powerUps.head === this) {
+      return this.game.powerUps.head.nextPowerUp;
     }
-    for (let i = head; i.nextPowerUp != null; i = i.nextPowerUp) {
+    for (let i = this.game.powerUps.head; i.nextPowerUp != null; i = i.nextPowerUp) {
       if (i.nextPowerUp === this) {
         i.nextPowerUp = i.nextPowerUp.nextPowerUp;
       }
       if (i.nextPowerUp == null) {
-        return head;
+        return this.game.powerUps.head;
       }
     }
-    return head;
+    return this.game.powerUps.head;
   }
 };

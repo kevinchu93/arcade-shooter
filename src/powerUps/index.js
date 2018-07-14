@@ -10,15 +10,14 @@ module.exports = {
     },
   },
   types: ['deepskyblue', 'orangered', 'mediumpurple'],
-  canvasFill(gameArea) {
+  draw() {
     for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.canvasFill(gameArea.canvasContext);
+      i.draw();
     }
   },
-  update(time, components, PowerUp, gameArea) {
-    this.spawnUpdate(time, components, PowerUp, gameArea);
+  update() {
     for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.update(time, gameArea.canvas.height, components);
+      i.update();
     }
   },
   spawnUpdate(time, components, PowerUp, gameArea) {
@@ -26,16 +25,13 @@ module.exports = {
     if (components.powerUps.config.spawn.countdown <= 0) {
       components.powerUps.config.spawn.countdown += components.powerUps.config.spawn.randomRate();
       const powerUp = this.create(PowerUp, gameArea);
-      this.appendList(components, powerUp);
+      this.appendList();
     }
   },
-  create(PowerUp, gameArea) {
-    const powerUp = new PowerUp();
-    powerUp.positionX = Math.floor(Math.random() * gameArea.canvas.width);
+  create(PowerUp, game) {
+    const powerUp = new PowerUp(game);
+    powerUp.positionX = Math.floor(Math.random() * game.canvas.width);
     powerUp.color = this.types[Math.floor(Math.random() * this.types.length)];
     return powerUp;
-  },
-  appendList(components, powerUp) {
-    components.powerUps.head = powerUp.append(components.powerUps.head);
   },
 };

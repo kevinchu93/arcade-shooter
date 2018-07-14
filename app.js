@@ -9,10 +9,9 @@ app.use(express.static('dist'));
 const io = socket(server);
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
 
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
+  socket.on('player coordinates', (data) => {
+    socket.broadcast.emit('player coordinates', data);
   });
 });
 

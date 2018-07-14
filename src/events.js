@@ -1,8 +1,8 @@
 module.exports = {
-  listen(canvas, components, Bullet, keyMap) {
-    this.mouseMove(canvas, components.player);
-    this.click(canvas, Bullet, components);
-    this.keyInput(canvas, keyMap);
+  listen(Bullet, game) {
+    this.mouseMove(game.canvas, game.player);
+    this.click(game.canvas, Bullet, game);
+    this.keyInput(game.canvas, game.keyMap);
   },
   mouseMove(canvas, player) {
     canvas.addEventListener('mousemove', (e) => {
@@ -10,9 +10,9 @@ module.exports = {
       player.positionY = e.clientY;
     });
   },
-  click(canvas, Bullet, components) {
+  click(canvas, Bullet, game) {
     canvas.addEventListener('click', () => {
-      components.bullets.create(components, Bullet, canvas);
+      game.bullets.create(game, Bullet);
     });
   },
   keyInput(canvas, keyMap) {

@@ -1,14 +1,14 @@
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(player, offset, angle) {
-    super(player);
+  constructor(game, offset, angle) {
+    super(game);
     this.offset = offset;
     this.angle = angle;
-    this.positionX = (player.positionX + ((player.width - this.width) / 2)) + this.offset;
+    this.positionX = (game.player.positionX + ((game.player.width - this.width) / 2)) + this.offset;
   }
-  movement(time) {
-    this.positionX += this.angle * this.speed * (time / (1000 / 60));
-    this.positionY -= this.speed * (time / (1000 / 60));
+  movement() {
+    this.positionX += this.angle * this.speed * (this.game.timer.deltaTime / (1000 / 60));
+    this.positionY -= this.speed * (this.game.timer.deltaTime / (1000 / 60));
   }
 };
