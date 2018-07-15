@@ -25,34 +25,26 @@ module.exports = {
     let bullet = {};
     switch (game.player.bulletType) {
       case 'white':
-        bullet = new Bullet.Default(game);
-        this.appendList(bullet);
+        this.head = new Bullet.Default(game).append();
         break;
       case 'orangered': {
-        const bulletArray = red.createRed(game, emptyArray);
+        const bulletArray = red.createRed(game);
         for (let i = 0; bulletArray[i] != null; i += 1) {
-          this.appendList(bulletArray[i], game);
+          this.head = bulletArray[i].append();
         }
         break;
       }
       case 'deepskyblue':
-        console.log('deepskyblue');
-        bullet = blue.createBlue(game);
-        console.log(bullet);
-        this.appendList(bullet);
+        this.head = blue.createBlue(game).append();
         break;
       case 'mediumpurple':
         bullet = purple.createPurple(game);
         if (bullet != null) {
-          this.appendList(bullet);
+          this.head = bullet.append();
         }
         break;
       default:
-        bullet = new Bullet.Default(game.player, game);
-        this.appendList(bullet);
+        this.head = new Bullet.Default(game).append();
     }
-  },
-  appendList(bullet) {
-    this.head = bullet.append();
   },
 };

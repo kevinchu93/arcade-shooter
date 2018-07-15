@@ -8,7 +8,7 @@ module.exports = class extends Default {
     this.positionX = game.player.positionX + ((game.player.width - this.width) / 2);
     this.positionY = game.player.positionY;
   }
-  update(components) {
+  update() {
     super.boundaryCheck();
     super.movement();
     this.hitCheck();

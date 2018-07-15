@@ -7,7 +7,7 @@ module.exports = class {
   }
   tick() {
     this.currentTime = Date.now();
-    if (this.previousTimeStamp == 0) {
+    if (this.previousTimeStamp === 0) {
       this.deltaTime = 17;
     } else {
       this.deltaTime = this.currentTime - this.previousTimeStamp;
@@ -16,4 +16,4 @@ module.exports = class {
     this.gameTime += this.deltaTime;
     return this.deltaTime;
   }
-}
+};

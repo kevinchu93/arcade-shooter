@@ -21,7 +21,7 @@ module.exports = class {
   update() {
     this.boundaryCheck();
     this.movement();
-    this.hitCheck()
+    this.hitCheck();
     if (this.removeFromGame === true) {
       this.game.bullets.head = this.remove();
     }

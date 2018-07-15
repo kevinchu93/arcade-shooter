@@ -2,9 +2,7 @@ const Timer = require('./timer.js');
 const bullets = require('./bullets/index.js');
 const enemies = require('./enemies/index.js');
 const powerUps = require('./powerUps/index.js');
-const Bullet = require('./objects/bullet/default.js');
-const Enemy = require('./objects/enemy/index.js');
-const PowerUp = require('./objects/powerUp/index.js');
+const Player = require('./objects/player/index.js');
 
 module.exports = {
   keyMap: [],
@@ -13,7 +11,7 @@ module.exports = {
   powerUps,
   player: null,
   canvas: document.getElementById('canvas'),
-  init(components, Player) {
+  init() {
     this.timer = new Timer();
     this.canvas.width = 1366;
     this.canvas.height = 768;
@@ -29,7 +27,7 @@ module.exports = {
       this.draw();
       this.spawn();
       window.requestAnimationFrame(gameLoop);
-    }
+    };
     gameLoop();
   },
   drawBackground() {
@@ -52,18 +50,7 @@ module.exports = {
     this.powerUps.draw();
   },
   spawn() {
-    this.enemies.spawn.countdown -= this.timer.deltaTime;
-    if (this.enemies.spawn.countdown <= 0) {
-      this.enemies.spawn.countdown += this.enemies.spawn.rate;
-      const enemy = new Enemy(this);
-      this.enemies.head = enemy.append();
-    }
-
-    this.powerUps.config.spawn.countdown -= this.timer.deltaTime;
-    if (this.powerUps.config.spawn.countdown <= 0) {
-      this.powerUps.config.spawn.countdown += this.powerUps.config.spawn.randomRate();
-      const powerUp = this.powerUps.create(PowerUp, this);
-      this.powerUps.head = powerUp.append();
-    }
+    this.enemies.spawn(this);
+    this.powerUps.spawn(this);
   },
 };

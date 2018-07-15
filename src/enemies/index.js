@@ -1,11 +1,15 @@
+const Enemy = require('../objects/enemy/index.js');
+
 module.exports = {
   head: null,
   count: 0,
   targettedCount: 0,
   totalTime: 0,
-  spawn: {
-    countdown: 1000,
-    rate: 1000,
+  config: {
+    spawn: {
+      countdown: 1000,
+      rate: 1000,
+    },
   },
   draw(game) {
     for (let i = this.head; i != null; i = i.nextEnemy) {
@@ -18,15 +22,11 @@ module.exports = {
       i.update();
     }
   },
-  spawnUpdate(time, components, Enemy) {
-    components.enemies.spawn.countdown -= time;
-    if (components.enemies.spawn.countdown <= 0) {
-      components.enemies.spawn.countdown += components.enemies.spawn.rate;
-      const enemy = new Enemy();
-      this.appendList(components, enemy);
+  spawn(game) {
+    game.enemies.config.spawn.countdown -= game.timer.deltaTime;
+    if (game.enemies.config.spawn.countdown <= 0) {
+      game.enemies.config.spawn.countdown += game.enemies.config.spawn.rate;
+      game.enemies.head = new Enemy(game).append();
     }
-  },
-  appendList(components, enemy) {
-    components.enemies.head = enemy.append(components.enemies.head, components.enemies);
   },
 };

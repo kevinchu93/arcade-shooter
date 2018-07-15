@@ -1,3 +1,5 @@
+const PowerUp = require('../objects/powerUp/index.js');
+
 module.exports = {
   head: null,
   config: {
@@ -20,18 +22,11 @@ module.exports = {
       i.update();
     }
   },
-  spawnUpdate(time, components, PowerUp, gameArea) {
-    components.powerUps.config.spawn.countdown -= time;
-    if (components.powerUps.config.spawn.countdown <= 0) {
-      components.powerUps.config.spawn.countdown += components.powerUps.config.spawn.randomRate();
-      const powerUp = this.create(PowerUp, gameArea);
-      this.appendList();
+  spawn(game) {
+    this.config.spawn.countdown -= game.timer.deltaTime;
+    if (this.config.spawn.countdown <= 0) {
+      this.config.spawn.countdown += this.config.spawn.randomRate();
+      game.powerUps.head = new PowerUp(game).append();
     }
-  },
-  create(PowerUp, game) {
-    const powerUp = new PowerUp(game);
-    powerUp.positionX = Math.floor(Math.random() * game.canvas.width);
-    powerUp.color = this.types[Math.floor(Math.random() * this.types.length)];
-    return powerUp;
   },
 };

@@ -9,9 +9,7 @@ app.use(express.static('dist'));
 const io = socket(server);
 
 io.on('connection', (socket) => {
-
   socket.on('player coordinates', (data) => {
     socket.broadcast.emit('player coordinates', data);
   });
 });
-

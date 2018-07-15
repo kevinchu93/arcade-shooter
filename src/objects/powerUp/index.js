@@ -3,9 +3,9 @@ module.exports = class {
     this.game = game;
     this.radius = 5;
     this.speed = 2;
-    this.positionX = null;
+    this.positionX = Math.floor(Math.random() * game.canvas.width);
     this.positionY = null;
-    this.color = null;
+    this.color = game.powerUps.types[Math.floor(Math.random() * game.powerUps.types.length)];
     this.removeFromGame = false;
     this.nextPowerUp = null;
   }

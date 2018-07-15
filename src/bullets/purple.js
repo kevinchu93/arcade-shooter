@@ -11,20 +11,19 @@ module.exports = {
       while (enemy != null && enemy.stateTargetted === true) {
         enemy = enemy.nextEnemy;
       }
-      console.log(randomUntargettedEnemy);
-      if (enemy == null) { // no untargetted Enemy 
+      if (enemy == null) { // no untargetted Enemy
         return null;
-      } else if (randomUntargettedEnemy === 0) { // 1 untargetted Enemy 
+      } else if (randomUntargettedEnemy === 0) { // 1 untargetted Enemy
         return enemy;
       }
-      for (let i = 0; i < randomUntargettedEnemy; i += 1) { // > 1 untargettedEnemy 
+      for (let i = 0; i < randomUntargettedEnemy; i += 1) { // > 1 untargettedEnemy
         enemy = enemy.nextEnemy;
         while (enemy.stateTargetted !== false) {
           enemy = enemy.nextEnemy;
         }
       }
       return enemy;
-    }
+    };
     const enemy = findRandomUntargettedEnemy();
     if (enemy == null) {
       return null;
