@@ -1,12 +1,13 @@
 module.exports = class {
-  constructor(game) {
+  constructor(game, player) {
     this.game = game;
+    this.playerId = player.socketId;
     this.width = 5;
     this.height = 10;
     this.speed = 20;
-    this.positionX = game.player.positionX + ((game.player.width - this.width) / 2);
-    this.positionY = game.player.positionY;
-    this.type = game.player.bulletType;
+    this.positionX = player.positionX + ((player.width - this.width) / 2);
+    this.positionY = player.positionY;
+    this.type = player.bulletType;
     this.nextBullet = null;
     this.removeFromGame = false;
   }
@@ -19,12 +20,12 @@ module.exports = class {
     }
   }
   update() {
-    this.boundaryCheck();
-    this.movement();
-    this.hitCheck();
     if (this.removeFromGame === true) {
       this.game.bullets.head = this.remove();
     }
+    this.boundaryCheck();
+    this.movement();
+    this.hitCheck();
   }
   draw() {
     this.game.canvasContext.fillStyle = this.type;

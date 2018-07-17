@@ -3,29 +3,31 @@ const { red } = require('./config.js');
 
 module.exports = {
   config: red,
-  createRed(game) {
+  createRed(game, player) {
     const bulletArray = [];
     switch (game.player.bulletLevel) {
       case 1:
-        bulletArray[0] = new Bullet.Red(game, -this.config.level1.offset);
-        bulletArray[1] = new Bullet.Red(game, this.config.level1.offset);
+        bulletArray[0] = new Bullet.Red(game, player, -this.config.level1.offset);
+        bulletArray[1] = new Bullet.Red(game, player, this.config.level1.offset);
         break;
       case 2:
-        bulletArray[0] = new Bullet.Red(game, -this.config.level2.offset);
-        bulletArray[1] = new Bullet.Red(game, 0);
-        bulletArray[2] = new Bullet.Red(game, this.config.level2.offset);
+        bulletArray[0] = new Bullet.Red(game, player, -this.config.level2.offset);
+        bulletArray[1] = new Bullet.Red(game, player, 0);
+        bulletArray[2] = new Bullet.Red(game, player, this.config.level2.offset);
         break;
       case 3:
         bulletArray[0] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level3.offset,
           -this.config.level3.angle,
         );
-        bulletArray[1] = new Bullet.Red(game, -this.config.level3.offset);
-        bulletArray[2] = new Bullet.Red(game, 0);
-        bulletArray[3] = new Bullet.Red(game, this.config.level3.offset);
+        bulletArray[1] = new Bullet.Red(game, player, -this.config.level3.offset);
+        bulletArray[2] = new Bullet.Red(game, player, 0);
+        bulletArray[3] = new Bullet.Red(game, player, this.config.level3.offset);
         bulletArray[4] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level3.offset,
           this.config.level3.angle,
         );
@@ -33,24 +35,28 @@ module.exports = {
       case 4:
         bulletArray[0] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level4.offset,
           -this.config.level4.angleOuter,
         );
         bulletArray[1] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level4.offset,
           -this.config.level4.angleInner,
         );
-        bulletArray[2] = new Bullet.Red(game, -this.config.level4.offset);
-        bulletArray[3] = new Bullet.Red(game, 0);
-        bulletArray[4] = new Bullet.Red(game, this.config.level4.offset);
+        bulletArray[2] = new Bullet.Red(game, player, -this.config.level4.offset);
+        bulletArray[3] = new Bullet.Red(game, player, 0);
+        bulletArray[4] = new Bullet.Red(game, player, this.config.level4.offset);
         bulletArray[5] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level4.offset,
           this.config.level4.angleInner,
         );
         bulletArray[6] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level4.offset,
           this.config.level4.angleOuter,
         );
@@ -58,22 +64,25 @@ module.exports = {
       case 5:
         bulletArray[0] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level5.offset,
           -this.config.level5.angleOuter,
         );
         bulletArray[1] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level5.offset,
           -this.config.level5.angleMiddle,
         );
         bulletArray[2] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level5.offset,
           -this.config.level5.angleInner,
         );
-        bulletArray[3] = new Bullet.Red(game, -this.config.level5.offset);
-        bulletArray[4] = new Bullet.Red(game, 0);
-        bulletArray[5] = new Bullet.Red(game, this.config.level5.offset);
+        bulletArray[3] = new Bullet.Red(game, player, -this.config.level5.offset);
+        bulletArray[4] = new Bullet.Red(game, player, 0);
+        bulletArray[5] = new Bullet.Red(game, player, this.config.level5.offset);
         bulletArray[6] = new Bullet.RedAngled(
           game,
           this.config.level5.offset,

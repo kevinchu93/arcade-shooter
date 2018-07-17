@@ -3,7 +3,7 @@ const { purple } = require('./config.js');
 
 module.exports = {
   config: purple,
-  createPurple(game) {
+  createPurple(game, player) {
     const findRandomUntargettedEnemy = () => {
       let enemy = game.enemies.head;
       const untargettedEnemiesCount = game.enemies.count - game.enemies.targettedCount;
@@ -57,6 +57,6 @@ module.exports = {
       default:
         break;
     }
-    return new Bullet.Purple(game, enemy);
+    return new Bullet.Purple(game, player, enemy);
   },
 };

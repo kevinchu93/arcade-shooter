@@ -11,6 +11,10 @@ window.onload = () => {
   socket.on('update', (data) => {
     gameEngine.gameState = data;
   });
+  socket.on('connect', () => {
+    console.log(socket.id);
+  });
+
   gameEngine.canvas.addEventListener('keydown', (e) => {
     if (e.keyCode !== 116 && e.keyCode !== 123) {
       e.preventDefault();

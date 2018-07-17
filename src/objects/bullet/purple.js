@@ -1,17 +1,17 @@
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(game, enemy) {
-    super(game);
-    this.positionX = game.player.positionX + (game.player.width / 2);
-    this.positionY = game.player.positionY;
+  constructor(game, player, enemy) {
+    super(game, player);
+    this.positionX = player.positionX + (game.player.width / 2);
+    this.positionY = player.positionY;
     this.enemyPositionX = enemy.positionX + (enemy.width / 2);
     this.enemyPositionY = enemy.positionY + (enemy.height / 2);
     this.controlPositionX = Math.floor(Math.random() * game.canvas.width);
     this.controlPositionY = Math.floor(Math.random() * game.canvas.height);
     this.reqKillTime = 500;
     this.targetEnemy = enemy;
-    this.targetPlayer = game.player;
+    this.targetPlayer = player;
     if (enemy.stateTargetted === false) {
       game.enemies.targettedCount += 1;
     }

@@ -4,12 +4,13 @@ const { blue } = require('./config.js');
 
 module.exports = {
   config: blue,
-  createBlue(game) {
+  createBlue(game, player) {
     let bullet = {};
     switch (game.player.bulletLevel) {
       case 1:
         bullet = new Bullet.Blue(
           game,
+          player,
           this.config.level1.width,
           this.config.level1.height,
         );
@@ -17,6 +18,7 @@ module.exports = {
       case 2:
         bullet = new Bullet.Blue(
           game,
+          player,
           this.config.level2.width,
           this.config.level2.height,
         );
@@ -24,6 +26,7 @@ module.exports = {
       case 3:
         bullet = new Bullet.Blue(
           game,
+          player,
           this.config.level3.width,
           this.config.level3.height,
         );
@@ -31,6 +34,7 @@ module.exports = {
       case 4:
         bullet = new Bullet.Blue(
           game,
+          player,
           this.config.level4.width,
           this.config.level4.height,
         );
@@ -38,6 +42,7 @@ module.exports = {
       case 5:
         bullet = new Bullet.Blue(
           game,
+          player,
           this.config.level5.width,
           this.config.level5.height,
         );
@@ -139,30 +144,30 @@ module.exports = {
       i.update();
     }
   },
-  create(game) {
+  create(game, id) {
     let bullet = {};
     switch (game.player.bulletType) {
       case 'white':
-        this.head = new Bullet.Default(game).append();
+        this.head = new Bullet.Default(game, id).append();
         break;
       case 'orangered': {
-        const bulletArray = red.createRed(game);
+        const bulletArray = red.createRed(game, id);
         for (let i = 0; bulletArray[i] != null; i += 1) {
           this.head = bulletArray[i].append();
         }
         break;
       }
       case 'deepskyblue':
-        this.head = blue.createBlue(game).append();
+        this.head = blue.createBlue(game, id).append();
         break;
       case 'mediumpurple':
-        bullet = purple.createPurple(game);
+        bullet = purple.createPurple(game, id);
         if (bullet != null) {
           this.head = bullet.append();
         }
         break;
       default:
-        this.head = new Bullet.Default(game).append();
+        this.head = new Bullet.Default(game, id).append();
     }
   },
 };
@@ -173,7 +178,7 @@ const { purple } = require('./config.js');
 
 module.exports = {
   config: purple,
-  createPurple(game) {
+  createPurple(game, player) {
     const findRandomUntargettedEnemy = () => {
       let enemy = game.enemies.head;
       const untargettedEnemiesCount = game.enemies.count - game.enemies.targettedCount;
@@ -227,7 +232,7 @@ module.exports = {
       default:
         break;
     }
-    return new Bullet.Purple(game, enemy);
+    return new Bullet.Purple(game, enemy, player);
   },
 };
 
@@ -237,29 +242,31 @@ const { red } = require('./config.js');
 
 module.exports = {
   config: red,
-  createRed(game) {
+  createRed(game, player) {
     const bulletArray = [];
     switch (game.player.bulletLevel) {
       case 1:
-        bulletArray[0] = new Bullet.Red(game, -this.config.level1.offset);
-        bulletArray[1] = new Bullet.Red(game, this.config.level1.offset);
+        bulletArray[0] = new Bullet.Red(game, player, -this.config.level1.offset);
+        bulletArray[1] = new Bullet.Red(game, player, this.config.level1.offset);
         break;
       case 2:
-        bulletArray[0] = new Bullet.Red(game, -this.config.level2.offset);
-        bulletArray[1] = new Bullet.Red(game, 0);
-        bulletArray[2] = new Bullet.Red(game, this.config.level2.offset);
+        bulletArray[0] = new Bullet.Red(game, player, -this.config.level2.offset);
+        bulletArray[1] = new Bullet.Red(game, player, 0);
+        bulletArray[2] = new Bullet.Red(game, player, this.config.level2.offset);
         break;
       case 3:
         bulletArray[0] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level3.offset,
           -this.config.level3.angle,
         );
-        bulletArray[1] = new Bullet.Red(game, -this.config.level3.offset);
-        bulletArray[2] = new Bullet.Red(game, 0);
-        bulletArray[3] = new Bullet.Red(game, this.config.level3.offset);
+        bulletArray[1] = new Bullet.Red(game, player, -this.config.level3.offset);
+        bulletArray[2] = new Bullet.Red(game, player, 0);
+        bulletArray[3] = new Bullet.Red(game, player, this.config.level3.offset);
         bulletArray[4] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level3.offset,
           this.config.level3.angle,
         );
@@ -267,24 +274,28 @@ module.exports = {
       case 4:
         bulletArray[0] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level4.offset,
           -this.config.level4.angleOuter,
         );
         bulletArray[1] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level4.offset,
           -this.config.level4.angleInner,
         );
-        bulletArray[2] = new Bullet.Red(game, -this.config.level4.offset);
-        bulletArray[3] = new Bullet.Red(game, 0);
-        bulletArray[4] = new Bullet.Red(game, this.config.level4.offset);
+        bulletArray[2] = new Bullet.Red(game, player, -this.config.level4.offset);
+        bulletArray[3] = new Bullet.Red(game, player, 0);
+        bulletArray[4] = new Bullet.Red(game, player, this.config.level4.offset);
         bulletArray[5] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level4.offset,
           this.config.level4.angleInner,
         );
         bulletArray[6] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level4.offset,
           this.config.level4.angleOuter,
         );
@@ -292,22 +303,25 @@ module.exports = {
       case 5:
         bulletArray[0] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level5.offset,
           -this.config.level5.angleOuter,
         );
         bulletArray[1] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level5.offset,
           -this.config.level5.angleMiddle,
         );
         bulletArray[2] = new Bullet.RedAngled(
           game,
+          player,
           -this.config.level5.offset,
           -this.config.level5.angleInner,
         );
-        bulletArray[3] = new Bullet.Red(game, -this.config.level5.offset);
-        bulletArray[4] = new Bullet.Red(game, 0);
-        bulletArray[5] = new Bullet.Red(game, this.config.level5.offset);
+        bulletArray[3] = new Bullet.Red(game, player, -this.config.level5.offset);
+        bulletArray[4] = new Bullet.Red(game, player, 0);
+        bulletArray[5] = new Bullet.Red(game, player, this.config.level5.offset);
         bulletArray[6] = new Bullet.RedAngled(
           game,
           this.config.level5.offset,
@@ -410,6 +424,7 @@ module.exports = {
   enemies,
   powerUps,
   player: null,
+  player2: null,
   canvas: null,
   gameState: null,
   init() {
@@ -426,7 +441,6 @@ module.exports = {
     this.canvas = {};
     this.canvas.width = 1366;
     this.canvas.height = 768;
-    this.player = new Player(this);
   },
   clientInit() {
     this.timer = new Timer();
@@ -435,7 +449,6 @@ module.exports = {
     this.canvas.tabIndex = 1000;
     this.canvas.focus();
     this.canvasContext = this.canvas.getContext('2d');
-    this.player = new Player(this);
   },
   start() {
     const gameLoop = () => {
@@ -464,12 +477,22 @@ module.exports = {
   clientDraw() {
     this.drawBackground();
     if (this.gameState != null) {
-      this.canvasContext.fillRect(
-        this.gameState.player.positionX,
-        this.gameState.player.positionY,
-        30,
-        20,
-      );
+      if (this.gameState.player != null) {
+        this.canvasContext.fillRect(
+          this.gameState.player.positionX,
+          this.gameState.player.positionY,
+          30,
+          20,
+        );
+      }
+      if (this.gameState.player2 != null) {
+        this.canvasContext.fillRect(
+          this.gameState.player2.positionX,
+          this.gameState.player2.positionY,
+          30,
+          20,
+        );
+      }
       for (let i = 0; this.gameState.enemies[i] != null; i += 1) {
         this.canvasContext.fillRect(
           this.gameState.enemies[i].positionX,
@@ -479,12 +502,27 @@ module.exports = {
         );
       }
       for (let i = 0; this.gameState.bullets[i] != null; i += 1) {
-        this.canvasContext.fillRect(
-          this.gameState.bullets[i].positionX,
-          this.gameState.bullets[i].positionY,
-          20,
-          10,
-        );
+        console.log(this.gameState.bullets[i].type);
+        if (this.gameState.bullets[i].type != 'mediumpurple') {
+          this.canvasContext.fillStyle = this.gameState.bullets[i].type;
+          this.canvasContext.fillRect(
+            this.gameState.bullets[i].positionX,
+            this.gameState.bullets[i].positionY,
+            this.gameState.bullets[i].width,
+            this.gameState.bullets[i].height,
+          );
+        } else {
+          this.canvasContext.strokeStyle = 'mediumpurple';
+          this.canvasContext.lineWidth = 2;
+          this.canvasContext.lineCap = 'round';
+          this.canvasContext.beginPath();
+          this.canvasContext.moveTo(this.gameState.bullets[i].positionX, this.gameState.bullets[i].positionY);
+          this.canvasContext.quadraticCurveTo(
+            this.gameState.bullets[i].controlPositionX, this.gameState.bullets[i].controlPositionY,
+            this.gameState.bullets[i].enemyPositionX, this.gameState.bullets[i].enemyPositionY,
+          );
+          this.canvasContext.stroke();
+        }
       }
       for (let i = 0; this.gameState.powerUps[i] != null; i += 1) {
         this.canvasContext.fillStyle = this.gameState.powerUps[i].color;
@@ -510,6 +548,9 @@ module.exports = {
     if (this.player !== null) {
       this.player.update();
     }
+    if (this.player2 !== null) {
+      this.player2.update();
+    }
     this.enemies.update();
     this.bullets.update(this);
     this.powerUps.update();
@@ -531,12 +572,12 @@ module.exports = {
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(game, width, height) {
-    super(game);
+  constructor(game, player, width, height) {
+    super(game, player);
     this.width = width;
     this.height = height;
-    this.positionX = game.player.positionX + ((game.player.width - this.width) / 2);
-    this.positionY = game.player.positionY;
+    this.positionX = player.positionX + ((player.width - this.width) / 2);
+    this.positionY = player.positionY;
   }
   update() {
     super.boundaryCheck();
@@ -577,14 +618,15 @@ module.exports = class extends Default {
 
 },{"./default.js":10}],10:[function(require,module,exports){
 module.exports = class {
-  constructor(game) {
+  constructor(game, player) {
     this.game = game;
+    this.playerId = player.socketId;
     this.width = 5;
     this.height = 10;
     this.speed = 20;
-    this.positionX = game.player.positionX + ((game.player.width - this.width) / 2);
-    this.positionY = game.player.positionY;
-    this.type = game.player.bulletType;
+    this.positionX = player.positionX + ((player.width - this.width) / 2);
+    this.positionY = player.positionY;
+    this.type = player.bulletType;
     this.nextBullet = null;
     this.removeFromGame = false;
   }
@@ -597,12 +639,12 @@ module.exports = class {
     }
   }
   update() {
-    this.boundaryCheck();
-    this.movement();
-    this.hitCheck();
     if (this.removeFromGame === true) {
       this.game.bullets.head = this.remove();
     }
+    this.boundaryCheck();
+    this.movement();
+    this.hitCheck();
   }
   draw() {
     this.game.canvasContext.fillStyle = this.type;
@@ -694,17 +736,17 @@ module.exports = {
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(game, enemy) {
-    super(game);
-    this.positionX = game.player.positionX + (game.player.width / 2);
-    this.positionY = game.player.positionY;
+  constructor(game, player, enemy) {
+    super(game, player);
+    this.positionX = player.positionX + (game.player.width / 2);
+    this.positionY = player.positionY;
     this.enemyPositionX = enemy.positionX + (enemy.width / 2);
     this.enemyPositionY = enemy.positionY + (enemy.height / 2);
     this.controlPositionX = Math.floor(Math.random() * game.canvas.width);
     this.controlPositionY = Math.floor(Math.random() * game.canvas.height);
     this.reqKillTime = 500;
     this.targetEnemy = enemy;
-    this.targetPlayer = game.player;
+    this.targetPlayer = player;
     if (enemy.stateTargetted === false) {
       game.enemies.targettedCount += 1;
     }
@@ -778,9 +820,9 @@ module.exports = class extends Default {
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(game, offset) {
-    super(game);
-    this.positionX = (game.player.positionX + ((game.player.width - this.width) / 2)) + offset;
+  constructor(game, player, offset) {
+    super(game, player);
+    this.positionX = (player.positionX + ((player.width - this.width) / 2)) + offset;
   }
 };
 
@@ -788,11 +830,11 @@ module.exports = class extends Default {
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(game, offset, angle) {
-    super(game);
+  constructor(game, player, offset, angle) {
+    super(game, player);
     this.offset = offset;
     this.angle = angle;
-    this.positionX = (game.player.positionX + ((game.player.width - this.width) / 2)) + this.offset;
+    this.positionX = (player.positionX + ((player.width - this.width) / 2)) + this.offset;
   }
   movement() {
     this.positionX += this.angle * this.speed * (this.game.timer.deltaTime / (1000 / 60));
@@ -890,6 +932,8 @@ module.exports = class {
     this.bulletLevel = 0;
     this.maxBulletLevel = 5;
     this.score = 0;
+    this.socketId = null;
+    this.keyMap = [];
   }
   draw() {
     this.game.canvasContext.fillRect(
@@ -903,6 +947,10 @@ module.exports = class {
   update() {
     this.movement();
     this.powerUpCollisionCheck();
+    if (this.keyMap[13] === true) {
+      console.log(this.socketId);
+      this.game.bullets.create(this.game, this);
+    }
   }
   movement() {
     this.positionXUpdate();
@@ -971,25 +1019,25 @@ module.exports = class {
     }
   }
   accelerateXUpdate() {
-    if (this.game.keyMap[37] === true && this.game.keyMap[39] !== true) {
+    if (this.keyMap[37] === true && this.keyMap[39] !== true) {
       this.accelerationX = -this.acceleration;
-    } else if (this.game.keyMap[37] !== true && this.game.keyMap[39] === true) {
+    } else if (this.keyMap[37] !== true && this.keyMap[39] === true) {
       this.accelerationX = this.acceleration;
     } else if (
-      (this.game.keyMap[37] !== true && this.game.keyMap[39] !== true) ||
-      (this.game.keyMap[37] === true && this.game.keyMap[39] === true)
+      (this.keyMap[37] !== true && this.keyMap[39] !== true) ||
+      (this.keyMap[37] === true && this.keyMap[39] === true)
     ) {
       this.accelerationX = 0;
     }
   }
   accelerateYUpdate() {
-    if (this.game.keyMap[38] === true && this.game.keyMap[40] !== true) {
+    if (this.keyMap[38] === true && this.keyMap[40] !== true) {
       this.accelerationY = -this.acceleration;
-    } else if (this.game.keyMap[38] !== true && this.game.keyMap[40] === true) {
+    } else if (this.keyMap[38] !== true && this.keyMap[40] === true) {
       this.accelerationY = this.acceleration;
     } else if (
-      (this.game.keyMap[38] !== true && this.game.keyMap[40] !== true) ||
-      (this.game.keyMap[38] === true && this.game.keyMap[40] === true)
+      (this.keyMap[38] !== true && this.keyMap[40] !== true) ||
+      (this.keyMap[38] === true && this.keyMap[40] === true)
     ) {
       this.accelerationY = 0;
     }
@@ -1126,6 +1174,10 @@ window.onload = () => {
   socket.on('update', (data) => {
     gameEngine.gameState = data;
   });
+  socket.on('connect', () => {
+    console.log(socket.id);
+  });
+
   gameEngine.canvas.addEventListener('keydown', (e) => {
     if (e.keyCode !== 116 && e.keyCode !== 123) {
       e.preventDefault();

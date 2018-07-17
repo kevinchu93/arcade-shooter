@@ -16,6 +16,8 @@ module.exports = class {
     this.bulletLevel = 0;
     this.maxBulletLevel = 5;
     this.score = 0;
+    this.socketId = null;
+    this.keyMap = [];
   }
   draw() {
     this.game.canvasContext.fillRect(
@@ -29,6 +31,10 @@ module.exports = class {
   update() {
     this.movement();
     this.powerUpCollisionCheck();
+    if (this.keyMap[13] === true) {
+      console.log(this.socketId);
+      this.game.bullets.create(this.game, this);
+    }
   }
   movement() {
     this.positionXUpdate();
@@ -97,25 +103,25 @@ module.exports = class {
     }
   }
   accelerateXUpdate() {
-    if (this.game.keyMap[37] === true && this.game.keyMap[39] !== true) {
+    if (this.keyMap[37] === true && this.keyMap[39] !== true) {
       this.accelerationX = -this.acceleration;
-    } else if (this.game.keyMap[37] !== true && this.game.keyMap[39] === true) {
+    } else if (this.keyMap[37] !== true && this.keyMap[39] === true) {
       this.accelerationX = this.acceleration;
     } else if (
-      (this.game.keyMap[37] !== true && this.game.keyMap[39] !== true) ||
-      (this.game.keyMap[37] === true && this.game.keyMap[39] === true)
+      (this.keyMap[37] !== true && this.keyMap[39] !== true) ||
+      (this.keyMap[37] === true && this.keyMap[39] === true)
     ) {
       this.accelerationX = 0;
     }
   }
   accelerateYUpdate() {
-    if (this.game.keyMap[38] === true && this.game.keyMap[40] !== true) {
+    if (this.keyMap[38] === true && this.keyMap[40] !== true) {
       this.accelerationY = -this.acceleration;
-    } else if (this.game.keyMap[38] !== true && this.game.keyMap[40] === true) {
+    } else if (this.keyMap[38] !== true && this.keyMap[40] === true) {
       this.accelerationY = this.acceleration;
     } else if (
-      (this.game.keyMap[38] !== true && this.game.keyMap[40] !== true) ||
-      (this.game.keyMap[38] === true && this.game.keyMap[40] === true)
+      (this.keyMap[38] !== true && this.keyMap[40] !== true) ||
+      (this.keyMap[38] === true && this.keyMap[40] === true)
     ) {
       this.accelerationY = 0;
     }

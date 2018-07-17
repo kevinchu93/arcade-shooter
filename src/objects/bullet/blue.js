@@ -1,14 +1,17 @@
 const Default = require('./default.js');
 
 module.exports = class extends Default {
-  constructor(game, width, height) {
-    super(game);
+  constructor(game, player, width, height) {
+    super(game, player);
     this.width = width;
     this.height = height;
-    this.positionX = game.player.positionX + ((game.player.width - this.width) / 2);
-    this.positionY = game.player.positionY;
+    this.positionX = player.positionX + ((player.width - this.width) / 2);
+    this.positionY = player.positionY;
   }
   update() {
+    if (this.removeFromGame === true) {
+      this.game.bullets.head = this.remove();
+    }
     super.boundaryCheck();
     super.movement();
     this.hitCheck();
@@ -25,7 +28,6 @@ module.exports = class extends Default {
         const By1 = i.positionY;
         const By2 = i.positionY + i.height;
         if (super.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-          i.removeFromGame = true;
           this.game.player.score += 1;
         }
       }

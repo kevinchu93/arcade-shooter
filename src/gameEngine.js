@@ -10,6 +10,7 @@ module.exports = {
   enemies,
   powerUps,
   player: null,
+  player2: null,
   canvas: null,
   gameState: null,
   init() {
@@ -26,7 +27,6 @@ module.exports = {
     this.canvas = {};
     this.canvas.width = 1366;
     this.canvas.height = 768;
-    this.player = new Player(this);
   },
   clientInit() {
     this.timer = new Timer();
@@ -35,7 +35,6 @@ module.exports = {
     this.canvas.tabIndex = 1000;
     this.canvas.focus();
     this.canvasContext = this.canvas.getContext('2d');
-    this.player = new Player(this);
   },
   start() {
     const gameLoop = () => {
@@ -64,12 +63,22 @@ module.exports = {
   clientDraw() {
     this.drawBackground();
     if (this.gameState != null) {
-      this.canvasContext.fillRect(
-        this.gameState.player.positionX,
-        this.gameState.player.positionY,
-        30,
-        20,
-      );
+      if (this.gameState.player != null) {
+        this.canvasContext.fillRect(
+          this.gameState.player.positionX,
+          this.gameState.player.positionY,
+          30,
+          20,
+        );
+      }
+      if (this.gameState.player2 != null) {
+        this.canvasContext.fillRect(
+          this.gameState.player2.positionX,
+          this.gameState.player2.positionY,
+          30,
+          20,
+        );
+      }
       for (let i = 0; this.gameState.enemies[i] != null; i += 1) {
         this.canvasContext.fillRect(
           this.gameState.enemies[i].positionX,
@@ -79,12 +88,27 @@ module.exports = {
         );
       }
       for (let i = 0; this.gameState.bullets[i] != null; i += 1) {
-        this.canvasContext.fillRect(
-          this.gameState.bullets[i].positionX,
-          this.gameState.bullets[i].positionY,
-          20,
-          10,
-        );
+        console.log(this.gameState.bullets[i].type);
+        if (this.gameState.bullets[i].type != 'mediumpurple') {
+          this.canvasContext.fillStyle = this.gameState.bullets[i].type;
+          this.canvasContext.fillRect(
+            this.gameState.bullets[i].positionX,
+            this.gameState.bullets[i].positionY,
+            this.gameState.bullets[i].width,
+            this.gameState.bullets[i].height,
+          );
+        } else {
+          this.canvasContext.strokeStyle = 'mediumpurple';
+          this.canvasContext.lineWidth = 2;
+          this.canvasContext.lineCap = 'round';
+          this.canvasContext.beginPath();
+          this.canvasContext.moveTo(this.gameState.bullets[i].positionX, this.gameState.bullets[i].positionY);
+          this.canvasContext.quadraticCurveTo(
+            this.gameState.bullets[i].controlPositionX, this.gameState.bullets[i].controlPositionY,
+            this.gameState.bullets[i].enemyPositionX, this.gameState.bullets[i].enemyPositionY,
+          );
+          this.canvasContext.stroke();
+        }
       }
       for (let i = 0; this.gameState.powerUps[i] != null; i += 1) {
         this.canvasContext.fillStyle = this.gameState.powerUps[i].color;
@@ -109,6 +133,9 @@ module.exports = {
   update() {
     if (this.player !== null) {
       this.player.update();
+    }
+    if (this.player2 !== null) {
+      this.player2.update();
     }
     this.enemies.update();
     this.bullets.update(this);
