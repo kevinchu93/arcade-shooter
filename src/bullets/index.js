@@ -7,18 +7,40 @@ module.exports = {
   bulletCount: 0,
   bulletCountPurple: 0,
   head: null,
-  draw(game) {
+  drawDepreciate(game) {
     for (let i = this.head; i != null; i = i.nextBullet) {
       i.draw();
     }
     game.canvasContext.fillText(this.bulletCountPurple, 400, 55);
   },
-  update(game) {
-    /*
-    if (game.keyMap[13] === true) {
-      this.create(game);
+  draw(game, gameState) {
+    for (let i = 0; gameState.bullets[i] != null; i += 1) {
+      if (gameState.bullets[i].type !== 'mediumpurple') {
+        game.canvasContext.fillStyle = gameState.bullets[i].type;
+        game.canvasContext.fillRect(
+          game.gameState.bullets[i].positionX,
+          game.gameState.bullets[i].positionY,
+          game.gameState.bullets[i].width,
+          game.gameState.bullets[i].height,
+        );
+      } else if (gameState.bullets[i].type === 'mediumpurple') {
+        game.canvasContext.strokeStyle = 'mediumpurple';
+        game.canvasContext.lineWidth = 2;
+        game.canvasContext.lineCap = 'round';
+        game.canvasContext.beginPath();
+        game.canvasContext.moveTo(
+          gameState.bullets[i].positionX,
+          gameState.bullets[i].positionY,
+        );
+        game.canvasContext.quadraticCurveTo(
+          gameState.bullets[i].controlPositionX, gameState.bullets[i].controlPositionY,
+          gameState.bullets[i].enemyPositionX, gameState.bullets[i].enemyPositionY,
+        );
+        game.canvasContext.stroke();
+      }
     }
-    */
+  },
+  update() {
     for (let i = this.head; i != null; i = i.nextBullet) {
       i.update();
     }
@@ -47,6 +69,11 @@ module.exports = {
         break;
       default:
         this.head = new Bullet.Default(game, player).append();
+    }
+  },
+  getState(gameServer) {
+    for (let i = this.head; i != null; i = i.nextBullet) {
+      gameServer.gameState.bullets.push(i.getState());
     }
   },
 };

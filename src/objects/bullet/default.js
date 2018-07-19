@@ -49,7 +49,7 @@ module.exports = class {
         const By2 = i.positionY + i.height;
         if (this.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
           i.removeFromGame = true;
-          this.game.player.score += 1;
+          this.game.players.entities[this.playerId].score += 1;
           this.removeFromGame = true;
         }
       }
@@ -95,5 +95,14 @@ module.exports = class {
       }
     }
     return this.game.bullets.head;
+  }
+  getState() {
+    let state = {};
+    Object.keys(this).forEach((key) => {
+      if (['game', 'nextBullet', 'targetEnemy', 'targetPlayer'].indexOf(key) === -1) {
+        state = { ...state, ...{ [key]: this[key] } };
+      }
+    });
+    return state;
   }
 };

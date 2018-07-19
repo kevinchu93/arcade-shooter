@@ -66,4 +66,13 @@ module.exports = class {
     }
     return this.game.enemies.head;
   }
+  getState() {
+    let state = {};
+    Object.keys(this).forEach((key) => {
+      if (key !== 'game' && key !== 'nextEnemy') {
+        state = { ...state, ...{ [key]: this[key] } };
+      }
+    });
+    return state;
+  }
 };

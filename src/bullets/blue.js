@@ -5,7 +5,7 @@ module.exports = {
   config: blue,
   createBlue(game, player) {
     let bullet = {};
-    switch (game.player.bulletLevel) {
+    switch (player.bulletLevel) {
       case 1:
         bullet = new Bullet.Blue(
           game,

@@ -5,7 +5,7 @@ module.exports = {
   config: red,
   createRed(game, player) {
     const bulletArray = [];
-    switch (game.player.bulletLevel) {
+    switch (player.bulletLevel) {
       case 1:
         bulletArray[0] = new Bullet.Red(game, player, -this.config.level1.offset);
         bulletArray[1] = new Bullet.Red(game, player, this.config.level1.offset);
@@ -85,16 +85,19 @@ module.exports = {
         bulletArray[5] = new Bullet.Red(game, player, this.config.level5.offset);
         bulletArray[6] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level5.offset,
           this.config.level5.angleInner,
         );
         bulletArray[7] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level5.offset,
           this.config.level5.angleMiddle,
         );
         bulletArray[8] = new Bullet.RedAngled(
           game,
+          player,
           this.config.level5.offset,
           this.config.level5.angleOuter,
         );

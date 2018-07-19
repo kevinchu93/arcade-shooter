@@ -56,4 +56,13 @@ module.exports = class {
     }
     return this.game.powerUps.head;
   }
+  getState() {
+    let state = {};
+    Object.keys(this).forEach((key) => {
+      if (key !== 'game' && key !== 'nextPowerUp') {
+        state = { ...state, ...{ [key]: this[key] } };
+      }
+    });
+    return state;
+  }
 };

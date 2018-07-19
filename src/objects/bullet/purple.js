@@ -3,7 +3,7 @@ const Default = require('./default.js');
 module.exports = class extends Default {
   constructor(game, player, enemy) {
     super(game, player);
-    this.positionX = player.positionX + (game.player.width / 2);
+    this.positionX = player.positionX + (player.width / 2);
     this.positionY = player.positionY;
     this.enemyPositionX = enemy.positionX + (enemy.width / 2);
     this.enemyPositionY = enemy.positionY + (enemy.height / 2);
@@ -29,7 +29,7 @@ module.exports = class extends Default {
     if (this.reqKillTime <= 0) {
       this.removeFromGame = true;
       this.targetEnemy.removeFromGame = true;
-      this.game.player.score += 1;
+      this.game.players.entities[this.playerId].score += 1;
     }
   }
 

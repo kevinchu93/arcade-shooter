@@ -11,11 +11,21 @@ module.exports = {
       rate: 1000,
     },
   },
-  draw(game) {
+  drawDepreciated(game) {
     for (let i = this.head; i != null; i = i.nextEnemy) {
       i.draw();
     }
     game.canvasContext.fillText(this.count, 100, 55);
+  },
+  draw(game, gameState) {
+    for (let i = 0; gameState.enemies[i] != null; i += 1) {
+      game.canvasContext.fillRect(
+        gameState.enemies[i].positionX,
+        gameState.enemies[i].positionY,
+        gameState.enemies[i].width,
+        gameState.enemies[i].height,
+      );
+    }
   },
   update() {
     for (let i = this.head; i != null; i = i.nextEnemy) {
@@ -27,6 +37,11 @@ module.exports = {
     if (game.enemies.config.spawn.countdown <= 0) {
       game.enemies.config.spawn.countdown += game.enemies.config.spawn.rate;
       game.enemies.head = new Enemy(game).append();
+    }
+  },
+  getState(gameServer) {
+    for (let i = this.head; i != null; i = i.nextEnemy) {
+      gameServer.gameState.enemies.push(i.getState());
     }
   },
 };

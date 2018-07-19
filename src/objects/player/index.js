@@ -1,5 +1,5 @@
 module.exports = class {
-  constructor(game) {
+  constructor(game, id) {
     this.game = game;
     this.width = 30;
     this.height = 20;
@@ -16,7 +16,7 @@ module.exports = class {
     this.bulletLevel = 0;
     this.maxBulletLevel = 5;
     this.score = 0;
-    this.socketId = null;
+    this.socketId = id;
     this.keyMap = [];
   }
   draw() {
@@ -32,7 +32,6 @@ module.exports = class {
     this.movement();
     this.powerUpCollisionCheck();
     if (this.keyMap[13] === true) {
-      console.log(this.socketId);
       this.game.bullets.create(this.game, this);
     }
   }
@@ -146,5 +145,14 @@ module.exports = class {
         i.removeFromGame = true;
       }
     }
+  }
+  getState() {
+    let state = {};
+    Object.keys(this).forEach((key) => {
+      if (key !== 'game') {
+        state = { ...state, ...{ [key]: this[key] } };
+      }
+    });
+    return state;
   }
 };

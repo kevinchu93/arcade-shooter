@@ -28,7 +28,7 @@ module.exports = {
     if (enemy == null) {
       return null;
     }
-    switch (game.player.bulletLevel) {
+    switch (player.bulletLevel) {
       case 1:
         if (game.bullets.bulletCountPurple >= this.config.level1.maxBullets) {
           return null;

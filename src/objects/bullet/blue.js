@@ -28,7 +28,8 @@ module.exports = class extends Default {
         const By1 = i.positionY;
         const By2 = i.positionY + i.height;
         if (super.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-          this.game.player.score += 1;
+          i.removeFromGame = true;
+          this.game.players.entities[this.playerId].score += 1;
         }
       }
     }
