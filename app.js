@@ -9,5 +9,6 @@ app.use(express.static('dist'));
 
 const io = socket(server);
 
+gameServer.createGame();
 gameServer.init();
 gameServer.socketInit(io);

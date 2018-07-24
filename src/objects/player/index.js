@@ -5,8 +5,10 @@ module.exports = class {
     this.height = 20;
     this.positionX = game.canvas.width / 2;
     this.positionY = game.canvas.height - 25;
-    this.speedX = 0;
-    this.speedY = 0;
+    this.speedXInitial = 0;
+    this.speedYInitial = 0;
+    this.speedXFinal = 0;
+    this.speedYFinal = 0;
     this.maxSpeed = 5;
     this.accelerationX = 0;
     this.accelerationY = 0;
@@ -18,6 +20,7 @@ module.exports = class {
     this.score = 0;
     this.socketId = id;
     this.keyMap = [];
+    this.inputSequence = 0;
   }
   draw() {
     this.game.canvasContext.fillRect(
@@ -44,7 +47,9 @@ module.exports = class {
     this.accelerateYUpdate();
   }
   positionXUpdate() {
-    this.positionX += this.speedX * (this.game.timer.deltaTime / (1000 / 60));
+    this.positionX +=
+      ((this.speedXInitial + this.speedXFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+    // check if within boundaries
     if (this.positionX < 0) {
       this.positionX = 0;
     } else if (this.positionX + this.width > this.game.canvas.width) {
@@ -52,7 +57,9 @@ module.exports = class {
     }
   }
   positionYUpdate() {
-    this.positionY += this.speedY * (this.game.timer.deltaTime / (1000 / 60));
+    this.positionY +=
+      ((this.speedYInitial + this.speedYFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+    // check if within boundaries
     if (this.positionY < 0) {
       this.positionY = 0;
     } else if (this.positionY + this.height > this.game.canvas.height) {
@@ -60,45 +67,48 @@ module.exports = class {
     }
   }
   speedXUpdate() {
-    if (this.speedX > -this.maxSpeed && this.speedX < this.maxSpeed) {
-      this.speedX += this.accelerationX * (this.game.timer.deltaTime / (1000 / 60));
-    }
-    if (this.speedX > 0) {
-      this.speedX -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedX < 0) {
-        this.speedX = 0;
+    // set initial speed to final speed of last loop
+    this.speedXInitial = this.speedXFinal;
+    this.speedXFinal += this.accelerationX * (this.game.timer.deltaTime / (1000 / 60));
+    // apply friction, doesn't account for case when speed changes signs,
+    // but should have negligible impact
+    if (this.speedXFinal > 0) {
+      this.speedXFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedXFinal < 0) {
+        this.speedXFinal = 0;
       }
-    } else if (this.speedX < 0) {
-      this.speedX += this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedX > 0) {
-        this.speedX = 0;
+    } else if (this.speedXFinal < 0) {
+      this.speedXFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedXFinal > 0) {
+        this.speedXFinal = 0;
       }
     }
-    if (this.speedX < -this.maxSpeed) {
-      this.speedX = -this.maxSpeed;
-    } else if (this.speedX > this.maxSpeed) {
-      this.speedX = this.maxSpeed;
+    if (this.speedXFinal < -this.maxSpeed) {
+      this.speedXFinal = -this.maxSpeed;
+    } else if (this.speedXFinal > this.maxSpeed) {
+      this.speedXFinal = this.maxSpeed;
     }
   }
   speedYUpdate() {
-    if (this.speedY > -this.maxSpeed && this.speedY < this.maxSpeed) {
-      this.speedY += this.accelerationY * (this.game.timer.deltaTime / (1000 / 60));
-    }
-    if (this.speedY > 0) {
-      this.speedY -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedY < 0) {
-        this.speedY = 0;
+    this.speedYInitial = this.speedYFinal;
+    this.speedYFinal += this.accelerationY * (this.game.timer.deltaTime / (1000 / 60));
+    // apply friction, doesn't account for case when speed changes signs,
+    // but should have negligible impact
+    if (this.speedYFinal > 0) {
+      this.speedYFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedYFinal < 0) {
+        this.speedYFinal = 0;
       }
-    } else if (this.speedY < 0) {
-      this.speedY += this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedY > 0) {
-        this.speedY = 0;
+    } else if (this.speedYFinal < 0) {
+      this.speedYFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedYFinal > 0) {
+        this.speedYFinal = 0;
       }
     }
-    if (this.speedY < -this.maxSpeed) {
-      this.speedY = -this.maxSpeed;
-    } else if (this.speedY > this.maxSpeed) {
-      this.speedY = this.maxSpeed;
+    if (this.speedYFinal < -this.maxSpeed) {
+      this.speedYFinal = -this.maxSpeed;
+    } else if (this.speedYFinal > this.maxSpeed) {
+      this.speedYFinal = this.maxSpeed;
     }
   }
   accelerateXUpdate() {
@@ -126,23 +136,24 @@ module.exports = class {
     }
   }
   powerUpCollisionCheck() {
-    for (let i = this.game.powerUps.head; i != null; i = i.nextPowerUp) {
+    for (let i = 0; i < this.game.powerUps.entities.length; i += 1) {
+      const powerUp = this.game.powerUps.entities[i];
       if (
-        i.removeFromGame === false &&
-        i.positionX >= this.positionX &&
-        i.positionX <= this.positionX + this.width &&
-        i.positionY >= this.positionY &&
-        i.positionY <= this.positionY + this.height
+        powerUp.removeFromGame === false &&
+        powerUp.positionX >= this.positionX &&
+        powerUp.positionX <= this.positionX + this.width &&
+        powerUp.positionY >= this.positionY &&
+        powerUp.positionY <= this.positionY + this.height
       ) {
-        if (this.bulletType === i.color) {
+        if (this.bulletType === powerUp.color) {
           if (this.bulletLevel < this.maxBulletLevel) {
             this.bulletLevel += 1;
           }
         } else {
-          this.bulletType = i.color;
+          this.bulletType = powerUp.color;
           this.bulletLevel = 1;
         }
-        i.removeFromGame = true;
+        powerUp.removeFromGame = true;
       }
     }
   }

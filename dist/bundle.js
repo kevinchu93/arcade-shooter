@@ -126,79 +126,100 @@ const red = require('./red.js');
 const purple = require('./purple.js');
 const Bullet = require('../objects/bullet/index.js');
 
-module.exports = {
-  bulletCount: 0,
-  bulletCountPurple: 0,
-  head: null,
+module.exports = class {
+  constructor() {
+    this.entities = [];
+    this.bulletCount = 0;
+    this.bulletCountPurple = 0;
+    this.head = null;
+  }
   drawDepreciate(game) {
     for (let i = this.head; i != null; i = i.nextBullet) {
       i.draw();
     }
     game.canvasContext.fillText(this.bulletCountPurple, 400, 55);
-  },
+  }
   draw(game, gameState) {
-    for (let i = 0; gameState.bullets[i] != null; i += 1) {
-      if (gameState.bullets[i].type !== 'mediumpurple') {
-        game.canvasContext.fillStyle = gameState.bullets[i].type;
+    for (let i = 0; gameState.bullets.entities[i] != null; i += 1) {
+      if (gameState.bullets.entities[i].type !== 'mediumpurple') {
+        game.canvasContext.fillStyle = gameState.bullets.entities[i].type;
         game.canvasContext.fillRect(
-          game.gameState.bullets[i].positionX,
-          game.gameState.bullets[i].positionY,
-          game.gameState.bullets[i].width,
-          game.gameState.bullets[i].height,
+          game.gameState.bullets.entities[i].positionX,
+          game.gameState.bullets.entities[i].positionY,
+          game.gameState.bullets.entities[i].width,
+          game.gameState.bullets.entities[i].height,
         );
-      } else if (gameState.bullets[i].type === 'mediumpurple') {
+      } else if (gameState.bullets.entities[i].type === 'mediumpurple') {
         game.canvasContext.strokeStyle = 'mediumpurple';
         game.canvasContext.lineWidth = 2;
         game.canvasContext.lineCap = 'round';
         game.canvasContext.beginPath();
         game.canvasContext.moveTo(
-          gameState.bullets[i].positionX,
-          gameState.bullets[i].positionY,
+          gameState.bullets.entities[i].positionX,
+          gameState.bullets.entities[i].positionY,
         );
         game.canvasContext.quadraticCurveTo(
-          gameState.bullets[i].controlPositionX, gameState.bullets[i].controlPositionY,
-          gameState.bullets[i].enemyPositionX, gameState.bullets[i].enemyPositionY,
+          gameState.bullets.entities[i].controlPositionX,
+          gameState.bullets.entities[i].controlPositionY,
+          gameState.bullets.entities[i].enemyPositionX,
+          gameState.bullets.entities[i].enemyPositionY,
         );
         game.canvasContext.stroke();
       }
     }
-  },
+  }
   update() {
-    for (let i = this.head; i != null; i = i.nextBullet) {
-      i.update();
+    for (let i = this.entities.length - 1; i >= 0; i -= 1) {
+      if (this.entities[i].removeFromGame === true) {
+        this.entities.splice(i, 1);
+        this.bulletCountPurple -= 1;
+      }
     }
-  },
+    for (let i = 0; i < this.entities.length; i += 1) {
+      this.entities[i].update();
+    }
+  }
+  addBullet(bullet) {
+    this.entities.push(bullet);
+    this.bulletCountPurple += 1;
+  }
   create(game, player) {
-    let bullet = {};
+    let bulletArray = [];
     switch (player.bulletType) {
       case 'white':
-        this.head = new Bullet.Default(game, player).append();
+        bulletArray[0] = new Bullet.Default(game, player);
+        this.addBullet(bulletArray[0]);
         break;
       case 'orangered': {
-        const bulletArray = red.createRed(game, player);
+        bulletArray = red.createRed(game, player);
         for (let i = 0; bulletArray[i] != null; i += 1) {
-          this.head = bulletArray[i].append();
+          this.addBullet(bulletArray[i]);
         }
         break;
       }
       case 'deepskyblue':
-        this.head = blue.createBlue(game, player).append();
+        bulletArray[0] = blue.createBlue(game, player);
+        this.addBullet(bulletArray[0]);
         break;
       case 'mediumpurple':
-        bullet = purple.createPurple(game, player);
-        if (bullet != null) {
-          this.head = bullet.append();
+        bulletArray[0] = purple.createPurple(game, player);
+        if (bulletArray[0] != null) {
+          this.addBullet(bulletArray[0]);
         }
         break;
       default:
-        this.head = new Bullet.Default(game, player).append();
+        bulletArray[0] = new Bullet.Default(game, player);
+        this.addBullet(bulletArray[0]);
     }
-  },
-  getState(gameServer) {
-    for (let i = this.head; i != null; i = i.nextBullet) {
-      gameServer.gameState.bullets.push(i.getState());
+    return bulletArray;
+  }
+  getState() {
+    const state = [];
+    for (let i = 0; i < this.entities.length; i += 1) {
+      state.push(this.entities[i].getState());
     }
-  },
+    return state;
+  }
 };
 
 },{"../objects/bullet/index.js":10,"./blue.js":1,"./purple.js":4,"./red.js":5}],4:[function(require,module,exports){
@@ -209,24 +230,20 @@ module.exports = {
   config: purple,
   createPurple(game, player) {
     const findRandomUntargettedEnemy = () => {
-      let enemy = game.enemies.head;
-      const untargettedEnemiesCount = game.enemies.count - game.enemies.targettedCount;
-      const randomUntargettedEnemy = Math.floor(Math.random() * untargettedEnemiesCount);
-      while (enemy != null && enemy.stateTargetted === true) {
-        enemy = enemy.nextEnemy;
-      }
-      if (enemy == null) { // no untargetted Enemy
+      const untargettedEnemiesCount = game.enemies.entities.length - game.enemies.targettedCount;
+      if (untargettedEnemiesCount === 0) {
         return null;
-      } else if (randomUntargettedEnemy === 0) { // 1 untargetted Enemy
-        return enemy;
       }
-      for (let i = 0; i < randomUntargettedEnemy; i += 1) { // > 1 untargettedEnemy
-        enemy = enemy.nextEnemy;
-        while (enemy.stateTargetted !== false) {
-          enemy = enemy.nextEnemy;
+      let randomUntargettedEnemy = Math.floor(Math.random() * untargettedEnemiesCount) + 1;
+      for (let i = 0; randomUntargettedEnemy > 0; i += 1) {
+        if (game.enemies.entities[i].stateTargetted === false) {
+          randomUntargettedEnemy -= 1;
+        }
+        if (randomUntargettedEnemy === 0) {
+          return game.enemies.entities[i];
         }
       }
-      return enemy;
+      return null; // restructure so this return has meaning
     };
     const enemy = findRandomUntargettedEnemy();
     if (enemy == null) {
@@ -380,68 +397,95 @@ module.exports = {
 },{"../objects/bullet/index.js":10,"./config.js":2}],6:[function(require,module,exports){
 const Enemy = require('../objects/enemy/index.js');
 
-module.exports = {
-  head: null,
-  count: 0,
-  targettedCount: 0,
-  totalTime: 0,
-  config: {
-    spawn: {
-      countdown: 1000,
-      rate: 1000,
-    },
-  },
+module.exports = class {
+  constructor() {
+    this.entities = [];
+    this.head = null;
+    this.count = 0;
+    this.targettedCount = 0;
+    this.totalTime = 0;
+    this.config = {
+      spawn: {
+        countdown: 1000,
+        rate: 1000,
+      },
+    };
+  }
   drawDepreciated(game) {
     for (let i = this.head; i != null; i = i.nextEnemy) {
       i.draw();
     }
     game.canvasContext.fillText(this.count, 100, 55);
-  },
+  }
   draw(game, gameState) {
-    for (let i = 0; gameState.enemies[i] != null; i += 1) {
+    for (let i = 0; i < gameState.enemies.entities.length; i += 1) {
       game.canvasContext.fillRect(
-        gameState.enemies[i].positionX,
-        gameState.enemies[i].positionY,
-        gameState.enemies[i].width,
-        gameState.enemies[i].height,
+        gameState.enemies.entities[i].positionX,
+        gameState.enemies.entities[i].positionY,
+        gameState.enemies.entities[i].width,
+        gameState.enemies.entities[i].height,
       );
     }
-  },
+  }
   update() {
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.update();
+    for (let i = this.entities.length - 1; i >= 0; i -= 1) {
+      if (this.entities[i].removeFromGame === true) {
+        if (this.entities[i].stateTargetted === true) {
+          this.targettedCount -= 1;
+        }
+        this.entities.splice(i, 1);
+      }
     }
-  },
+    for (let i = 0; i < this.entities.length; i += 1) {
+      this.entities[i].update();
+    }
+  }
+  addEnemy(enemy) {
+    this.entities.push(enemy);
+  }
   spawn(game) {
-    game.enemies.config.spawn.countdown -= game.timer.deltaTime;
-    if (game.enemies.config.spawn.countdown <= 0) {
-      game.enemies.config.spawn.countdown += game.enemies.config.spawn.rate;
-      game.enemies.head = new Enemy(game).append();
+    this.config.spawn.countdown -= game.timer.deltaTime;
+    if (this.config.spawn.countdown <= 0) {
+      this.config.spawn.countdown += this.config.spawn.rate;
+      this.addEnemy(new Enemy(game));
     }
-  },
-  getState(gameServer) {
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      gameServer.gameState.enemies.push(i.getState());
+  }
+  getState() {
+    const state = [];
+    for (let i = 0; i < this.entities.length; i += 1) {
+      state.push(this.entities[i].getState());
     }
-  },
+    return state;
+  }
 };
 
 },{"../objects/enemy/index.js":14}],7:[function(require,module,exports){
 const Timer = require('./timer.js');
-const bullets = require('./bullets/index.js');
-const enemies = require('./enemies/index.js');
-const powerUps = require('./powerUps/index.js');
+const Bullets = require('./bullets/index.js');
+const Enemies = require('./enemies/index.js');
+const PowerUps = require('./powerUps/index.js');
 const Player = require('./objects/player/index.js');
-const players = require('./players/index.js');
+const Players = require('./players/index.js');
+const Enemy = require('./objects/enemy/index.js');
+const PowerUp = require('./objects/powerUp/index.js');
+const Bullet = require('./objects/bullet/index.js');
 
-module.exports = {
-  keyMap: [],
-  bullets,
-  enemies,
-  powerUps,
-  players,
-  canvas: null,
-  gameState: null,
+module.exports = class {
+  constructor() {
+    this.client_input = {
+      keyMap: [],
+      history: [],
+      sequence: 0,
+      deltaTime: [],
+    };
+    this.applyState = false;
+    this.bullets = new Bullets();
+    this.enemies = new Enemies();
+    this.powerUps = new PowerUps();
+    this.players = new Players();
+    this.canvas = null;
+    this.gameState = null;
+  }
   init() {
     this.timer = new Timer();
     this.canvas.width = 1366;
@@ -450,21 +494,21 @@ module.exports = {
     this.canvas.focus();
     this.canvasContext = this.canvas.getContext('2d');
     this.player = new Player(this);
-  },
-  serverInit() {
+  }
+  server_init() {
     this.timer = new Timer();
     this.canvas = {};
     this.canvas.width = 1366;
     this.canvas.height = 768;
-  },
-  clientInit() {
+  }
+  client_init() {
     this.timer = new Timer();
     this.canvas.width = 1366;
     this.canvas.height = 768;
     this.canvas.tabIndex = 1000;
     this.canvas.focus();
     this.canvasContext = this.canvas.getContext('2d');
-  },
+  }
   start() {
     const gameLoop = () => {
       this.timer.tick();
@@ -474,22 +518,121 @@ module.exports = {
       window.requestAnimationFrame(gameLoop);
     };
     gameLoop();
-  },
-  serverStart() {
+  }
+  // starts server update loop
+  server_start() {
     setInterval(() => {
       this.timer.tick();
       this.update();
       this.spawn();
     }, 1000 / 60);
-  },
-  clientStart() {
+  }
+  client_start(socket) {
     const gameLoop = () => {
-      this.clientDraw();
+      this.client_input.sequence += 1;
+      this.sendInput(socket);
+      // save delta time of this input sequence
+      this.client_input.deltaTime[this.client_input.sequence] = this.timer.tick();
+      // save input sequence
+      this.client_input.history[this.client_inputSequence] = this.client_input.keyMap;
+
+      this.client_updateWithState();
+      // this.client_draw();
+      this.client_drawOwnState();
       window.requestAnimationFrame(gameLoop);
     };
     gameLoop();
-  },
-  clientDraw() {
+  }
+  // use server gameState to recreate all entities, not sure if most efficient method
+  client_updateWithState() {
+    // if server state has not yet been applied
+    if (this.applyState === true) {
+      // create dummy entities to obtain templates with class methods
+      const player = new Player(this, 'id');
+
+      this.players.entities = {};
+      Object.keys(this.gameState.players.entities).forEach((id) => {
+        this.players.entities[id] = new Player(this, id);
+        Object.keys(this.gameState.players.entities[id]).forEach((key) => {
+          this.players.entities[id][key] = this.gameState.players.entities[id][key];
+        });
+      });
+
+      this.enemies.entities = [];
+      for (let i = 0; this.gameState.enemies.entities[i] != null; i += 1) {
+        // create new Enemy instance, to avoid using the same enemy object reference
+        const enemy = new Enemy(this);
+        Object.keys(this.gameState.enemies.entities[i]).forEach((key) => {
+          enemy[key] = this.gameState.enemies.entities[i][key];
+        });
+        this.enemies.entities[i] = enemy;
+      }
+
+      this.powerUps.entities = [];
+      for (let i = 0; this.gameState.powerUps.entities[i] != null; i += 1) {
+        const powerUp = new PowerUp(this);
+        Object.keys(this.gameState.powerUps.entities[i]).forEach((key) => {
+          powerUp[key] = this.gameState.powerUps.entities[i][key];
+        });
+        this.powerUps.entities[i] = powerUp;
+      }
+
+      this.bullets.entities = [];
+      for (let i = 0; this.gameState.bullets.entities[i] != null; i += 1) {
+        switch (this.gameState.bullets.entities[i].type) {
+          case 'white': {
+            const bulletDefault = new Bullet.Default(this, player);
+            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
+              bulletDefault[key] = this.gameState.bullets.entities[i][key];
+            });
+            this.bullets.entities[i] = bulletDefault;
+            break;
+          }
+          case 'orangered': {
+            const bulletRed = new Bullet.Red(this, player, 10);
+            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
+              bulletRed[key] = this.gameState.bullets.entities[i][key];
+            });
+            this.bullets.entities[i] = bulletRed;
+            break;
+          }
+          case 'deepskyblue': {
+            const bulletBlue = new Bullet.Blue(this, player, 10, 10);
+            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
+              bulletBlue[key] = this.gameState.bullets.entities[i][key];
+            });
+            this.bullets.entities[i] = bulletBlue;
+            break;
+          }
+          case 'mediumpurple': {
+            const enemy = new Enemy(this);
+            const bulletPurple = new Bullet.Purple(this, player, enemy);
+            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
+              bulletPurple[key] = this.gameState.bullets.entities[i][key];
+            });
+            this.bullets.entities[i] = bulletPurple;
+            break;
+          }
+          default: {
+            const bulletDefault = new Bullet.Default(this, player);
+            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
+              bulletDefault[key] = this.gameState.bullets.entities[i][key];
+            });
+            this.bullets.entities[i] = bulletDefault;
+          }
+        }
+      }
+
+      this.applyState = false;
+    }
+  }
+  sendInput(socket) {
+    socket.emit('input', {
+      keyMap: this.client_input.keyMap,
+      sequence: this.client_input.sequence,
+    });
+  }
+  client_draw() {
     this.drawBackground();
     if (this.gameState != null) {
       this.players.draw(this, this.gameState);
@@ -497,19 +640,26 @@ module.exports = {
       this.powerUps.draw(this, this.gameState);
       this.bullets.draw(this, this.gameState);
     }
-  },
+  }
+  client_drawOwnState() {
+    this.drawBackground();
+    this.players.draw(this, this);
+    this.enemies.draw(this, this);
+    this.powerUps.draw(this, this);
+    this.bullets.draw(this, this);
+  }
   drawBackground() {
     this.canvasContext.font = 'bold 48px Arial, sans-serif';
     this.canvasContext.fillStyle = 'black';
     this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.canvasContext.fillStyle = 'white';
-  },
+  }
   update() {
     this.players.update();
     this.enemies.update();
     this.bullets.update(this);
     this.powerUps.update();
-  },
+  }
   draw() {
     this.drawBackground();
     Object.keys(this.players).forEach((key) => {
@@ -518,14 +668,14 @@ module.exports = {
     this.enemies.draw(this);
     this.bullets.draw(this);
     this.powerUps.draw();
-  },
+  }
   spawn() {
     this.enemies.spawn(this);
     this.powerUps.spawn(this);
-  },
+  }
 };
 
-},{"./bullets/index.js":3,"./enemies/index.js":6,"./objects/player/index.js":15,"./players/index.js":17,"./powerUps/index.js":18,"./timer.js":20}],8:[function(require,module,exports){
+},{"./bullets/index.js":3,"./enemies/index.js":6,"./objects/bullet/index.js":10,"./objects/enemy/index.js":14,"./objects/player/index.js":15,"./objects/powerUp/index.js":16,"./players/index.js":17,"./powerUps/index.js":18,"./timer.js":20}],8:[function(require,module,exports){
 const Default = require('./default.js');
 
 module.exports = class extends Default {
@@ -537,9 +687,6 @@ module.exports = class extends Default {
     this.positionY = player.positionY;
   }
   update() {
-    if (this.removeFromGame === true) {
-      this.game.bullets.head = this.remove();
-    }
     super.boundaryCheck();
     super.movement();
     this.hitCheck();
@@ -549,14 +696,15 @@ module.exports = class extends Default {
     const Ax2 = this.positionX + this.width;
     const Ay1 = this.positionY;
     const Ay2 = this.positionY + this.height;
-    for (let i = this.game.enemies.head; i != null; i = i.nextEnemy) {
-      if (i.removeFromGame === false) {
-        const Bx1 = i.positionX;
-        const Bx2 = i.positionX + i.width;
-        const By1 = i.positionY;
-        const By2 = i.positionY + i.height;
+    for (let i = 0; i < this.game.enemies.entities.length; i += 1) {
+      const enemy = this.game.enemies.entities[i];
+      if (enemy.removeFromGame === false) {
+        const Bx1 = enemy.positionX;
+        const Bx2 = enemy.positionX + enemy.width;
+        const By1 = enemy.positionY;
+        const By2 = enemy.positionY + enemy.height;
         if (super.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-          i.removeFromGame = true;
+          enemy.removeFromGame = true;
           this.game.players.entities[this.playerId].score += 1;
         }
       }
@@ -599,9 +747,6 @@ module.exports = class {
     }
   }
   update() {
-    if (this.removeFromGame === true) {
-      this.game.bullets.head = this.remove();
-    }
     this.boundaryCheck();
     this.movement();
     this.hitCheck();
@@ -620,14 +765,15 @@ module.exports = class {
     const Ax2 = this.positionX + this.width;
     const Ay1 = this.positionY;
     const Ay2 = this.positionY + this.height;
-    for (let i = this.game.enemies.head; i != null; i = i.nextEnemy) {
-      if (i.removeFromGame === false) {
-        const Bx1 = i.positionX;
-        const Bx2 = i.positionX + i.width;
-        const By1 = i.positionY;
-        const By2 = i.positionY + i.height;
+    for (let i = 0; i < this.game.enemies.entities.length; i += 1) {
+      const enemy = this.game.enemies.entities[i];
+      if (enemy.removeFromGame === false) {
+        const Bx1 = enemy.positionX;
+        const Bx2 = enemy.positionX + enemy.width;
+        const By1 = enemy.positionY;
+        const By2 = enemy.positionY + enemy.height;
         if (this.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-          i.removeFromGame = true;
+          enemy.removeFromGame = true;
           this.game.players.entities[this.playerId].score += 1;
           this.removeFromGame = true;
         }
@@ -648,32 +794,6 @@ module.exports = class {
       return true;
     }
     return false;
-  }
-  append() {
-    if (this.game.bullets.head == null) {
-      return this;
-    }
-    for (let i = this.game.bullets.head; i != null; i = i.nextBullet) {
-      if (i.nextBullet == null) {
-        i.nextBullet = this;
-        i = i.nextBullet;
-      }
-    }
-    return this.game.bullets.head;
-  }
-  remove() {
-    if (this.game.bullets.head === this) {
-      return this.game.bullets.head.nextBullet;
-    }
-    for (let i = this.game.bullets.head; i.nextBullet != null; i = i.nextBullet) {
-      if (i.nextBullet === this) {
-        i.nextBullet = i.nextBullet.nextBullet;
-      }
-      if (i.nextBullet == null) {
-        return this.game.bullets.head;
-      }
-    }
-    return this.game.bullets.head;
   }
   getState() {
     let state = {};
@@ -722,9 +842,6 @@ module.exports = class extends Default {
     enemy.stateTargetted = true;
   }
   update() {
-    if (this.removeFromGame === true) {
-      this.game.bullets.head = this.remove();
-    }
     this.movement();
     this.killCheck();
   }
@@ -754,34 +871,6 @@ module.exports = class extends Default {
     this.enemyPositionY = this.targetEnemy.positionY + (this.targetEnemy.height / 2);
     this.positionX = this.targetPlayer.positionX + (this.targetPlayer.width / 2);
     this.positionY = this.targetPlayer.positionY;
-  }
-  append() {
-    this.game.bullets.bulletCountPurple += 1;
-    if (this.game.bullets.head == null) {
-      return this;
-    }
-    for (let i = this.game.bullets.head; i != null; i = i.nextBullet) {
-      if (i.nextBullet == null) {
-        i.nextBullet = this;
-        i = i.nextBullet;
-      }
-    }
-    return this.game.bullets.head;
-  }
-  remove() {
-    this.game.bullets.bulletCountPurple -= 1;
-    if (this.game.bullets.head === this) {
-      return this.game.bullets.head.nextBullet;
-    }
-    for (let i = this.game.bullets.head; i.nextBullet != null; i = i.nextBullet) {
-      if (i.nextBullet === this) {
-        i.nextBullet = i.nextBullet.nextBullet;
-      }
-      if (i.nextBullet == null) {
-        return this.game.bullets.head;
-      }
-    }
-    return this.game.bullets.head;
   }
 };
 
@@ -843,42 +932,8 @@ module.exports = class {
     }
   }
   update() {
-    if (this.removeFromGame) {
-      this.game.enemies.head = this.remove();
-    }
     this.movement();
     this.boundaryCheck();
-  }
-  append() {
-    this.game.enemies.count += 1;
-    if (this.game.enemies.head == null) {
-      return this;
-    }
-    for (let i = this.game.enemies.head; i != null; i = i.nextEnemy) {
-      if (i.nextEnemy == null) {
-        i.nextEnemy = this;
-        i = i.nextEnemy;
-      }
-    }
-    return this.game.enemies.head;
-  }
-  remove() {
-    if (this.stateTargetted === true) {
-      this.game.enemies.targettedCount -= 1;
-    }
-    this.game.enemies.count -= 1;
-    if (this.game.enemies.head === this) {
-      return this.game.enemies.head.nextEnemy;
-    }
-    for (let i = this.game.enemies.head; i.nextEnemy != null; i = i.nextEnemy) {
-      if (i.nextEnemy === this) {
-        i.nextEnemy = i.nextEnemy.nextEnemy;
-      }
-      if (i.nextEnemy == null) {
-        return this.game.enemies.head;
-      }
-    }
-    return this.game.enemies.head;
   }
   getState() {
     let state = {};
@@ -899,8 +954,10 @@ module.exports = class {
     this.height = 20;
     this.positionX = game.canvas.width / 2;
     this.positionY = game.canvas.height - 25;
-    this.speedX = 0;
-    this.speedY = 0;
+    this.speedXInitial = 0;
+    this.speedYInitial = 0;
+    this.speedXFinal = 0;
+    this.speedYFinal = 0;
     this.maxSpeed = 5;
     this.accelerationX = 0;
     this.accelerationY = 0;
@@ -912,6 +969,7 @@ module.exports = class {
     this.score = 0;
     this.socketId = id;
     this.keyMap = [];
+    this.inputSequence = 0;
   }
   draw() {
     this.game.canvasContext.fillRect(
@@ -938,7 +996,9 @@ module.exports = class {
     this.accelerateYUpdate();
   }
   positionXUpdate() {
-    this.positionX += this.speedX * (this.game.timer.deltaTime / (1000 / 60));
+    this.positionX +=
+      ((this.speedXInitial + this.speedXFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+    // check if within boundaries
     if (this.positionX < 0) {
       this.positionX = 0;
     } else if (this.positionX + this.width > this.game.canvas.width) {
@@ -946,7 +1006,9 @@ module.exports = class {
     }
   }
   positionYUpdate() {
-    this.positionY += this.speedY * (this.game.timer.deltaTime / (1000 / 60));
+    this.positionY +=
+      ((this.speedYInitial + this.speedYFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+    // check if within boundaries
     if (this.positionY < 0) {
       this.positionY = 0;
     } else if (this.positionY + this.height > this.game.canvas.height) {
@@ -954,45 +1016,48 @@ module.exports = class {
     }
   }
   speedXUpdate() {
-    if (this.speedX > -this.maxSpeed && this.speedX < this.maxSpeed) {
-      this.speedX += this.accelerationX * (this.game.timer.deltaTime / (1000 / 60));
-    }
-    if (this.speedX > 0) {
-      this.speedX -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedX < 0) {
-        this.speedX = 0;
+    // set initial speed to final speed of last loop
+    this.speedXInitial = this.speedXFinal;
+    this.speedXFinal += this.accelerationX * (this.game.timer.deltaTime / (1000 / 60));
+    // apply friction, doesn't account for case when speed changes signs,
+    // but should have negligible impact
+    if (this.speedXFinal > 0) {
+      this.speedXFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedXFinal < 0) {
+        this.speedXFinal = 0;
       }
-    } else if (this.speedX < 0) {
-      this.speedX += this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedX > 0) {
-        this.speedX = 0;
+    } else if (this.speedXFinal < 0) {
+      this.speedXFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedXFinal > 0) {
+        this.speedXFinal = 0;
       }
     }
-    if (this.speedX < -this.maxSpeed) {
-      this.speedX = -this.maxSpeed;
-    } else if (this.speedX > this.maxSpeed) {
-      this.speedX = this.maxSpeed;
+    if (this.speedXFinal < -this.maxSpeed) {
+      this.speedXFinal = -this.maxSpeed;
+    } else if (this.speedXFinal > this.maxSpeed) {
+      this.speedXFinal = this.maxSpeed;
     }
   }
   speedYUpdate() {
-    if (this.speedY > -this.maxSpeed && this.speedY < this.maxSpeed) {
-      this.speedY += this.accelerationY * (this.game.timer.deltaTime / (1000 / 60));
-    }
-    if (this.speedY > 0) {
-      this.speedY -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedY < 0) {
-        this.speedY = 0;
+    this.speedYInitial = this.speedYFinal;
+    this.speedYFinal += this.accelerationY * (this.game.timer.deltaTime / (1000 / 60));
+    // apply friction, doesn't account for case when speed changes signs,
+    // but should have negligible impact
+    if (this.speedYFinal > 0) {
+      this.speedYFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedYFinal < 0) {
+        this.speedYFinal = 0;
       }
-    } else if (this.speedY < 0) {
-      this.speedY += this.friction * (this.game.timer.deltaTime / (1000 / 60));
-      if (this.speedY > 0) {
-        this.speedY = 0;
+    } else if (this.speedYFinal < 0) {
+      this.speedYFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      if (this.speedYFinal > 0) {
+        this.speedYFinal = 0;
       }
     }
-    if (this.speedY < -this.maxSpeed) {
-      this.speedY = -this.maxSpeed;
-    } else if (this.speedY > this.maxSpeed) {
-      this.speedY = this.maxSpeed;
+    if (this.speedYFinal < -this.maxSpeed) {
+      this.speedYFinal = -this.maxSpeed;
+    } else if (this.speedYFinal > this.maxSpeed) {
+      this.speedYFinal = this.maxSpeed;
     }
   }
   accelerateXUpdate() {
@@ -1020,23 +1085,24 @@ module.exports = class {
     }
   }
   powerUpCollisionCheck() {
-    for (let i = this.game.powerUps.head; i != null; i = i.nextPowerUp) {
+    for (let i = 0; i < this.game.powerUps.entities.length; i += 1) {
+      const powerUp = this.game.powerUps.entities[i];
       if (
-        i.removeFromGame === false &&
-        i.positionX >= this.positionX &&
-        i.positionX <= this.positionX + this.width &&
-        i.positionY >= this.positionY &&
-        i.positionY <= this.positionY + this.height
+        powerUp.removeFromGame === false &&
+        powerUp.positionX >= this.positionX &&
+        powerUp.positionX <= this.positionX + this.width &&
+        powerUp.positionY >= this.positionY &&
+        powerUp.positionY <= this.positionY + this.height
       ) {
-        if (this.bulletType === i.color) {
+        if (this.bulletType === powerUp.color) {
           if (this.bulletLevel < this.maxBulletLevel) {
             this.bulletLevel += 1;
           }
         } else {
-          this.bulletType = i.color;
+          this.bulletType = powerUp.color;
           this.bulletLevel = 1;
         }
-        i.removeFromGame = true;
+        powerUp.removeFromGame = true;
       }
     }
   }
@@ -1073,9 +1139,6 @@ module.exports = class {
     this.positionY += this.speed * (this.game.timer.deltaTime / (1000 / 60));
   }
   update() {
-    if (this.removeFromGame) {
-      this.game.powerUps.head = this.remove();
-    }
     this.movement();
     this.boundaryCheck();
   }
@@ -1083,32 +1146,6 @@ module.exports = class {
     if (this.positionY >= this.game.canvas.height) {
       this.removeFromGame = true;
     }
-  }
-  append() {
-    if (this.game.powerUps.head == null) {
-      return this;
-    }
-    for (let i = this.game.powerUps.head; i != null; i = i.nextPowerUp) {
-      if (i.nextPowerUp == null) {
-        i.nextPowerUp = this;
-        i = i.nextPowerUp;
-      }
-    }
-    return this.game.powerUps.head;
-  }
-  remove() {
-    if (this.game.powerUps.head === this) {
-      return this.game.powerUps.head.nextPowerUp;
-    }
-    for (let i = this.game.powerUps.head; i.nextPowerUp != null; i = i.nextPowerUp) {
-      if (i.nextPowerUp === this) {
-        i.nextPowerUp = i.nextPowerUp.nextPowerUp;
-      }
-      if (i.nextPowerUp == null) {
-        return this.game.powerUps.head;
-      }
-    }
-    return this.game.powerUps.head;
   }
   getState() {
     let state = {};
@@ -1122,114 +1159,127 @@ module.exports = class {
 };
 
 },{}],17:[function(require,module,exports){
-module.exports = {
-  entities: {},
+module.exports = class {
+  constructor() {
+    this.entities = {};
+  }
   update() {
     Object.keys(this.entities).forEach((key) => {
       this.entities[key].update();
     });
-  },
-  getState(gameServer) {
+  }
+  getState() {
+    const state = {};
     Object.keys(this.entities).forEach((key) => {
-      gameServer.gameState.players.push(this.entities[key].getState(gameServer));
+      state[key] = this.entities[key].getState();
     });
-  },
+    return state;
+  }
   draw(game, gameState) {
-    Object.keys(gameState.players).forEach((key) => {
+    Object.keys(gameState.players.entities).forEach((key) => {
       game.canvasContext.fillRect(
-        gameState.players[key].positionX,
-        gameState.players[key].positionY,
-        gameState.players[key].width,
-        gameState.players[key].height,
+        gameState.players.entities[key].positionX,
+        gameState.players.entities[key].positionY,
+        gameState.players.entities[key].width,
+        gameState.players.entities[key].height,
       );
     });
-  },
+  }
 };
 
 },{}],18:[function(require,module,exports){
 const PowerUp = require('../objects/powerUp/index.js');
 
-module.exports = {
-  head: null,
-  config: {
-    spawn: {
-      countdown: null,
-      rate: 1000,
-      randomRate() {
-        return Math.floor(Math.random() * this.rate);
+module.exports = class {
+  constructor() {
+    this.entities = [];
+    this.config = {
+      spawn: {
+        countdown: null,
+        rate: 1000,
+        randomRate() {
+          return Math.floor(Math.random() * this.rate);
+        },
       },
-    },
-  },
-  types: ['deepskyblue', 'orangered', 'mediumpurple'],
+    };
+    this.types = ['deepskyblue', 'orangered', 'mediumpurple'];
+  }
   drawDepreciated() {
     for (let i = this.head; i != null; i = i.nextPowerUp) {
       i.draw();
     }
-  },
+  }
   draw(game, gameState) {
-    for (let i = 0; gameState.powerUps[i] != null; i += 1) {
-      game.canvasContext.fillStyle = gameState.powerUps[i].color;
+    for (let i = 0; i < gameState.powerUps.entities.length; i += 1) {
+      game.canvasContext.fillStyle = gameState.powerUps.entities[i].color;
       game.canvasContext.beginPath();
       game.canvasContext.arc(
-        gameState.powerUps[i].positionX,
-        gameState.powerUps[i].positionY,
-        gameState.powerUps[i].radius,
+        gameState.powerUps.entities[i].positionX,
+        gameState.powerUps.entities[i].positionY,
+        gameState.powerUps.entities[i].radius,
         0,
         2 * Math.PI,
       );
       game.canvasContext.fill();
     }
-  },
+  }
   update() {
-    for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.update();
+    for (let i = this.entities.length - 1; i >= 0; i -= 1) {
+      if (this.entities[i].removeFromGame == true) {
+        this.entities.splice(i, 1);
+      }
     }
-  },
+    for (let i = 0; i < this.entities.length; i += 1) {
+      this.entities[i].update();
+    }
+  }
+  addPowerUp(powerUp) {
+    this.entities.push(powerUp);
+  }
   spawn(game) {
     this.config.spawn.countdown -= game.timer.deltaTime;
     if (this.config.spawn.countdown <= 0) {
       this.config.spawn.countdown += this.config.spawn.randomRate();
-      game.powerUps.head = new PowerUp(game).append();
+      this.addPowerUp(new PowerUp(game));
     }
-  },
-  getState(gameServer) {
-    for (let i = this.head; i != null; i = i.nextPowerUp) {
-      gameServer.gameState.powerUps.push(i.getState());
+  }
+  getState() {
+    let state = [];
+    for (let i = 0; i < this.entities.length; i += 1) {
+      state.push(this.entities[i].getState());
     }
-  },
+    return state;
+  }
 };
 
 },{"../objects/powerUp/index.js":16}],19:[function(require,module,exports){
-const gameEngine = require('./gameEngine.js');
+const GameEngine = require('./gameEngine.js');
 
 const socket = io();
 
 window.onload = () => {
-  gameEngine.canvas = document.getElementById('canvas');
-  gameEngine.clientInit();
-  gameEngine.clientStart();
+  // create client game instance
+  const client_game = {};
+  client_game.engine = new GameEngine();
+  client_game.engine.canvas = document.getElementById('canvas');
+  client_game.engine.client_init();
+  client_game.engine.client_start(socket);
+
 
   socket.on('update', (data) => {
-    gameEngine.gameState = data;
+    client_game.engine.gameState = data;
+    client_game.engine.applyState = true;
   });
   socket.on('connect', () => {
     console.log(socket.id);
   });
 
-  gameEngine.canvas.addEventListener('keydown', (e) => {
-    if (e.keyCode !== 116 && e.keyCode !== 123) {
-      e.preventDefault();
-    }
-    socket.emit('keydown', {
-      keyCode: e.keyCode,
-    });
-  });
-  gameEngine.canvas.addEventListener('keyup', (e) => {
-    if (e.keyCode !== 116 && e.keyCode !== 123) {
-      e.preventDefault();
-    }
-    socket.emit('keyup', {
-      keyCode: e.keyCode,
+  ['keydown', 'keyup'].forEach((eventListener) => {
+    client_game.engine.canvas.addEventListener(eventListener, (e) => {
+      if (e.keyCode !== 116 && e.keyCode !== 123) {
+        e.preventDefault();
+      }
+      client_game.engine.client_input.keyMap[e.keyCode] = e.type === 'keydown';
     });
   });
 };

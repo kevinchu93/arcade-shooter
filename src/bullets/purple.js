@@ -5,24 +5,20 @@ module.exports = {
   config: purple,
   createPurple(game, player) {
     const findRandomUntargettedEnemy = () => {
-      let enemy = game.enemies.head;
-      const untargettedEnemiesCount = game.enemies.count - game.enemies.targettedCount;
-      const randomUntargettedEnemy = Math.floor(Math.random() * untargettedEnemiesCount);
-      while (enemy != null && enemy.stateTargetted === true) {
-        enemy = enemy.nextEnemy;
-      }
-      if (enemy == null) { // no untargetted Enemy
+      const untargettedEnemiesCount = game.enemies.entities.length - game.enemies.targettedCount;
+      if (untargettedEnemiesCount === 0) {
         return null;
-      } else if (randomUntargettedEnemy === 0) { // 1 untargetted Enemy
-        return enemy;
       }
-      for (let i = 0; i < randomUntargettedEnemy; i += 1) { // > 1 untargettedEnemy
-        enemy = enemy.nextEnemy;
-        while (enemy.stateTargetted !== false) {
-          enemy = enemy.nextEnemy;
+      let randomUntargettedEnemy = Math.floor(Math.random() * untargettedEnemiesCount) + 1;
+      for (let i = 0; randomUntargettedEnemy > 0; i += 1) {
+        if (game.enemies.entities[i].stateTargetted === false) {
+          randomUntargettedEnemy -= 1;
+        }
+        if (randomUntargettedEnemy === 0) {
+          return game.enemies.entities[i];
         }
       }
-      return enemy;
+      return null; // restructure so this return has meaning
     };
     const enemy = findRandomUntargettedEnemy();
     if (enemy == null) {

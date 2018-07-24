@@ -9,9 +9,6 @@ module.exports = class extends Default {
     this.positionY = player.positionY;
   }
   update() {
-    if (this.removeFromGame === true) {
-      this.game.bullets.head = this.remove();
-    }
     super.boundaryCheck();
     super.movement();
     this.hitCheck();
@@ -21,14 +18,15 @@ module.exports = class extends Default {
     const Ax2 = this.positionX + this.width;
     const Ay1 = this.positionY;
     const Ay2 = this.positionY + this.height;
-    for (let i = this.game.enemies.head; i != null; i = i.nextEnemy) {
-      if (i.removeFromGame === false) {
-        const Bx1 = i.positionX;
-        const Bx2 = i.positionX + i.width;
-        const By1 = i.positionY;
-        const By2 = i.positionY + i.height;
+    for (let i = 0; i < this.game.enemies.entities.length; i += 1) {
+      const enemy = this.game.enemies.entities[i];
+      if (enemy.removeFromGame === false) {
+        const Bx1 = enemy.positionX;
+        const Bx2 = enemy.positionX + enemy.width;
+        const By1 = enemy.positionY;
+        const By2 = enemy.positionY + enemy.height;
         if (super.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-          i.removeFromGame = true;
+          enemy.removeFromGame = true;
           this.game.players.entities[this.playerId].score += 1;
         }
       }

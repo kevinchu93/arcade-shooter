@@ -29,42 +29,8 @@ module.exports = class {
     }
   }
   update() {
-    if (this.removeFromGame) {
-      this.game.enemies.head = this.remove();
-    }
     this.movement();
     this.boundaryCheck();
-  }
-  append() {
-    this.game.enemies.count += 1;
-    if (this.game.enemies.head == null) {
-      return this;
-    }
-    for (let i = this.game.enemies.head; i != null; i = i.nextEnemy) {
-      if (i.nextEnemy == null) {
-        i.nextEnemy = this;
-        i = i.nextEnemy;
-      }
-    }
-    return this.game.enemies.head;
-  }
-  remove() {
-    if (this.stateTargetted === true) {
-      this.game.enemies.targettedCount -= 1;
-    }
-    this.game.enemies.count -= 1;
-    if (this.game.enemies.head === this) {
-      return this.game.enemies.head.nextEnemy;
-    }
-    for (let i = this.game.enemies.head; i.nextEnemy != null; i = i.nextEnemy) {
-      if (i.nextEnemy === this) {
-        i.nextEnemy = i.nextEnemy.nextEnemy;
-      }
-      if (i.nextEnemy == null) {
-        return this.game.enemies.head;
-      }
-    }
-    return this.game.enemies.head;
   }
   getState() {
     let state = {};

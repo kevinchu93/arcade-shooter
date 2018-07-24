@@ -18,9 +18,6 @@ module.exports = class extends Default {
     enemy.stateTargetted = true;
   }
   update() {
-    if (this.removeFromGame === true) {
-      this.game.bullets.head = this.remove();
-    }
     this.movement();
     this.killCheck();
   }
@@ -50,33 +47,5 @@ module.exports = class extends Default {
     this.enemyPositionY = this.targetEnemy.positionY + (this.targetEnemy.height / 2);
     this.positionX = this.targetPlayer.positionX + (this.targetPlayer.width / 2);
     this.positionY = this.targetPlayer.positionY;
-  }
-  append() {
-    this.game.bullets.bulletCountPurple += 1;
-    if (this.game.bullets.head == null) {
-      return this;
-    }
-    for (let i = this.game.bullets.head; i != null; i = i.nextBullet) {
-      if (i.nextBullet == null) {
-        i.nextBullet = this;
-        i = i.nextBullet;
-      }
-    }
-    return this.game.bullets.head;
-  }
-  remove() {
-    this.game.bullets.bulletCountPurple -= 1;
-    if (this.game.bullets.head === this) {
-      return this.game.bullets.head.nextBullet;
-    }
-    for (let i = this.game.bullets.head; i.nextBullet != null; i = i.nextBullet) {
-      if (i.nextBullet === this) {
-        i.nextBullet = i.nextBullet.nextBullet;
-      }
-      if (i.nextBullet == null) {
-        return this.game.bullets.head;
-      }
-    }
-    return this.game.bullets.head;
   }
 };

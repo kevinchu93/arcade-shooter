@@ -19,9 +19,6 @@ module.exports = class {
     this.positionY += this.speed * (this.game.timer.deltaTime / (1000 / 60));
   }
   update() {
-    if (this.removeFromGame) {
-      this.game.powerUps.head = this.remove();
-    }
     this.movement();
     this.boundaryCheck();
   }
@@ -29,32 +26,6 @@ module.exports = class {
     if (this.positionY >= this.game.canvas.height) {
       this.removeFromGame = true;
     }
-  }
-  append() {
-    if (this.game.powerUps.head == null) {
-      return this;
-    }
-    for (let i = this.game.powerUps.head; i != null; i = i.nextPowerUp) {
-      if (i.nextPowerUp == null) {
-        i.nextPowerUp = this;
-        i = i.nextPowerUp;
-      }
-    }
-    return this.game.powerUps.head;
-  }
-  remove() {
-    if (this.game.powerUps.head === this) {
-      return this.game.powerUps.head.nextPowerUp;
-    }
-    for (let i = this.game.powerUps.head; i.nextPowerUp != null; i = i.nextPowerUp) {
-      if (i.nextPowerUp === this) {
-        i.nextPowerUp = i.nextPowerUp.nextPowerUp;
-      }
-      if (i.nextPowerUp == null) {
-        return this.game.powerUps.head;
-      }
-    }
-    return this.game.powerUps.head;
   }
   getState() {
     let state = {};

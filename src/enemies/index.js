@@ -1,47 +1,63 @@
 const Enemy = require('../objects/enemy/index.js');
 
-module.exports = {
-  head: null,
-  count: 0,
-  targettedCount: 0,
-  totalTime: 0,
-  config: {
-    spawn: {
-      countdown: 1000,
-      rate: 1000,
-    },
-  },
+module.exports = class {
+  constructor() {
+    this.entities = [];
+    this.head = null;
+    this.count = 0;
+    this.targettedCount = 0;
+    this.totalTime = 0;
+    this.config = {
+      spawn: {
+        countdown: 1000,
+        rate: 1000,
+      },
+    };
+  }
   drawDepreciated(game) {
     for (let i = this.head; i != null; i = i.nextEnemy) {
       i.draw();
     }
     game.canvasContext.fillText(this.count, 100, 55);
-  },
+  }
   draw(game, gameState) {
-    for (let i = 0; gameState.enemies[i] != null; i += 1) {
+    for (let i = 0; i < gameState.enemies.entities.length; i += 1) {
       game.canvasContext.fillRect(
-        gameState.enemies[i].positionX,
-        gameState.enemies[i].positionY,
-        gameState.enemies[i].width,
-        gameState.enemies[i].height,
+        gameState.enemies.entities[i].positionX,
+        gameState.enemies.entities[i].positionY,
+        gameState.enemies.entities[i].width,
+        gameState.enemies.entities[i].height,
       );
     }
-  },
+  }
   update() {
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.update();
+    for (let i = this.entities.length - 1; i >= 0; i -= 1) {
+      if (this.entities[i].removeFromGame === true) {
+        if (this.entities[i].stateTargetted === true) {
+          this.targettedCount -= 1;
+        }
+        this.entities.splice(i, 1);
+      }
     }
-  },
+    for (let i = 0; i < this.entities.length; i += 1) {
+      this.entities[i].update();
+    }
+  }
+  addEnemy(enemy) {
+    this.entities.push(enemy);
+  }
   spawn(game) {
-    game.enemies.config.spawn.countdown -= game.timer.deltaTime;
-    if (game.enemies.config.spawn.countdown <= 0) {
-      game.enemies.config.spawn.countdown += game.enemies.config.spawn.rate;
-      game.enemies.head = new Enemy(game).append();
+    this.config.spawn.countdown -= game.timer.deltaTime;
+    if (this.config.spawn.countdown <= 0) {
+      this.config.spawn.countdown += this.config.spawn.rate;
+      this.addEnemy(new Enemy(game));
     }
-  },
-  getState(gameServer) {
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      gameServer.gameState.enemies.push(i.getState());
+  }
+  getState() {
+    const state = [];
+    for (let i = 0; i < this.entities.length; i += 1) {
+      state.push(this.entities[i].getState());
     }
-  },
+    return state;
+  }
 };

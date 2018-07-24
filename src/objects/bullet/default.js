@@ -20,9 +20,6 @@ module.exports = class {
     }
   }
   update() {
-    if (this.removeFromGame === true) {
-      this.game.bullets.head = this.remove();
-    }
     this.boundaryCheck();
     this.movement();
     this.hitCheck();
@@ -41,14 +38,15 @@ module.exports = class {
     const Ax2 = this.positionX + this.width;
     const Ay1 = this.positionY;
     const Ay2 = this.positionY + this.height;
-    for (let i = this.game.enemies.head; i != null; i = i.nextEnemy) {
-      if (i.removeFromGame === false) {
-        const Bx1 = i.positionX;
-        const Bx2 = i.positionX + i.width;
-        const By1 = i.positionY;
-        const By2 = i.positionY + i.height;
+    for (let i = 0; i < this.game.enemies.entities.length; i += 1) {
+      const enemy = this.game.enemies.entities[i];
+      if (enemy.removeFromGame === false) {
+        const Bx1 = enemy.positionX;
+        const Bx2 = enemy.positionX + enemy.width;
+        const By1 = enemy.positionY;
+        const By2 = enemy.positionY + enemy.height;
         if (this.constructor.rectangleCollision(Ax1, Ax2, Ay1, Ay2, Bx1, Bx2, By1, By2)) {
-          i.removeFromGame = true;
+          enemy.removeFromGame = true;
           this.game.players.entities[this.playerId].score += 1;
           this.removeFromGame = true;
         }
@@ -69,32 +67,6 @@ module.exports = class {
       return true;
     }
     return false;
-  }
-  append() {
-    if (this.game.bullets.head == null) {
-      return this;
-    }
-    for (let i = this.game.bullets.head; i != null; i = i.nextBullet) {
-      if (i.nextBullet == null) {
-        i.nextBullet = this;
-        i = i.nextBullet;
-      }
-    }
-    return this.game.bullets.head;
-  }
-  remove() {
-    if (this.game.bullets.head === this) {
-      return this.game.bullets.head.nextBullet;
-    }
-    for (let i = this.game.bullets.head; i.nextBullet != null; i = i.nextBullet) {
-      if (i.nextBullet === this) {
-        i.nextBullet = i.nextBullet.nextBullet;
-      }
-      if (i.nextBullet == null) {
-        return this.game.bullets.head;
-      }
-    }
-    return this.game.bullets.head;
   }
   getState() {
     let state = {};
