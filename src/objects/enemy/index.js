@@ -9,6 +9,7 @@ module.exports = class {
     this.removeFromGame = false;
     this.nextEnemy = null;
     this.stateTargetted = false;
+    this.id = game.enemies.idCount;
   }
   draw() {
     this.game.canvasContext.fillRect(
@@ -18,8 +19,8 @@ module.exports = class {
       this.height,
     );
   }
-  movement() {
-    this.positionX += this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionX += this.speed * (time / (1000 / 60));
   }
   boundaryCheck() {
     if (this.positionX <= 0 && this.speed < 0) {
@@ -28,8 +29,8 @@ module.exports = class {
       this.speed = -this.speed;
     }
   }
-  update() {
-    this.movement();
+  update(time) {
+    this.movement(time);
     this.boundaryCheck();
   }
   getState() {

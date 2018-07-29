@@ -1,8 +1,10 @@
 const Enemy = require('../objects/enemy/index.js');
 
 module.exports = class {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.entities = [];
+    this.idCount = 0;
     this.head = null;
     this.count = 0;
     this.targettedCount = 0;
@@ -14,23 +16,17 @@ module.exports = class {
       },
     };
   }
-  drawDepreciated(game) {
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.draw();
-    }
-    game.canvasContext.fillText(this.count, 100, 55);
-  }
-  draw(game, gameState) {
-    for (let i = 0; i < gameState.enemies.entities.length; i += 1) {
-      game.canvasContext.fillRect(
-        gameState.enemies.entities[i].positionX,
-        gameState.enemies.entities[i].positionY,
-        gameState.enemies.entities[i].width,
-        gameState.enemies.entities[i].height,
+  draw() {
+    for (let i = 0; i < this.game.enemies.entities.length; i += 1) {
+      this.game.canvasContext.fillRect(
+        this.game.enemies.entities[i].positionX,
+        this.game.enemies.entities[i].positionY,
+        this.game.enemies.entities[i].width,
+        this.game.enemies.entities[i].height,
       );
     }
   }
-  update() {
+  update(time) {
     for (let i = this.entities.length - 1; i >= 0; i -= 1) {
       if (this.entities[i].removeFromGame === true) {
         if (this.entities[i].stateTargetted === true) {
@@ -40,17 +36,18 @@ module.exports = class {
       }
     }
     for (let i = 0; i < this.entities.length; i += 1) {
-      this.entities[i].update();
+      this.entities[i].update(time);
     }
   }
   addEnemy(enemy) {
+    this.idCount += 1;
     this.entities.push(enemy);
   }
-  spawn(game) {
-    this.config.spawn.countdown -= game.timer.deltaTime;
+  spawn() {
+    this.config.spawn.countdown -= this.game.timer.deltaTime;
     if (this.config.spawn.countdown <= 0) {
       this.config.spawn.countdown += this.config.spawn.rate;
-      this.addEnemy(new Enemy(game));
+      this.addEnemy(new Enemy(this.game));
     }
   }
   getState() {
@@ -59,5 +56,15 @@ module.exports = class {
       state.push(this.entities[i].getState());
     }
     return state;
+  }
+  updateWithServerState() {
+    this.entities = [];
+    for (let i = 0; this.game.serverState.enemies.entities[i] != null; i += 1) {
+      const enemy = new Enemy(this.game);
+      Object.keys(this.game.serverState.enemies.entities[i]).forEach((key) => {
+        enemy[key] = this.game.serverState.enemies.entities[i][key];
+      });
+      this.entities[i] = enemy;
+    }
   }
 };

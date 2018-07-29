@@ -12,17 +12,18 @@ module.exports = class extends Default {
     this.reqKillTime = 500;
     this.targetEnemy = enemy;
     this.targetPlayer = player;
+    this.enemyId = enemy.id;
     if (enemy.stateTargetted === false) {
       game.enemies.targettedCount += 1;
     }
     enemy.stateTargetted = true;
   }
-  update() {
+  update(time) {
     this.movement();
-    this.killCheck();
+    this.killCheck(time);
   }
-  killCheck() {
-    this.reqKillTime -= this.game.timer.deltaTime;
+  killCheck(time) {
+    this.reqKillTime -= time;
     if (this.reqKillTime <= 0) {
       this.removeFromGame = true;
       this.targetEnemy.removeFromGame = true;

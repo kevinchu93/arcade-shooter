@@ -4,7 +4,7 @@ module.exports = class {
     this.radius = 5;
     this.speed = 2;
     this.positionX = Math.floor(Math.random() * (game.width || game.canvas.width)); // temp
-    this.positionY = null;
+    this.positionY = -200;
     this.color = game.powerUps.types[Math.floor(Math.random() * game.powerUps.types.length)];
     this.removeFromGame = false;
     this.nextPowerUp = null;
@@ -15,11 +15,11 @@ module.exports = class {
     this.game.canvasContext.arc(this.positionX, this.positionY, this.radius, 0, 2 * Math.PI);
     this.game.canvasContext.fill();
   }
-  movement() {
-    this.positionY += this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionY += this.speed * (time / (1000 / 60));
   }
-  update() {
-    this.movement();
+  update(time) {
+    this.movement(time);
     this.boundaryCheck();
   }
   boundaryCheck() {

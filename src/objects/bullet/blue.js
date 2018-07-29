@@ -8,9 +8,9 @@ module.exports = class extends Default {
     this.positionX = player.positionX + ((player.width - this.width) / 2);
     this.positionY = player.positionY;
   }
-  update() {
+  update(time) {
     super.boundaryCheck();
-    super.movement();
+    super.movement(time);
     this.hitCheck();
   }
   hitCheck() {

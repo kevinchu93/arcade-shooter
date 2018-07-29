@@ -7,8 +7,8 @@ module.exports = class extends Default {
     this.angle = angle;
     this.positionX = (player.positionX + ((player.width - this.width) / 2)) + this.offset;
   }
-  movement() {
-    this.positionX += this.angle * this.speed * (this.game.timer.deltaTime / (1000 / 60));
-    this.positionY -= this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionX += this.angle * this.speed * (time / (1000 / 60));
+    this.positionY -= this.speed * (time / (1000 / 60));
   }
 };

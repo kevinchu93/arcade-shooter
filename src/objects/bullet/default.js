@@ -11,17 +11,17 @@ module.exports = class {
     this.nextBullet = null;
     this.removeFromGame = false;
   }
-  movement() {
-    this.positionY -= this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionY -= this.speed * (time / (1000 / 60));
   }
   boundaryCheck() {
     if (this.positionY + this.height <= 0) {
       this.removeFromGame = true;
     }
   }
-  update() {
+  update(time) {
     this.boundaryCheck();
-    this.movement();
+    this.movement(time);
     this.hitCheck();
   }
   draw() {

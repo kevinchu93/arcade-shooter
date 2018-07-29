@@ -31,24 +31,24 @@ module.exports = class {
     );
     this.game.canvasContext.fillText(this.score, 1200, 55);
   }
-  update() {
-    this.movement();
+  update(input, time) {
+    this.movement(input, time);
     this.powerUpCollisionCheck();
-    if (this.keyMap[13] === true) {
-      this.game.bullets.create(this.game, this);
+    if (input[13] === true) {
+      this.game.bullets.create(this);
     }
   }
-  movement() {
-    this.positionXUpdate();
-    this.positionYUpdate();
-    this.speedXUpdate();
-    this.speedYUpdate();
-    this.accelerateXUpdate();
-    this.accelerateYUpdate();
+  movement(input, time) {
+    this.positionXUpdate(time);
+    this.positionYUpdate(time);
+    this.speedXUpdate(time);
+    this.speedYUpdate(time);
+    this.accelerateXUpdate(input);
+    this.accelerateYUpdate(input);
   }
-  positionXUpdate() {
+  positionXUpdate(time) {
     this.positionX +=
-      ((this.speedXInitial + this.speedXFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+      ((this.speedXInitial + this.speedXFinal) * (time / (1000 / 60))) / 2;
     // check if within boundaries
     if (this.positionX < 0) {
       this.positionX = 0;
@@ -56,9 +56,9 @@ module.exports = class {
       this.positionX = this.game.canvas.width - this.width;
     }
   }
-  positionYUpdate() {
+  positionYUpdate(time) {
     this.positionY +=
-      ((this.speedYInitial + this.speedYFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+      ((this.speedYInitial + this.speedYFinal) * (time / (1000 / 60))) / 2;
     // check if within boundaries
     if (this.positionY < 0) {
       this.positionY = 0;
@@ -66,19 +66,19 @@ module.exports = class {
       this.positionY = this.game.canvas.height - this.height;
     }
   }
-  speedXUpdate() {
+  speedXUpdate(time) {
     // set initial speed to final speed of last loop
     this.speedXInitial = this.speedXFinal;
-    this.speedXFinal += this.accelerationX * (this.game.timer.deltaTime / (1000 / 60));
+    this.speedXFinal += this.accelerationX * (time / (1000 / 60));
     // apply friction, doesn't account for case when speed changes signs,
     // but should have negligible impact
     if (this.speedXFinal > 0) {
-      this.speedXFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedXFinal -= this.friction * (time / (1000 / 60));
       if (this.speedXFinal < 0) {
         this.speedXFinal = 0;
       }
     } else if (this.speedXFinal < 0) {
-      this.speedXFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedXFinal += this.friction * (time / (1000 / 60));
       if (this.speedXFinal > 0) {
         this.speedXFinal = 0;
       }
@@ -89,18 +89,18 @@ module.exports = class {
       this.speedXFinal = this.maxSpeed;
     }
   }
-  speedYUpdate() {
+  speedYUpdate(time) {
     this.speedYInitial = this.speedYFinal;
-    this.speedYFinal += this.accelerationY * (this.game.timer.deltaTime / (1000 / 60));
+    this.speedYFinal += this.accelerationY * (time / (1000 / 60));
     // apply friction, doesn't account for case when speed changes signs,
     // but should have negligible impact
     if (this.speedYFinal > 0) {
-      this.speedYFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedYFinal -= this.friction * (time / (1000 / 60));
       if (this.speedYFinal < 0) {
         this.speedYFinal = 0;
       }
     } else if (this.speedYFinal < 0) {
-      this.speedYFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedYFinal += this.friction * (time / (1000 / 60));
       if (this.speedYFinal > 0) {
         this.speedYFinal = 0;
       }
@@ -111,26 +111,26 @@ module.exports = class {
       this.speedYFinal = this.maxSpeed;
     }
   }
-  accelerateXUpdate() {
-    if (this.keyMap[37] === true && this.keyMap[39] !== true) {
+  accelerateXUpdate(input) {
+    if (input[37] === true && input[39] !== true) {
       this.accelerationX = -this.acceleration;
-    } else if (this.keyMap[37] !== true && this.keyMap[39] === true) {
+    } else if (input[37] !== true && input[39] === true) {
       this.accelerationX = this.acceleration;
     } else if (
-      (this.keyMap[37] !== true && this.keyMap[39] !== true) ||
-      (this.keyMap[37] === true && this.keyMap[39] === true)
+      (input[37] !== true && input[39] !== true) ||
+      (input[37] === true && input[39] === true)
     ) {
       this.accelerationX = 0;
     }
   }
-  accelerateYUpdate() {
-    if (this.keyMap[38] === true && this.keyMap[40] !== true) {
+  accelerateYUpdate(input) {
+    if (input[38] === true && input[40] !== true) {
       this.accelerationY = -this.acceleration;
-    } else if (this.keyMap[38] !== true && this.keyMap[40] === true) {
+    } else if (input[38] !== true && input[40] === true) {
       this.accelerationY = this.acceleration;
     } else if (
-      (this.keyMap[38] !== true && this.keyMap[40] !== true) ||
-      (this.keyMap[38] === true && this.keyMap[40] === true)
+      (input[38] !== true && input[40] !== true) ||
+      (input[38] === true && input[40] === true)
     ) {
       this.accelerationY = 0;
     }

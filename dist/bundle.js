@@ -54,7 +54,7 @@ module.exports = {
   },
 };
 
-},{"../objects/bullet/index.js":10,"./config.js":2}],2:[function(require,module,exports){
+},{"../objects/bullet/index.js":11,"./config.js":2}],2:[function(require,module,exports){
 module.exports = {
   blue: {
     level1: {
@@ -126,89 +126,91 @@ const red = require('./red.js');
 const purple = require('./purple.js');
 const Bullet = require('../objects/bullet/index.js');
 
+const Player = require('../objects/player/index.js');
+const Enemy = require('../objects/enemy/index.js');
+
 module.exports = class {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.entities = [];
     this.bulletCount = 0;
     this.bulletCountPurple = 0;
     this.head = null;
   }
-  drawDepreciate(game) {
-    for (let i = this.head; i != null; i = i.nextBullet) {
-      i.draw();
-    }
-    game.canvasContext.fillText(this.bulletCountPurple, 400, 55);
-  }
-  draw(game, gameState) {
-    for (let i = 0; gameState.bullets.entities[i] != null; i += 1) {
-      if (gameState.bullets.entities[i].type !== 'mediumpurple') {
-        game.canvasContext.fillStyle = gameState.bullets.entities[i].type;
-        game.canvasContext.fillRect(
-          game.gameState.bullets.entities[i].positionX,
-          game.gameState.bullets.entities[i].positionY,
-          game.gameState.bullets.entities[i].width,
-          game.gameState.bullets.entities[i].height,
+  draw() {
+    for (let i = 0; this.game.bullets.entities[i] != null; i += 1) {
+      if (this.game.bullets.entities[i].type !== 'mediumpurple') {
+        this.game.canvasContext.fillStyle = this.game.bullets.entities[i].type;
+        this.game.canvasContext.fillRect(
+          this.game.bullets.entities[i].positionX,
+          this.game.bullets.entities[i].positionY,
+          this.game.bullets.entities[i].width,
+          this.game.bullets.entities[i].height,
         );
-      } else if (gameState.bullets.entities[i].type === 'mediumpurple') {
-        game.canvasContext.strokeStyle = 'mediumpurple';
-        game.canvasContext.lineWidth = 2;
-        game.canvasContext.lineCap = 'round';
-        game.canvasContext.beginPath();
-        game.canvasContext.moveTo(
-          gameState.bullets.entities[i].positionX,
-          gameState.bullets.entities[i].positionY,
+      } else if (this.game.bullets.entities[i].type === 'mediumpurple') {
+        this.game.canvasContext.strokeStyle = 'mediumpurple';
+        this.game.canvasContext.lineWidth = 2;
+        this.game.canvasContext.lineCap = 'round';
+        this.game.canvasContext.beginPath();
+        this.game.canvasContext.moveTo(
+          this.game.bullets.entities[i].positionX,
+          this.game.bullets.entities[i].positionY,
         );
-        game.canvasContext.quadraticCurveTo(
-          gameState.bullets.entities[i].controlPositionX,
-          gameState.bullets.entities[i].controlPositionY,
-          gameState.bullets.entities[i].enemyPositionX,
-          gameState.bullets.entities[i].enemyPositionY,
+        this.game.canvasContext.quadraticCurveTo(
+          this.game.bullets.entities[i].controlPositionX,
+          this.game.bullets.entities[i].controlPositionY,
+          this.game.bullets.entities[i].enemyPositionX,
+          this.game.bullets.entities[i].enemyPositionY,
         );
-        game.canvasContext.stroke();
+        this.game.canvasContext.stroke();
       }
     }
   }
-  update() {
+  update(time) {
     for (let i = this.entities.length - 1; i >= 0; i -= 1) {
       if (this.entities[i].removeFromGame === true) {
+        if (this.entities[i].type === 'mediumpurple') {
+          this.bulletCountPurple -= 1;
+        }
         this.entities.splice(i, 1);
-        this.bulletCountPurple -= 1;
       }
     }
     for (let i = 0; i < this.entities.length; i += 1) {
-      this.entities[i].update();
+      this.entities[i].update(time);
     }
   }
   addBullet(bullet) {
     this.entities.push(bullet);
-    this.bulletCountPurple += 1;
+    if (bullet.type === 'mediumpurple') {
+      this.bulletCountPurple += 1;
+    }
   }
-  create(game, player) {
+  create(player) {
     let bulletArray = [];
     switch (player.bulletType) {
       case 'white':
-        bulletArray[0] = new Bullet.Default(game, player);
+        bulletArray[0] = new Bullet.Default(this.game, player);
         this.addBullet(bulletArray[0]);
         break;
       case 'orangered': {
-        bulletArray = red.createRed(game, player);
+        bulletArray = red.createRed(this.game, player);
         for (let i = 0; bulletArray[i] != null; i += 1) {
           this.addBullet(bulletArray[i]);
         }
         break;
       }
       case 'deepskyblue':
-        bulletArray[0] = blue.createBlue(game, player);
+        bulletArray[0] = blue.createBlue(this.game, player);
         this.addBullet(bulletArray[0]);
         break;
       case 'mediumpurple':
-        bulletArray[0] = purple.createPurple(game, player);
+        bulletArray[0] = purple.createPurple(this.game, player);
         if (bulletArray[0] != null) {
           this.addBullet(bulletArray[0]);
         }
         break;
       default:
-        bulletArray[0] = new Bullet.Default(game, player);
+        bulletArray[0] = new Bullet.Default(this.game, player);
         this.addBullet(bulletArray[0]);
     }
     return bulletArray;
@@ -220,9 +222,67 @@ module.exports = class {
     }
     return state;
   }
+  updateWithServerState() {
+    this.entities = [];
+    for (let i = 0; this.game.serverState.bullets.entities[i] != null; i += 1) {
+      switch (this.game.serverState.bullets.entities[i].type) {
+        case 'white': {
+          const player = new Player(this.game, 'id');
+          const bulletDefault = new Bullet.Default(this.game, player);
+          Object.keys(this.game.serverState.bullets.entities[i]).forEach((key) => {
+            bulletDefault[key] = this.game.serverState.bullets.entities[i][key];
+          });
+          this.entities[i] = bulletDefault;
+          break;
+        }
+        case 'orangered': {
+          const player = new Player(this.game, 'id');
+          const bulletRed = new Bullet.Red(this.game, player, 10);
+          Object.keys(this.game.serverState.bullets.entities[i]).forEach((key) => {
+            bulletRed[key] = this.game.serverState.bullets.entities[i][key];
+          });
+          this.entities[i] = bulletRed;
+          break;
+        }
+        case 'deepskyblue': {
+          const player = new Player(this.game, 'id');
+          const bulletBlue = new Bullet.Blue(this.game, player, 10, 10);
+          Object.keys(this.game.serverState.bullets.entities[i]).forEach((key) => {
+            bulletBlue[key] = this.game.serverState.bullets.entities[i][key];
+          });
+          this.entities[i] = bulletBlue;
+          break;
+        }
+        case 'mediumpurple': {
+          const player = new Player(this.game, 'id');
+          const enemy = new Enemy(this.game);
+          const bulletPurple = new Bullet.Purple(this.game, player, enemy);
+          Object.keys(this.game.serverState.bullets.entities[i]).forEach((key) => {
+            bulletPurple[key] = this.game.serverState.bullets.entities[i][key];
+          });
+          const targetEnemy = this.game.enemies.entities.find(obj => (
+            obj.id === bulletPurple.enemyId
+          ));
+          const targetPlayer = this.game.players.entities[bulletPurple.playerId];
+          bulletPurple.targetEnemy = targetEnemy;
+          bulletPurple.targetPlayer = targetPlayer;
+          this.entities[i] = bulletPurple;
+          break;
+        }
+        default: {
+          const player = new Player(this.game, 'id');
+          const bulletDefault = new Bullet.Default(this.game, player);
+          Object.keys(this.game.serverState.bullets.entities[i]).forEach((key) => {
+            bulletDefault[key] = this.game.serverState.bullets.entities[i][key];
+          });
+          this.entities[i] = bulletDefault;
+        }
+      }
+    }
+  }
 };
 
-},{"../objects/bullet/index.js":10,"./blue.js":1,"./purple.js":4,"./red.js":5}],4:[function(require,module,exports){
+},{"../objects/bullet/index.js":11,"../objects/enemy/index.js":15,"../objects/player/index.js":16,"./blue.js":1,"./purple.js":4,"./red.js":5}],4:[function(require,module,exports){
 const Bullet = require('../objects/bullet/index.js');
 const { purple } = require('./config.js');
 
@@ -282,7 +342,7 @@ module.exports = {
   },
 };
 
-},{"../objects/bullet/index.js":10,"./config.js":2}],5:[function(require,module,exports){
+},{"../objects/bullet/index.js":11,"./config.js":2}],5:[function(require,module,exports){
 const Bullet = require('../objects/bullet/index.js');
 const { red } = require('./config.js');
 
@@ -394,12 +454,111 @@ module.exports = {
   },
 };
 
-},{"../objects/bullet/index.js":10,"./config.js":2}],6:[function(require,module,exports){
+},{"../objects/bullet/index.js":11,"./config.js":2}],6:[function(require,module,exports){
+const GameEngine = require('./gameEngine.js');
+
+module.exports = class extends GameEngine {
+  constructor() {
+    super();
+    this.id = null;
+    this.input = {
+      step: 0,
+      data: [],
+      time: null,
+    };
+    this.storedInputs = []; // used for interpolation from received server state
+    this.updateWithServerStateRequired = false;
+    this.serverState = null;
+  }
+  init() {
+    super.init();
+    this.canvas.tabIndex = 1000;
+    this.canvas.focus();
+    this.canvasContext = this.canvas.getContext('2d');
+  }
+  start(socket) {
+    const gameLoop = () => {
+      this.timer.tick();
+      this.sendInputToServer(socket);
+      this.storeInput();
+
+      if (this.updateWithServerStateRequired === true) {
+        this.updateWithServerState(socket);
+        this.applySavedInputs();
+        this.updateWithServerStateRequired = false;
+      } else {
+        this.update(this.input.data, this.timer.deltaTime);
+      }
+      this.draw();
+      window.requestAnimationFrame(gameLoop);
+    };
+    gameLoop();
+  }
+  storeInput() {
+    this.storedInputs.push({
+      step: this.input.step,
+      data: this.input.data.slice(0),
+      time: this.timer.deltaTime,
+    });
+  }
+  updateWithServerState() {
+    this.players.updateWithServerState();
+    this.enemies.updateWithServerState();
+    this.powerUps.updateWithServerState();
+    this.bullets.updateWithServerState();
+  }
+  applySavedInputs() {
+    // remove inputs that have already been applied by the server
+    const client = this.serverState.clients.find(obj => obj.id === this.id);
+    if (client === undefined) { // occurs when receiving serverState of nonexisting clients
+      return null
+    }
+    for (let i = 0; this.storedInputs[i] != null; i += 1) {
+      if (this.storedInputs[i].step === client.input.step) {
+        this.storedInputs.splice(0, i + 1);
+      }
+    }
+    // apply inputs to interpolate current game state
+    for (let i = 0; this.storedInputs[i] != null; i += 1) {
+      this.update(this.storedInputs[i].data, this.storedInputs[i].time);
+    }
+  }
+  sendInputToServer(socket) {
+    this.input.step += 1;
+    socket.emit('input', {
+      data: this.input.data,
+      step: this.input.step,
+    });
+  }
+  draw() {
+    this.drawBackground();
+    this.players.draw();
+    this.enemies.draw();
+    this.powerUps.draw();
+    this.bullets.draw();
+  }
+  drawBackground() {
+    this.canvasContext.font = 'bold 48px Arial, sans-serif';
+    this.canvasContext.fillStyle = 'black';
+    this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.canvasContext.fillStyle = 'white';
+  }
+  update(input, time) {
+    this.players.update(input, time);
+    this.enemies.update(time);
+    this.bullets.update(time);
+    this.powerUps.update(time);
+  }
+};
+
+},{"./gameEngine.js":8}],7:[function(require,module,exports){
 const Enemy = require('../objects/enemy/index.js');
 
 module.exports = class {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.entities = [];
+    this.idCount = 0;
     this.head = null;
     this.count = 0;
     this.targettedCount = 0;
@@ -411,23 +570,17 @@ module.exports = class {
       },
     };
   }
-  drawDepreciated(game) {
-    for (let i = this.head; i != null; i = i.nextEnemy) {
-      i.draw();
-    }
-    game.canvasContext.fillText(this.count, 100, 55);
-  }
-  draw(game, gameState) {
-    for (let i = 0; i < gameState.enemies.entities.length; i += 1) {
-      game.canvasContext.fillRect(
-        gameState.enemies.entities[i].positionX,
-        gameState.enemies.entities[i].positionY,
-        gameState.enemies.entities[i].width,
-        gameState.enemies.entities[i].height,
+  draw() {
+    for (let i = 0; i < this.game.enemies.entities.length; i += 1) {
+      this.game.canvasContext.fillRect(
+        this.game.enemies.entities[i].positionX,
+        this.game.enemies.entities[i].positionY,
+        this.game.enemies.entities[i].width,
+        this.game.enemies.entities[i].height,
       );
     }
   }
-  update() {
+  update(time) {
     for (let i = this.entities.length - 1; i >= 0; i -= 1) {
       if (this.entities[i].removeFromGame === true) {
         if (this.entities[i].stateTargetted === true) {
@@ -437,17 +590,18 @@ module.exports = class {
       }
     }
     for (let i = 0; i < this.entities.length; i += 1) {
-      this.entities[i].update();
+      this.entities[i].update(time);
     }
   }
   addEnemy(enemy) {
+    this.idCount += 1;
     this.entities.push(enemy);
   }
-  spawn(game) {
-    this.config.spawn.countdown -= game.timer.deltaTime;
+  spawn() {
+    this.config.spawn.countdown -= this.game.timer.deltaTime;
     if (this.config.spawn.countdown <= 0) {
       this.config.spawn.countdown += this.config.spawn.rate;
-      this.addEnemy(new Enemy(game));
+      this.addEnemy(new Enemy(this.game));
     }
   }
   getState() {
@@ -457,225 +611,45 @@ module.exports = class {
     }
     return state;
   }
+  updateWithServerState() {
+    this.entities = [];
+    for (let i = 0; this.game.serverState.enemies.entities[i] != null; i += 1) {
+      const enemy = new Enemy(this.game);
+      Object.keys(this.game.serverState.enemies.entities[i]).forEach((key) => {
+        enemy[key] = this.game.serverState.enemies.entities[i][key];
+      });
+      this.entities[i] = enemy;
+    }
+  }
 };
 
-},{"../objects/enemy/index.js":14}],7:[function(require,module,exports){
+},{"../objects/enemy/index.js":15}],8:[function(require,module,exports){
 const Timer = require('./timer.js');
 const Bullets = require('./bullets/index.js');
 const Enemies = require('./enemies/index.js');
 const PowerUps = require('./powerUps/index.js');
-const Player = require('./objects/player/index.js');
 const Players = require('./players/index.js');
-const Enemy = require('./objects/enemy/index.js');
-const PowerUp = require('./objects/powerUp/index.js');
-const Bullet = require('./objects/bullet/index.js');
 
 module.exports = class {
   constructor() {
-    this.client_input = {
-      keyMap: [],
-      history: [],
-      sequence: 0,
-      deltaTime: [],
-    };
-    this.applyState = false;
-    this.bullets = new Bullets();
-    this.enemies = new Enemies();
-    this.powerUps = new PowerUps();
-    this.players = new Players();
+    this.bullets = new Bullets(this);
+    this.enemies = new Enemies(this);
+    this.powerUps = new PowerUps(this);
+    this.players = new Players(this);
     this.canvas = null;
-    this.gameState = null;
   }
   init() {
     this.timer = new Timer();
     this.canvas.width = 1366;
     this.canvas.height = 768;
-    this.canvas.tabIndex = 1000;
-    this.canvas.focus();
-    this.canvasContext = this.canvas.getContext('2d');
-    this.player = new Player(this);
-  }
-  server_init() {
-    this.timer = new Timer();
-    this.canvas = {};
-    this.canvas.width = 1366;
-    this.canvas.height = 768;
-  }
-  client_init() {
-    this.timer = new Timer();
-    this.canvas.width = 1366;
-    this.canvas.height = 768;
-    this.canvas.tabIndex = 1000;
-    this.canvas.focus();
-    this.canvasContext = this.canvas.getContext('2d');
-  }
-  start() {
-    const gameLoop = () => {
-      this.timer.tick();
-      this.update();
-      this.draw();
-      this.spawn();
-      window.requestAnimationFrame(gameLoop);
-    };
-    gameLoop();
-  }
-  // starts server update loop
-  server_start() {
-    setInterval(() => {
-      this.timer.tick();
-      this.update();
-      this.spawn();
-    }, 1000 / 60);
-  }
-  client_start(socket) {
-    const gameLoop = () => {
-      this.client_input.sequence += 1;
-      this.sendInput(socket);
-      // save delta time of this input sequence
-      this.client_input.deltaTime[this.client_input.sequence] = this.timer.tick();
-      // save input sequence
-      this.client_input.history[this.client_inputSequence] = this.client_input.keyMap;
-
-      this.client_updateWithState();
-      // this.client_draw();
-      this.client_drawOwnState();
-      window.requestAnimationFrame(gameLoop);
-    };
-    gameLoop();
-  }
-  // use server gameState to recreate all entities, not sure if most efficient method
-  client_updateWithState() {
-    // if server state has not yet been applied
-    if (this.applyState === true) {
-      // create dummy entities to obtain templates with class methods
-      const player = new Player(this, 'id');
-
-      this.players.entities = {};
-      Object.keys(this.gameState.players.entities).forEach((id) => {
-        this.players.entities[id] = new Player(this, id);
-        Object.keys(this.gameState.players.entities[id]).forEach((key) => {
-          this.players.entities[id][key] = this.gameState.players.entities[id][key];
-        });
-      });
-
-      this.enemies.entities = [];
-      for (let i = 0; this.gameState.enemies.entities[i] != null; i += 1) {
-        // create new Enemy instance, to avoid using the same enemy object reference
-        const enemy = new Enemy(this);
-        Object.keys(this.gameState.enemies.entities[i]).forEach((key) => {
-          enemy[key] = this.gameState.enemies.entities[i][key];
-        });
-        this.enemies.entities[i] = enemy;
-      }
-
-      this.powerUps.entities = [];
-      for (let i = 0; this.gameState.powerUps.entities[i] != null; i += 1) {
-        const powerUp = new PowerUp(this);
-        Object.keys(this.gameState.powerUps.entities[i]).forEach((key) => {
-          powerUp[key] = this.gameState.powerUps.entities[i][key];
-        });
-        this.powerUps.entities[i] = powerUp;
-      }
-
-      this.bullets.entities = [];
-      for (let i = 0; this.gameState.bullets.entities[i] != null; i += 1) {
-        switch (this.gameState.bullets.entities[i].type) {
-          case 'white': {
-            const bulletDefault = new Bullet.Default(this, player);
-            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
-              bulletDefault[key] = this.gameState.bullets.entities[i][key];
-            });
-            this.bullets.entities[i] = bulletDefault;
-            break;
-          }
-          case 'orangered': {
-            const bulletRed = new Bullet.Red(this, player, 10);
-            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
-              bulletRed[key] = this.gameState.bullets.entities[i][key];
-            });
-            this.bullets.entities[i] = bulletRed;
-            break;
-          }
-          case 'deepskyblue': {
-            const bulletBlue = new Bullet.Blue(this, player, 10, 10);
-            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
-              bulletBlue[key] = this.gameState.bullets.entities[i][key];
-            });
-            this.bullets.entities[i] = bulletBlue;
-            break;
-          }
-          case 'mediumpurple': {
-            const enemy = new Enemy(this);
-            const bulletPurple = new Bullet.Purple(this, player, enemy);
-            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
-              bulletPurple[key] = this.gameState.bullets.entities[i][key];
-            });
-            this.bullets.entities[i] = bulletPurple;
-            break;
-          }
-          default: {
-            const bulletDefault = new Bullet.Default(this, player);
-            Object.keys(this.gameState.bullets.entities[i]).forEach((key) => {
-              bulletDefault[key] = this.gameState.bullets.entities[i][key];
-            });
-            this.bullets.entities[i] = bulletDefault;
-          }
-        }
-      }
-
-      this.applyState = false;
-    }
-  }
-  sendInput(socket) {
-    socket.emit('input', {
-      keyMap: this.client_input.keyMap,
-      sequence: this.client_input.sequence,
-    });
-  }
-  client_draw() {
-    this.drawBackground();
-    if (this.gameState != null) {
-      this.players.draw(this, this.gameState);
-      this.enemies.draw(this, this.gameState);
-      this.powerUps.draw(this, this.gameState);
-      this.bullets.draw(this, this.gameState);
-    }
-  }
-  client_drawOwnState() {
-    this.drawBackground();
-    this.players.draw(this, this);
-    this.enemies.draw(this, this);
-    this.powerUps.draw(this, this);
-    this.bullets.draw(this, this);
-  }
-  drawBackground() {
-    this.canvasContext.font = 'bold 48px Arial, sans-serif';
-    this.canvasContext.fillStyle = 'black';
-    this.canvasContext.fillRect(0, 0, this.canvas.width, this.canvas.height);
-    this.canvasContext.fillStyle = 'white';
-  }
-  update() {
-    this.players.update();
-    this.enemies.update();
-    this.bullets.update(this);
-    this.powerUps.update();
-  }
-  draw() {
-    this.drawBackground();
-    Object.keys(this.players).forEach((key) => {
-      this.players[key].draw();
-    });
-    this.enemies.draw(this);
-    this.bullets.draw(this);
-    this.powerUps.draw();
   }
   spawn() {
-    this.enemies.spawn(this);
-    this.powerUps.spawn(this);
+    this.enemies.spawn();
+    this.powerUps.spawn();
   }
 };
 
-},{"./bullets/index.js":3,"./enemies/index.js":6,"./objects/bullet/index.js":10,"./objects/enemy/index.js":14,"./objects/player/index.js":15,"./objects/powerUp/index.js":16,"./players/index.js":17,"./powerUps/index.js":18,"./timer.js":20}],8:[function(require,module,exports){
+},{"./bullets/index.js":3,"./enemies/index.js":7,"./players/index.js":18,"./powerUps/index.js":19,"./timer.js":21}],9:[function(require,module,exports){
 const Default = require('./default.js');
 
 module.exports = class extends Default {
@@ -686,9 +660,9 @@ module.exports = class extends Default {
     this.positionX = player.positionX + ((player.width - this.width) / 2);
     this.positionY = player.positionY;
   }
-  update() {
+  update(time) {
     super.boundaryCheck();
-    super.movement();
+    super.movement(time);
     this.hitCheck();
   }
   hitCheck() {
@@ -724,7 +698,7 @@ module.exports = class extends Default {
   }
 };
 
-},{"./default.js":9}],9:[function(require,module,exports){
+},{"./default.js":10}],10:[function(require,module,exports){
 module.exports = class {
   constructor(game, player) {
     this.game = game;
@@ -738,17 +712,17 @@ module.exports = class {
     this.nextBullet = null;
     this.removeFromGame = false;
   }
-  movement() {
-    this.positionY -= this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionY -= this.speed * (time / (1000 / 60));
   }
   boundaryCheck() {
     if (this.positionY + this.height <= 0) {
       this.removeFromGame = true;
     }
   }
-  update() {
+  update(time) {
     this.boundaryCheck();
-    this.movement();
+    this.movement(time);
     this.hitCheck();
   }
   draw() {
@@ -806,7 +780,7 @@ module.exports = class {
   }
 };
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 const Default = require('./default.js');
 const Red = require('./red.js');
 const RedAngled = require('./redAngled.js');
@@ -821,7 +795,7 @@ module.exports = {
   Purple,
 };
 
-},{"./blue.js":8,"./default.js":9,"./purple.js":11,"./red.js":12,"./redAngled.js":13}],11:[function(require,module,exports){
+},{"./blue.js":9,"./default.js":10,"./purple.js":12,"./red.js":13,"./redAngled.js":14}],12:[function(require,module,exports){
 const Default = require('./default.js');
 
 module.exports = class extends Default {
@@ -836,17 +810,18 @@ module.exports = class extends Default {
     this.reqKillTime = 500;
     this.targetEnemy = enemy;
     this.targetPlayer = player;
+    this.enemyId = enemy.id;
     if (enemy.stateTargetted === false) {
       game.enemies.targettedCount += 1;
     }
     enemy.stateTargetted = true;
   }
-  update() {
+  update(time) {
     this.movement();
-    this.killCheck();
+    this.killCheck(time);
   }
-  killCheck() {
-    this.reqKillTime -= this.game.timer.deltaTime;
+  killCheck(time) {
+    this.reqKillTime -= time;
     if (this.reqKillTime <= 0) {
       this.removeFromGame = true;
       this.targetEnemy.removeFromGame = true;
@@ -874,7 +849,7 @@ module.exports = class extends Default {
   }
 };
 
-},{"./default.js":9}],12:[function(require,module,exports){
+},{"./default.js":10}],13:[function(require,module,exports){
 const Default = require('./default.js');
 
 module.exports = class extends Default {
@@ -884,7 +859,7 @@ module.exports = class extends Default {
   }
 };
 
-},{"./default.js":9}],13:[function(require,module,exports){
+},{"./default.js":10}],14:[function(require,module,exports){
 const Default = require('./default.js');
 
 module.exports = class extends Default {
@@ -894,13 +869,13 @@ module.exports = class extends Default {
     this.angle = angle;
     this.positionX = (player.positionX + ((player.width - this.width) / 2)) + this.offset;
   }
-  movement() {
-    this.positionX += this.angle * this.speed * (this.game.timer.deltaTime / (1000 / 60));
-    this.positionY -= this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionX += this.angle * this.speed * (time / (1000 / 60));
+    this.positionY -= this.speed * (time / (1000 / 60));
   }
 };
 
-},{"./default.js":9}],14:[function(require,module,exports){
+},{"./default.js":10}],15:[function(require,module,exports){
 module.exports = class {
   constructor(game) {
     this.game = game;
@@ -912,6 +887,7 @@ module.exports = class {
     this.removeFromGame = false;
     this.nextEnemy = null;
     this.stateTargetted = false;
+    this.id = game.enemies.idCount;
   }
   draw() {
     this.game.canvasContext.fillRect(
@@ -921,8 +897,8 @@ module.exports = class {
       this.height,
     );
   }
-  movement() {
-    this.positionX += this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionX += this.speed * (time / (1000 / 60));
   }
   boundaryCheck() {
     if (this.positionX <= 0 && this.speed < 0) {
@@ -931,8 +907,8 @@ module.exports = class {
       this.speed = -this.speed;
     }
   }
-  update() {
-    this.movement();
+  update(time) {
+    this.movement(time);
     this.boundaryCheck();
   }
   getState() {
@@ -946,7 +922,7 @@ module.exports = class {
   }
 };
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 module.exports = class {
   constructor(game, id) {
     this.game = game;
@@ -980,24 +956,24 @@ module.exports = class {
     );
     this.game.canvasContext.fillText(this.score, 1200, 55);
   }
-  update() {
-    this.movement();
+  update(input, time) {
+    this.movement(input, time);
     this.powerUpCollisionCheck();
-    if (this.keyMap[13] === true) {
-      this.game.bullets.create(this.game, this);
+    if (input[13] === true) {
+      this.game.bullets.create(this);
     }
   }
-  movement() {
-    this.positionXUpdate();
-    this.positionYUpdate();
-    this.speedXUpdate();
-    this.speedYUpdate();
-    this.accelerateXUpdate();
-    this.accelerateYUpdate();
+  movement(input, time) {
+    this.positionXUpdate(time);
+    this.positionYUpdate(time);
+    this.speedXUpdate(time);
+    this.speedYUpdate(time);
+    this.accelerateXUpdate(input);
+    this.accelerateYUpdate(input);
   }
-  positionXUpdate() {
+  positionXUpdate(time) {
     this.positionX +=
-      ((this.speedXInitial + this.speedXFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+      ((this.speedXInitial + this.speedXFinal) * (time / (1000 / 60))) / 2;
     // check if within boundaries
     if (this.positionX < 0) {
       this.positionX = 0;
@@ -1005,9 +981,9 @@ module.exports = class {
       this.positionX = this.game.canvas.width - this.width;
     }
   }
-  positionYUpdate() {
+  positionYUpdate(time) {
     this.positionY +=
-      ((this.speedYInitial + this.speedYFinal) * (this.game.timer.deltaTime / (1000 / 60))) / 2;
+      ((this.speedYInitial + this.speedYFinal) * (time / (1000 / 60))) / 2;
     // check if within boundaries
     if (this.positionY < 0) {
       this.positionY = 0;
@@ -1015,19 +991,19 @@ module.exports = class {
       this.positionY = this.game.canvas.height - this.height;
     }
   }
-  speedXUpdate() {
+  speedXUpdate(time) {
     // set initial speed to final speed of last loop
     this.speedXInitial = this.speedXFinal;
-    this.speedXFinal += this.accelerationX * (this.game.timer.deltaTime / (1000 / 60));
+    this.speedXFinal += this.accelerationX * (time / (1000 / 60));
     // apply friction, doesn't account for case when speed changes signs,
     // but should have negligible impact
     if (this.speedXFinal > 0) {
-      this.speedXFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedXFinal -= this.friction * (time / (1000 / 60));
       if (this.speedXFinal < 0) {
         this.speedXFinal = 0;
       }
     } else if (this.speedXFinal < 0) {
-      this.speedXFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedXFinal += this.friction * (time / (1000 / 60));
       if (this.speedXFinal > 0) {
         this.speedXFinal = 0;
       }
@@ -1038,18 +1014,18 @@ module.exports = class {
       this.speedXFinal = this.maxSpeed;
     }
   }
-  speedYUpdate() {
+  speedYUpdate(time) {
     this.speedYInitial = this.speedYFinal;
-    this.speedYFinal += this.accelerationY * (this.game.timer.deltaTime / (1000 / 60));
+    this.speedYFinal += this.accelerationY * (time / (1000 / 60));
     // apply friction, doesn't account for case when speed changes signs,
     // but should have negligible impact
     if (this.speedYFinal > 0) {
-      this.speedYFinal -= this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedYFinal -= this.friction * (time / (1000 / 60));
       if (this.speedYFinal < 0) {
         this.speedYFinal = 0;
       }
     } else if (this.speedYFinal < 0) {
-      this.speedYFinal += this.friction * (this.game.timer.deltaTime / (1000 / 60));
+      this.speedYFinal += this.friction * (time / (1000 / 60));
       if (this.speedYFinal > 0) {
         this.speedYFinal = 0;
       }
@@ -1060,26 +1036,26 @@ module.exports = class {
       this.speedYFinal = this.maxSpeed;
     }
   }
-  accelerateXUpdate() {
-    if (this.keyMap[37] === true && this.keyMap[39] !== true) {
+  accelerateXUpdate(input) {
+    if (input[37] === true && input[39] !== true) {
       this.accelerationX = -this.acceleration;
-    } else if (this.keyMap[37] !== true && this.keyMap[39] === true) {
+    } else if (input[37] !== true && input[39] === true) {
       this.accelerationX = this.acceleration;
     } else if (
-      (this.keyMap[37] !== true && this.keyMap[39] !== true) ||
-      (this.keyMap[37] === true && this.keyMap[39] === true)
+      (input[37] !== true && input[39] !== true) ||
+      (input[37] === true && input[39] === true)
     ) {
       this.accelerationX = 0;
     }
   }
-  accelerateYUpdate() {
-    if (this.keyMap[38] === true && this.keyMap[40] !== true) {
+  accelerateYUpdate(input) {
+    if (input[38] === true && input[40] !== true) {
       this.accelerationY = -this.acceleration;
-    } else if (this.keyMap[38] !== true && this.keyMap[40] === true) {
+    } else if (input[38] !== true && input[40] === true) {
       this.accelerationY = this.acceleration;
     } else if (
-      (this.keyMap[38] !== true && this.keyMap[40] !== true) ||
-      (this.keyMap[38] === true && this.keyMap[40] === true)
+      (input[38] !== true && input[40] !== true) ||
+      (input[38] === true && input[40] === true)
     ) {
       this.accelerationY = 0;
     }
@@ -1117,14 +1093,14 @@ module.exports = class {
   }
 };
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 module.exports = class {
   constructor(game) {
     this.game = game;
     this.radius = 5;
     this.speed = 2;
     this.positionX = Math.floor(Math.random() * (game.width || game.canvas.width)); // temp
-    this.positionY = null;
+    this.positionY = -200;
     this.color = game.powerUps.types[Math.floor(Math.random() * game.powerUps.types.length)];
     this.removeFromGame = false;
     this.nextPowerUp = null;
@@ -1135,11 +1111,11 @@ module.exports = class {
     this.game.canvasContext.arc(this.positionX, this.positionY, this.radius, 0, 2 * Math.PI);
     this.game.canvasContext.fill();
   }
-  movement() {
-    this.positionY += this.speed * (this.game.timer.deltaTime / (1000 / 60));
+  movement(time) {
+    this.positionY += this.speed * (time / (1000 / 60));
   }
-  update() {
-    this.movement();
+  update(time) {
+    this.movement(time);
     this.boundaryCheck();
   }
   boundaryCheck() {
@@ -1158,14 +1134,25 @@ module.exports = class {
   }
 };
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
+const Player = require('../objects/player/index.js');
+
 module.exports = class {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.entities = {};
   }
-  update() {
+  update(input, time) {
     Object.keys(this.entities).forEach((key) => {
-      this.entities[key].update();
+      if (key === this.game.id) {
+        this.entities[key].update(input, time);
+      }
+    });
+  }
+  updateServer(clients, time) {
+    Object.keys(this.entities).forEach((id) => {
+      const inputData = clients.find(obj => obj.id === id).input.data;
+      this.entities[id].update(inputData, time);
     });
   }
   getState() {
@@ -1175,23 +1162,33 @@ module.exports = class {
     });
     return state;
   }
-  draw(game, gameState) {
-    Object.keys(gameState.players.entities).forEach((key) => {
-      game.canvasContext.fillRect(
-        gameState.players.entities[key].positionX,
-        gameState.players.entities[key].positionY,
-        gameState.players.entities[key].width,
-        gameState.players.entities[key].height,
+  draw() {
+    Object.keys(this.game.players.entities).forEach((key) => {
+      this.game.canvasContext.fillRect(
+        this.game.players.entities[key].positionX,
+        this.game.players.entities[key].positionY,
+        this.game.players.entities[key].width,
+        this.game.players.entities[key].height,
       );
+    });
+  }
+  updateWithServerState() {
+    this.entities = {};
+    Object.keys(this.game.serverState.players.entities).forEach((id) => {
+      this.entities[id] = new Player(this.game, id);
+      Object.keys(this.game.serverState.players.entities[id]).forEach((key) => {
+        this.entities[id][key] = this.game.serverState.players.entities[id][key];
+      });
     });
   }
 };
 
-},{}],18:[function(require,module,exports){
+},{"../objects/player/index.js":16}],19:[function(require,module,exports){
 const PowerUp = require('../objects/powerUp/index.js');
 
 module.exports = class {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.entities = [];
     this.config = {
       spawn: {
@@ -1204,87 +1201,92 @@ module.exports = class {
     };
     this.types = ['deepskyblue', 'orangered', 'mediumpurple'];
   }
-  drawDepreciated() {
-    for (let i = this.head; i != null; i = i.nextPowerUp) {
-      i.draw();
-    }
-  }
-  draw(game, gameState) {
-    for (let i = 0; i < gameState.powerUps.entities.length; i += 1) {
-      game.canvasContext.fillStyle = gameState.powerUps.entities[i].color;
-      game.canvasContext.beginPath();
-      game.canvasContext.arc(
-        gameState.powerUps.entities[i].positionX,
-        gameState.powerUps.entities[i].positionY,
-        gameState.powerUps.entities[i].radius,
+  draw() {
+    for (let i = 0; i < this.game.powerUps.entities.length; i += 1) {
+      this.game.canvasContext.fillStyle = this.game.powerUps.entities[i].color;
+      this.game.canvasContext.beginPath();
+      this.game.canvasContext.arc(
+        this.game.powerUps.entities[i].positionX,
+        this.game.powerUps.entities[i].positionY,
+        this.game.powerUps.entities[i].radius,
         0,
         2 * Math.PI,
       );
-      game.canvasContext.fill();
+      this.game.canvasContext.fill();
     }
   }
-  update() {
+  update(time) {
     for (let i = this.entities.length - 1; i >= 0; i -= 1) {
-      if (this.entities[i].removeFromGame == true) {
+      if (this.entities[i].removeFromGame === true) {
         this.entities.splice(i, 1);
       }
     }
     for (let i = 0; i < this.entities.length; i += 1) {
-      this.entities[i].update();
+      this.entities[i].update(time);
     }
   }
   addPowerUp(powerUp) {
     this.entities.push(powerUp);
   }
-  spawn(game) {
-    this.config.spawn.countdown -= game.timer.deltaTime;
+  spawn() {
+    this.config.spawn.countdown -= this.game.timer.deltaTime;
     if (this.config.spawn.countdown <= 0) {
       this.config.spawn.countdown += this.config.spawn.randomRate();
-      this.addPowerUp(new PowerUp(game));
+      this.addPowerUp(new PowerUp(this.game));
     }
   }
   getState() {
-    let state = [];
+    const state = [];
     for (let i = 0; i < this.entities.length; i += 1) {
       state.push(this.entities[i].getState());
     }
     return state;
   }
+  updateWithServerState() {
+    this.entities = [];
+    for (let i = 0; this.game.serverState.powerUps.entities[i] != null; i += 1) {
+      const powerUp = new PowerUp(this.game);
+      Object.keys(this.game.serverState.powerUps.entities[i]).forEach((key) => {
+        powerUp[key] = this.game.serverState.powerUps.entities[i][key];
+      });
+      this.entities[i] = powerUp;
+    }
+  }
 };
 
-},{"../objects/powerUp/index.js":16}],19:[function(require,module,exports){
-const GameEngine = require('./gameEngine.js');
+},{"../objects/powerUp/index.js":17}],20:[function(require,module,exports){
+const ClientEngine = require('./clientEngine.js');
 
 const socket = io();
 
 window.onload = () => {
-  // create client game instance
-  const client_game = {};
-  client_game.engine = new GameEngine();
-  client_game.engine.canvas = document.getElementById('canvas');
-  client_game.engine.client_init();
-  client_game.engine.client_start(socket);
-
+  const clientEngine = new ClientEngine();
+  clientEngine.canvas = document.getElementById('canvas');
+  clientEngine.init();
+  clientEngine.start(socket);
+  console.log(`initial socket: ${socket.id}`); // eslint-disable-line no-console
 
   socket.on('update', (data) => {
-    client_game.engine.gameState = data;
-    client_game.engine.applyState = true;
+    clientEngine.id = socket.id;
+    clientEngine.serverState = data;
+    clientEngine.updateWithServerStateRequired = true;
   });
-  socket.on('connect', () => {
-    console.log(socket.id);
+
+  socket.on('connect', () => { // why does this do nothing in chrome??
+    console.log(`connect: ${socket.id}`); // eslint-disable-line no-console
   });
 
   ['keydown', 'keyup'].forEach((eventListener) => {
-    client_game.engine.canvas.addEventListener(eventListener, (e) => {
+    clientEngine.canvas.addEventListener(eventListener, (e) => {
       if (e.keyCode !== 116 && e.keyCode !== 123) {
         e.preventDefault();
       }
-      client_game.engine.client_input.keyMap[e.keyCode] = e.type === 'keydown';
+      clientEngine.input.data[e.keyCode] = e.type === 'keydown';
     });
   });
 };
 
-},{"./gameEngine.js":7}],20:[function(require,module,exports){
+},{"./clientEngine.js":6}],21:[function(require,module,exports){
 module.exports = class {
   constructor() {
     this.gameTime = 0;
@@ -1305,4 +1307,4 @@ module.exports = class {
   }
 };
 
-},{}]},{},[19]);
+},{}]},{},[20]);
