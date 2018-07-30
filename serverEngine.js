@@ -9,24 +9,14 @@ module.exports = class extends GameEngine {
     this.updateLoopsRunning = false;
     this.canvas = {};
     this.fps = 60;
+    this.physicsUpdateInterval = null;
+    this.clientStateUpdateInterval = null;
   }
-  init(io) {
+  init(io, socket) {
     super.init();
-    this.initSocket(io);
-  }
-  initSocket(io) {
-    io.on('connect', (socket) => {
-      this.addClient(socket);
-      this.handleClientInput(socket);
-      if (this.updateLoopsRunning === false) {
-        this.startPhysicsUpdateLoop();
-        this.startClientStateUpdateLoop(io, socket);
-        this.updateLoopsRunning = true;
-      }
-      socket.on('disconnect', () => {
-        this.removeClient(socket);
-      });
-    });
+    this.addClient(socket);
+    this.startPhysicsUpdateLoop();
+    this.startClientStateUpdateLoop(io, socket);
   }
   handleClientInput(socket) {
     socket.on('input', (data) => {
@@ -35,7 +25,7 @@ module.exports = class extends GameEngine {
     });
   }
   startPhysicsUpdateLoop() {
-    setInterval(() => {
+    this.physicsUpdateInterval = setInterval(() => {
       this.timer.tick();
       this.update(this.timer.deltaTime);
       super.spawn();
@@ -48,7 +38,7 @@ module.exports = class extends GameEngine {
     this.players.updateServer(this.clients, time);
   }
   startClientStateUpdateLoop(io) {
-    setInterval(() => {
+    this.clientStateUpdateInterval = setInterval(() => {
       const state = {
         players: { entities: {} },
         enemies: { entities: [] },
@@ -64,7 +54,7 @@ module.exports = class extends GameEngine {
       setTimeout(() => {
         io.emit('update', state);
       }, this.latency);
-    }, 45);
+    }, this.latency);
   }
   addClient(socket) {
     this.players.entities[socket.id] = new Player(this, socket.id);
@@ -82,5 +72,9 @@ module.exports = class extends GameEngine {
     const clientIndex = this.clients.findIndex(obj => obj.id === socket.id);
     this.clients.splice(clientIndex, 1);
     console.log(`Client: ${socket.id} has disconnected`); // eslint-disable-line no-console
+  }
+  clearLoopIntervals() {
+    clearInterval(this.physicsUpdateInterval);
+    clearInterval(this.clientStateUpdateInterval);
   }
 };

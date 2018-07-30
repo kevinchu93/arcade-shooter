@@ -510,17 +510,16 @@ module.exports = class extends GameEngine {
   applySavedInputs() {
     // remove inputs that have already been applied by the server
     const client = this.serverState.clients.find(obj => obj.id === this.id);
-    if (client === undefined) { // occurs when receiving serverState of nonexisting clients
-      return null
-    }
-    for (let i = 0; this.storedInputs[i] != null; i += 1) {
-      if (this.storedInputs[i].step === client.input.step) {
-        this.storedInputs.splice(0, i + 1);
+    if (client !== undefined) { // occurs when receiving serverState of nonexisting clients
+      for (let i = 0; this.storedInputs[i] != null; i += 1) {
+        if (this.storedInputs[i].step === client.input.step) {
+          this.storedInputs.splice(0, i + 1);
+        }
       }
-    }
-    // apply inputs to interpolate current game state
-    for (let i = 0; this.storedInputs[i] != null; i += 1) {
-      this.update(this.storedInputs[i].data, this.storedInputs[i].time);
+      // apply inputs to interpolate current game state
+      for (let i = 0; this.storedInputs[i] != null; i += 1) {
+        this.update(this.storedInputs[i].data, this.storedInputs[i].time);
+      }
     }
   }
   sendInputToServer(socket) {
