@@ -1,5 +1,3 @@
-![Logo of the project](https://raw.githubusercontent.com/jehna/readme-best-practices/master/sample-logo.png)
-
 # Arcade Shooter
 > Additional information or tagline
 
@@ -15,7 +13,7 @@ cd arcade-shooter
 npm install
 ```
 
-Turning on watch mode for the browsierfy build for development purposes.
+Turning on watch mode for the browserify build for development purposes.
 
 ```shell
 npm run watch
@@ -33,7 +31,7 @@ Running app on localhost:3000
 node app
 ```
 
-Running the app listens for any socket connections. Once a client is connected, an instance of the gameEngine is created and the game begins running.
+Running the app listens for any socket connections. Once a connection occurs, an instance of the gameEngine is created and the game begins running.
 
 ## Features
 
