@@ -31,6 +31,15 @@ module.exports = class {
     );
     this.game.canvasContext.fillText(this.score, 1200, 55);
   }
+  getState() {
+    let state = {};
+    Object.keys(this).forEach((key) => {
+      if (key !== 'game') {
+        state = { ...state, ...{ [key]: this[key] } };
+      }
+    });
+    return state;
+  }
   update(input, time) {
     this.movement(input, time);
     this.powerUpCollisionCheck();
@@ -156,14 +165,5 @@ module.exports = class {
         powerUp.removeFromGame = true;
       }
     }
-  }
-  getState() {
-    let state = {};
-    Object.keys(this).forEach((key) => {
-      if (key !== 'game') {
-        state = { ...state, ...{ [key]: this[key] } };
-      }
-    });
-    return state;
   }
 };

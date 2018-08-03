@@ -29,3 +29,5 @@ io.on('connect', (socket) => {
     }
   });
 });
+
+module.exports = server;

@@ -7,7 +7,6 @@ module.exports = class {
     this.positionY = -200;
     this.color = game.powerUps.types[Math.floor(Math.random() * game.powerUps.types.length)];
     this.removeFromGame = false;
-    this.nextPowerUp = null;
   }
   draw() {
     this.game.canvasContext.fillStyle = this.color;
@@ -15,12 +14,12 @@ module.exports = class {
     this.game.canvasContext.arc(this.positionX, this.positionY, this.radius, 0, 2 * Math.PI);
     this.game.canvasContext.fill();
   }
-  movement(time) {
-    this.positionY += this.speed * (time / (1000 / 60));
-  }
   update(time) {
     this.movement(time);
     this.boundaryCheck();
+  }
+  movement(time) {
+    this.positionY += this.speed * (time / (1000 / 60));
   }
   boundaryCheck() {
     if (this.positionY >= this.game.canvas.height) {
@@ -30,7 +29,7 @@ module.exports = class {
   getState() {
     let state = {};
     Object.keys(this).forEach((key) => {
-      if (key !== 'game' && key !== 'nextPowerUp') {
+      if (key !== 'game') {
         state = { ...state, ...{ [key]: this[key] } };
       }
     });

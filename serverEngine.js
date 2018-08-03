@@ -20,9 +20,12 @@ module.exports = class extends GameEngine {
   }
   handleClientInput(socket) {
     socket.on('input', (data) => {
-      const client = this.clients.find(obj => obj.id === socket.id);
-      client.input = JSON.parse(JSON.stringify(data));
+      this.giveDataToClient(socket, data);
     });
+  }
+  giveDataToClient(socket, data) {
+    const client = this.clients.find(obj => obj.id === socket.id);
+    client.input = JSON.parse(JSON.stringify(data));
   }
   startPhysicsUpdateLoop() {
     this.physicsUpdateInterval = setInterval(() => {
@@ -39,22 +42,26 @@ module.exports = class extends GameEngine {
   }
   startClientStateUpdateLoop(io) {
     this.clientStateUpdateInterval = setInterval(() => {
-      const state = {
-        players: { entities: {} },
-        enemies: { entities: [] },
-        powerUps: { entities: [] },
-        bullets: { entities: [] },
-        clients: [],
-      };
-      state.players.entities = this.players.getState();
-      state.enemies.entities = this.enemies.getState();
-      state.powerUps.entities = this.powerUps.getState();
-      state.bullets.entities = this.bullets.getState();
-      state.clients = JSON.parse(JSON.stringify(this.clients));
+      const state = this.getState();
       setTimeout(() => {
         io.emit('update', state);
       }, this.latency);
     }, this.latency);
+  }
+  getState() {
+    const state = {
+      players: { entities: {} },
+      enemies: { entities: [] },
+      powerUps: { entities: [] },
+      bullets: { entities: [] },
+      clients: [],
+    };
+    state.players.entities = this.players.getState();
+    state.enemies.entities = this.enemies.getState();
+    state.powerUps.entities = this.powerUps.getState();
+    state.bullets.entities = this.bullets.getState();
+    state.clients = JSON.parse(JSON.stringify(this.clients));
+    return state;
   }
   addClient(socket) {
     this.players.entities[socket.id] = new Player(this, socket.id);
