@@ -5,8 +5,7 @@ const socket = io();
 window.onload = () => {
   const clientEngine = new ClientEngine();
   clientEngine.canvas = document.getElementById('canvas');
-  clientEngine.init();
-  clientEngine.start(socket);
+  clientEngine.init(socket);
   console.log(`initial socket: ${socket.id}`); // eslint-disable-line no-console
 
   socket.on('update', (data) => {

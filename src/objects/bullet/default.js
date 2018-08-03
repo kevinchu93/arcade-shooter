@@ -8,7 +8,6 @@ module.exports = class {
     this.positionX = player.positionX + ((player.width - this.width) / 2);
     this.positionY = player.positionY;
     this.type = player.bulletType;
-    this.nextBullet = null;
     this.removeFromGame = false;
   }
   movement(time) {

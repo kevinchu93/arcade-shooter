@@ -7,7 +7,6 @@ module.exports = class {
     this.positionY = 75;
     this.speed = 10;
     this.removeFromGame = false;
-    this.nextEnemy = null;
     this.stateTargetted = false;
     this.id = game.enemies.idCount;
   }
