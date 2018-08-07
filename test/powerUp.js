@@ -1,188 +1,111 @@
 const sinon = require('sinon');
 const { expect } = require('chai');
-const PowerUp = require('../objects/powerUp/index.js');
-
-const mockPowerUpSpecs = {
-  radius: 5,
-  speed: 2,
-  positionX: null,
-  positionY: null,
-  color: null,
-  stateObtained: false,
-  nextPowerUp: null,
-};
+const PowerUp = require('../src/objects/powerUp/index.js');
+const ClientEngine = require('../src/clientEngine.js');
 
 describe('powerUp', () => {
+  let mockClientEngine = null;
+  let mockPowerUp = null;
+  beforeEach(() => {
+    mockClientEngine = new ClientEngine();
+    mockClientEngine.width = 100;
+    mockPowerUp = new PowerUp(mockClientEngine);
+  });
   describe('constructor', () => {
-    it('should create powerUp with correct properties', () => {
-      const mockPowerUp = new PowerUp();
-      expect(mockPowerUp).to.deep.equal(mockPowerUpSpecs);
+    it('should create PowerUp instance', () => {
+      expect(mockPowerUp).to.be.an.instanceof(PowerUp);
     });
   });
-  describe('canvasFill', () => {
-    it('should set fillStyle = powerUP.color', () => {
-      const mockPowerUp = new PowerUp();
-      mockPowerUp.color = 'orangered';
-      const context = {
-        fillstyle: null,
+  describe('draw', () => {
+    beforeEach(() => {
+      mockPowerUp.game.canvasContext = {
+        fillStyle: null,
         beginPath() {},
         arc() {},
         fill() {},
       };
-      sinon.stub(context, 'beginPath');
-      sinon.stub(context, 'arc');
-      sinon.stub(context, 'fill');
-      mockPowerUp.canvasFill(context);
-      expect(context.fillStyle).to.equal('orangered');
-      context.beginPath.restore();
-      context.arc.restore();
-      context.fill.restore();
+      mockPowerUp.positionX = 'positionX';
+      mockPowerUp.positionY = 'positionY';
+      mockPowerUp.radius = 'radius';
+      sinon.stub(mockPowerUp.game.canvasContext, 'beginPath');
+      sinon.stub(mockPowerUp.game.canvasContext, 'arc');
+      sinon.stub(mockPowerUp.game.canvasContext, 'fill');
     });
-    it('should call beginPath', () => {
-      const mockPowerUp = new PowerUp();
-      const context = {
-        fillstyle: null,
-        beginPath() {},
-        arc() {},
-        fill() {},
-      };
-      sinon.stub(context, 'beginPath');
-      sinon.stub(context, 'arc');
-      sinon.stub(context, 'fill');
-      mockPowerUp.canvasFill(context);
-      sinon.assert.calledWithExactly(context.beginPath);
-      context.beginPath.restore();
-      context.arc.restore();
-      context.fill.restore();
+    afterEach(() => {
+      mockPowerUp.game.canvasContext.beginPath.restore();
+      mockPowerUp.game.canvasContext.arc.restore();
+      mockPowerUp.game.canvasContext.fill.restore();
     });
-    it('should call arc with correct parameters', () => {
-      const mockPowerUp = new PowerUp();
-      mockPowerUp.positionX = 10;
-      mockPowerUp.positionY = 20;
-      mockPowerUp.radius = 2;
-      const context = {
-        fillstyle: null,
-        beginPath() {},
-        arc() {},
-        fill() {},
-      };
-      sinon.stub(context, 'beginPath');
-      sinon.stub(context, 'arc');
-      sinon.stub(context, 'fill');
-      mockPowerUp.canvasFill(context);
-      sinon.assert.calledWithExactly(context.arc, 10, 20, 2, 0, 2 * Math.PI);
-      context.beginPath.restore();
-      context.arc.restore();
-      context.fill.restore();
+    it('should set fillStyle', () => {
+      mockPowerUp.color = 'color';
+      mockPowerUp.draw();
+      expect(mockPowerUp.game.canvasContext.fillStyle).to.equal('color');
     });
-    it('should call fill', () => {
-      const mockPowerUp = new PowerUp();
-      const context = {
-        fillstyle: null,
-        beginPath() {},
-        arc() {},
-        fill() {},
-      };
-      sinon.stub(context, 'beginPath');
-      sinon.stub(context, 'arc');
-      sinon.stub(context, 'fill');
-      mockPowerUp.canvasFill(context);
-      sinon.assert.calledWithExactly(context.fill);
-      context.beginPath.restore();
-      context.arc.restore();
-      context.fill.restore();
+    it('should call beginPath, arc, fill', () => {
+      mockPowerUp.draw();
+      sinon.assert.calledWithExactly(mockPowerUp.game.canvasContext.beginPath);
+      sinon.assert.calledWithExactly(
+        mockPowerUp.game.canvasContext.arc,
+        'positionX',
+        'positionY',
+        'radius',
+        0,
+        2 * Math.PI,
+      );
+      sinon.assert.calledWithExactly(mockPowerUp.game.canvasContext.fill);
+    });
+  });
+  describe('update', () => {
+    it('should call movement and boundaryCheck', () => {
+      sinon.stub(mockPowerUp, 'movement');
+      sinon.stub(mockPowerUp, 'boundaryCheck');
+      mockPowerUp.update('time');
+      sinon.assert.calledWithExactly(mockPowerUp.movement, 'time');
+      sinon.assert.calledWithExactly(mockPowerUp.boundaryCheck);
+      mockPowerUp.movement.restore();
+      mockPowerUp.boundaryCheck.restore();
     });
   });
   describe('movement', () => {
     it('should update positionY using time input', () => {
-      const mockPowerUp = new PowerUp();
-      mockPowerUp.positionY = 0;
-      mockPowerUp.speed = 2;
-      const time = 100;
-      mockPowerUp.movement(time);
-      expect(mockPowerUp.positionY).to.equal(12);
+      mockPowerUp.positionY = 1000;
+      mockPowerUp.speed = 20;
+      mockPowerUp.movement(100);
+      expect(mockPowerUp.positionY).to.equal(1120);
     });
   });
-  describe('update', () => {
-    it('should call movement with correct parameter', () => {
-      const mockPowerUp = new PowerUp();
-      sinon.stub(mockPowerUp, 'movement');
-      sinon.stub(mockPowerUp, 'boundaryCheck');
-      mockPowerUp.update('time', 'boundaryBottom', 'components');
-      sinon.assert.calledWithExactly(mockPowerUp.movement, 'time');
-      mockPowerUp.movement.restore();
-      mockPowerUp.boundaryCheck.restore();
+  describe('boundaryCheck', () => {
+    it('should set removeFromgame = true when positionY >= canvas.height', () => {
+      mockPowerUp.removeFromGame = false;
+      mockPowerUp.positionY = 200;
+      mockPowerUp.game.canvas = { height: 100 };
+      mockPowerUp.boundaryCheck();
+      expect(mockPowerUp.removeFromGame).to.equal(true);
     });
-    it('should call boundaryCheck with correct parameters', () => {
-      const mockPowerUp = new PowerUp();
-      sinon.stub(mockPowerUp, 'movement');
-      sinon.stub(mockPowerUp, 'boundaryCheck');
-      mockPowerUp.update('time', 'boundaryBottom', 'components');
-      sinon.assert.calledWithExactly(mockPowerUp.boundaryCheck, 'boundaryBottom', 'components');
-      mockPowerUp.movement.restore();
-      mockPowerUp.boundaryCheck.restore();
-    });
-    it('should call remove with correct parameter if stateObtained = true', () => {
-      const mockPowerUp = new PowerUp();
-      mockPowerUp.stateObtained = true;
-      const mockComponents = {
-        powerUps: {
-          head: 'head',
-        },
-      };
-      sinon.stub(mockPowerUp, 'movement');
-      sinon.stub(mockPowerUp, 'boundaryCheck');
-      sinon.stub(mockPowerUp, 'remove');
-      mockPowerUp.update('time', 'boundaryBottom', mockComponents);
-      sinon.assert.calledWithExactly(mockPowerUp.remove, 'head');
-      mockPowerUp.movement.restore();
-      mockPowerUp.boundaryCheck.restore();
-      mockPowerUp.remove.restore();
+    it('should not set removeFromgame = true when positionY < canvas.height', () => {
+      mockPowerUp.removeFromGame = false;
+      mockPowerUp.positionY = 50;
+      mockPowerUp.game.canvas = { height: 100 };
+      mockPowerUp.boundaryCheck();
+      expect(mockPowerUp.removeFromGame).to.equal(false);
     });
   });
-  describe('boundarycheck', () => {
-    it('should call remove with correct parameter if positionY >= boundaryBottom', () => {
-      const mockPowerUp = new PowerUp();
-      mockPowerUp.positionY = 10;
-      const boundaryBottom = 0;
-      const mockComponents = {
-        powerUps: {
-          head: 'head',
-        },
-      };
-      sinon.stub(mockPowerUp, 'remove');
-      mockPowerUp.boundaryCheck(boundaryBottom, mockComponents);
-      sinon.assert.calledWithExactly(mockPowerUp.remove, 'head');
-      mockPowerUp.remove.restore();
-    });
-  });
-  describe('append', () => {
-    it('should return mockPowerUp if head = null', () => {
-      const mockPowerUp = new PowerUp();
-      expect(mockPowerUp.append(null)).to.equal(mockPowerUp);
-    });
-    it('should set firstPowerUp.nextPowerUp to equal mockPowerUp', () => {
-      const mockPowerUp = new PowerUp();
-      const firstPowerUp = {
-        nextPowerUp: null,
-      };
-      expect(mockPowerUp.append(firstPowerUp).nextPowerUp).to.equal(mockPowerUp);
-    });
-  });
-  describe('remove', () => {
-    it('should return firstPowerUp.nextPowerUp if firstPowerUp equals mockbullet', () => {
-      const mockPowerUp = new PowerUp();
-      mockPowerUp.nextPowerUp = 'secondPowerUp';
-      const firstPowerUp = mockPowerUp;
-      expect(mockPowerUp.remove(firstPowerUp)).to.equal('secondPowerUp');
-    });
-    it('should return firstPowerUp and set firstPowerUp.nextPowerUp to equal mockPowerUp.nextPowerUp', () => {
-      const mockPowerUp = new PowerUp();
-      mockPowerUp.nextPowerUp = 'thirdPowerUp';
-      const firstPowerUp = {
-        nextPowerUp: mockPowerUp,
-      };
-      expect(mockPowerUp.remove(firstPowerUp).nextPowerUp).to.equal('thirdPowerUp');
+  describe('getState', () => {
+    it('should return state', () => {
+      mockPowerUp.radius = 'radius';
+      mockPowerUp.speed = 'speed';
+      mockPowerUp.positionX = 'positionX';
+      mockPowerUp.positionY = 'positionY';
+      mockPowerUp.color = 'color';
+      mockPowerUp.removeFromGame = 'removeFromGame';
+      expect(mockPowerUp.getState()).to.deep.equal({
+        radius: 'radius',
+        speed: 'speed',
+        positionX: 'positionX',
+        positionY: 'positionY',
+        color: 'color',
+        removeFromGame: 'removeFromGame',
+      });
     });
   });
 });

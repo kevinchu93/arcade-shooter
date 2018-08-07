@@ -4,6 +4,9 @@ module.exports = {
     "browser": true,
     "mocha": true,
   },
+  "globals" : {
+    "io": true,
+  },
   "rules": {
     "no-param-reassign": ["error", { "props": false }],
   },

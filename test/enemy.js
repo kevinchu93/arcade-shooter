@@ -1,216 +1,102 @@
 const sinon = require('sinon');
-const Enemy = require('../objects/enemy/index.js');
 const { expect } = require('chai');
-
-const mockEnemySpecs = {
-  width: 20,
-  height: 10,
-  positionX: 350,
-  positionY: 75,
-  speed: 10,
-  stateHit: false,
-  nextEnemy: null,
-  stateTargetted: false,
-};
+const Enemy = require('../src/objects/enemy/index.js');
+const ClientEngine = require('../src/clientEngine.js');
 
 describe('Enemy', () => {
+  let mockClientEngine = null;
+  let mockEnemy = null;
+  beforeEach(() => {
+    mockClientEngine = new ClientEngine();
+    mockEnemy = new Enemy(mockClientEngine);
+  });
   describe('constructor', () => {
-    it('should create mockEnemy with correct parameters', () => {
-      const mockEnemy = new Enemy();
-      expect(mockEnemy).to.deep.equal(mockEnemySpecs);
+    it('should create Enemy instance', () => {
+      expect(mockEnemy).to.be.an.instanceof(Enemy);
     });
   });
-  describe('canvasFill', () => {
-    it('should call fillRect with correct parameters', () => {
-      const mockEnemy = new Enemy();
-      const context = {
-        fillRect() {},
-      };
-      sinon.stub(context, 'fillRect');
-      mockEnemy.canvasFill(context);
+  describe('draw', () => {
+    it('should call fillRect', () => {
+      mockEnemy.game.canvasContext = { fillRect() {} };
+      mockEnemy.positionX = 'positionX';
+      mockEnemy.positionY = 'positionY';
+      mockEnemy.width = 'width';
+      mockEnemy.height = 'height';
+      sinon.stub(mockEnemy.game.canvasContext, 'fillRect');
+      mockEnemy.draw();
       sinon.assert.calledWithExactly(
-        context.fillRect,
-        mockEnemySpecs.positionX,
-        mockEnemySpecs.positionY,
-        mockEnemySpecs.width,
-        mockEnemySpecs.height,
+        mockEnemy.game.canvasContext.fillRect,
+        'positionX',
+        'positionY',
+        'width',
+        'height',
       );
-      context.fillRect.restore();
+      mockEnemy.game.canvasContext.fillRect.restore();
     });
   });
   describe('movement', () => {
     it('should update positionX using time input', () => {
-      const mockEnemy = new Enemy();
+      mockEnemy.positionX = 1000;
+      mockEnemy.speed = 20;
       mockEnemy.movement(100);
-      expect(mockEnemy.positionX)
-        .to.equal(mockEnemySpecs.positionX + (mockEnemySpecs.speed * (100 / (1000 / 60))));
+      expect(mockEnemy.positionX).to.equal(1120);
     });
   });
   describe('boundaryCheck', () => {
-    it('should change speed to positive when enemy exceeds boundaryLeft', () => {
-      const mockEnemy = new Enemy();
+    it('should change speed to positive when positionX <= 0 and speed is negative', () => {
+      mockEnemy.positionX = -100;
       mockEnemy.speed = -20;
-      mockEnemy.boundaryCheck(400, 500);
+      mockEnemy.boundaryCheck();
       expect(mockEnemy.speed).to.equal(20);
     });
-    it('should change speed to negative when enemy exceeds boundaryRight', () => {
-      const mockEnemy = new Enemy();
+    it('should change speed to negative when positionX + width >= canvas.width and speed is positive', () => {
+      mockEnemy.game.canvas = { width: 100 };
+      mockEnemy.positionX = 100;
+      mockEnemy.width = 20;
       mockEnemy.speed = 20;
-      mockEnemy.boundaryCheck(200, 300);
+      mockEnemy.boundaryCheck();
       expect(mockEnemy.speed).to.equal(-20);
+    });
+    it('should not change speed when positionX > 0 and positionX + width < canvas.width', () => {
+      mockEnemy.game.canvas = { width: 100 };
+      mockEnemy.positionX = 20;
+      mockEnemy.width = 20;
+      mockEnemy.speed = 20;
+      mockEnemy.boundaryCheck();
+      expect(mockEnemy.speed).to.equal(20);
     });
   });
   describe('update', () => {
-    it('should call boundaryCheck with correct parameters', () => {
-      const mockEnemy = new Enemy();
-      sinon.stub(mockEnemy, 'boundaryCheck');
+    it('should call movement and boundaryCheck', () => {
       sinon.stub(mockEnemy, 'movement');
-      sinon.stub(mockEnemy, 'hitCheck');
-      mockEnemy.update(10, 20, 30, 40);
-      sinon.assert.calledWithExactly(mockEnemy.boundaryCheck, 20, 30);
-      mockEnemy.boundaryCheck.restore();
-      mockEnemy.movement.restore();
-      mockEnemy.hitCheck.restore();
-    });
-    it('should call movement with correct parameters', () => {
-      const mockEnemy = new Enemy();
       sinon.stub(mockEnemy, 'boundaryCheck');
-      sinon.stub(mockEnemy, 'movement');
-      sinon.stub(mockEnemy, 'hitCheck');
-      mockEnemy.update(10, 20, 30, 40);
-      sinon.assert.calledWithExactly(mockEnemy.movement, 10);
-      mockEnemy.boundaryCheck.restore();
+      mockEnemy.update('time');
+      sinon.assert.calledWithExactly(mockEnemy.movement, 'time');
+      sinon.assert.calledWithExactly(mockEnemy.boundaryCheck);
       mockEnemy.movement.restore();
-      mockEnemy.hitCheck.restore();
-    });
-    it('should call hitCheck with correct parameters', () => {
-      const mockEnemy = new Enemy();
-      sinon.stub(mockEnemy, 'boundaryCheck');
-      sinon.stub(mockEnemy, 'movement');
-      sinon.stub(mockEnemy, 'hitCheck');
-      mockEnemy.update(10, 20, 30, 40);
-      sinon.assert.calledWithExactly(mockEnemy.hitCheck, 40);
       mockEnemy.boundaryCheck.restore();
-      mockEnemy.movement.restore();
-      mockEnemy.hitCheck.restore();
     });
   });
-  describe('hitCheck', () => {
-    it('should call remove with correct parameters if stateHit is true', () => {
-      const mockEnemy = new Enemy();
-      mockEnemy.stateHit = true;
-      const mockComponents = {
-        enemies: {
-          head: 'head',
-        },
-      };
-      sinon.stub(mockEnemy, 'remove').returns('enemyHead');
-      mockEnemy.hitCheck(mockComponents);
-      sinon.assert.calledWithExactly(mockEnemy.remove, 'head', { head: 'enemyHead' });
-      mockEnemy.remove.restore();
-    });
-    it('should not call remove if stateHit is false', () => {
-      const mockEnemy = new Enemy();
-      mockEnemy.stateHit = false;
-      const mockComponents = {
-        enemies: {
-          head: 'head',
-        },
-      };
-      sinon.stub(mockEnemy, 'remove').returns('enemyHead');
-      mockEnemy.hitCheck(mockComponents);
-      sinon.assert.notCalled(mockEnemy.remove);
-      mockEnemy.remove.restore();
-    });
-    it('should set head to enemyHead when stateHit is true', () => {
-      const mockEnemy = new Enemy();
-      mockEnemy.stateHit = true;
-      const mockComponents = {
-        enemies: {
-          head: 'head',
-        },
-      };
-      sinon.stub(mockEnemy, 'remove').returns('enemyHead');
-      mockEnemy.hitCheck(mockComponents);
-      expect(mockComponents.enemies.head).to.be.equal('enemyHead');
-      mockEnemy.remove.restore();
-    });
-  });
-  describe('append', () => {
-    it('should return mockEnemy if head is null', () => {
-      const mockEnemy = new Enemy();
-      const mockEnemies = {
-        count: 0,
-      };
-      expect(mockEnemy.append(null, mockEnemies)).to.equal(mockEnemy);
-    });
-    it('should set firstEnemy.nextEnemy to equal mockEnemy', () => {
-      const mockEnemy = new Enemy();
-      const mockEnemies = {
-        count: 0,
-      };
-      const firstEnemy = {
-        nextEnemy: null,
-      };
-      expect(mockEnemy.append(firstEnemy, mockEnemies).nextEnemy).to.equal(mockEnemy);
-    });
-    it('should increment count by 1', () => {
-      const mockEnemy = new Enemy();
-      const mockEnemies = {
-        count: 0,
-      };
-      const firstEnemy = {
-        nextEnemy: null,
-      };
-      mockEnemy.append(firstEnemy, mockEnemies);
-      expect(mockEnemies.count).to.equal(1);
-    });
-  });
-  describe('remove', () => {
-    it('should return firstEnemy.nextEnemy if firstEnemy equals mockEnemy', () => {
-      const mockEnemy = new Enemy();
-      mockEnemy.nextEnemy = 'secondEnemy';
-      const firstEnemy = mockEnemy;
-      const mockEnemies = {
-        count: 0,
-        targettedCount: 0,
-      };
-      expect(mockEnemy.remove(firstEnemy, mockEnemies)).to.equal('secondEnemy');
-    });
-    it('should return firstEnemy and set firstEnemy.nextEnemy to equal mockEnemy.nextEnemy', () => {
-      const mockEnemy = new Enemy();
-      mockEnemy.nextEnemy = 'thirdEnemy';
-      const firstEnemy = {
-        nextEnemy: mockEnemy,
-      };
-      const mockEnemies = {
-        count: 0,
-        targettedCount: 0,
-      };
-      expect(mockEnemy.remove(firstEnemy, mockEnemies).nextEnemy).to.equal('thirdEnemy');
-    });
-    it('should decrement targettedCount by 1 if stateTargetted is true', () => {
-      const mockEnemy = new Enemy();
-      mockEnemy.nextEnemy = 'secondEnemy';
-      mockEnemy.stateTargetted = true;
-      const firstEnemy = mockEnemy;
-      const mockEnemies = {
-        count: 0,
-        targettedCount: 0,
-      };
-      mockEnemy.remove(firstEnemy, mockEnemies);
-      expect(mockEnemies.targettedCount).to.equal(-1);
-    });
-    it('should decrement count by 1', () => {
-      const mockEnemy = new Enemy();
-      mockEnemy.nextEnemy = 'secondEnemy';
-      const firstEnemy = mockEnemy;
-      const mockEnemies = {
-        count: 0,
-        targettedCount: 0,
-      };
-      mockEnemy.remove(firstEnemy, mockEnemies);
-      expect(mockEnemies.count).to.equal(-1);
+  describe('getState', () => {
+    it('should return state', () => {
+      mockEnemy.width = 'width';
+      mockEnemy.height = 'height';
+      mockEnemy.speed = 'speed';
+      mockEnemy.positionX = 'positionX';
+      mockEnemy.positionY = 'positionY';
+      mockEnemy.removeFromGame = 'removeFromGame';
+      mockEnemy.stateTargetted = 'stateTargetted';
+      mockEnemy.id = 'id';
+      expect(mockEnemy.getState()).to.deep.equal({
+        width: 'width',
+        height: 'height',
+        speed: 'speed',
+        positionX: 'positionX',
+        positionY: 'positionY',
+        removeFromGame: 'removeFromGame',
+        stateTargetted: 'stateTargetted',
+        id: 'id',
+      });
     });
   });
 });

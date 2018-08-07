@@ -1,15 +1,33 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+const express = require('express');
+const socketIo = require('socket.io');
+const ServerEngine = require('./serverEngine.js');
 
-const server = http.createServer((req, res) => {
-  if (req.url === '/') {
-    res.writeHead(200, { 'content-Type': 'text/html' });
-    fs.createReadStream(path.join(__dirname, '/index.html')).pipe(res);
-  } else if (req.url === '/bundle.js') {
-    res.writeHead(200, { 'Content-Type': 'text/javascript' });
-    fs.createReadStream(path.join(__dirname, '/bundle.js')).pipe(res);
+const app = express();
+const server = app.listen(3000);
+
+app.use(express.static('dist'));
+
+const io = socketIo(server);
+
+let serverEngine = null;
+
+io.on('connect', (socket) => {
+  // creates new serverEngine if non exist, otherwise adds client to existing serverEngine
+  if (serverEngine === null) {
+    serverEngine = new ServerEngine();
+    serverEngine.init(io, socket);
+  } else {
+    serverEngine.addClient(socket);
   }
+  serverEngine.handleClientInput(socket);
+  socket.on('disconnect', () => {
+    serverEngine.removeClient(socket);
+    // if serverEngine has no clients, stop all setInterval loops and delete serverEngine
+    if (serverEngine.clients.length === 0) {
+      serverEngine.clearLoopIntervals();
+      serverEngine = null;
+    }
+  });
 });
 
-server.listen(3000);
+module.exports = server;
